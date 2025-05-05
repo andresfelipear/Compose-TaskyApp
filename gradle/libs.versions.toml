@@ -20,6 +20,7 @@ okhttp = "4.12.0"
 moshi = "1.15.1"
 room = "2.7.1"
 coil3 = "3.0.4"
+uiTextGoogleFonts = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -73,6 +74,7 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
 #Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization"}
+androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
