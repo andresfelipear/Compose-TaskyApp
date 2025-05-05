@@ -1,4 +1,4 @@
-package com.aarevalo.tasky
+package com.aarevalo.tasky.core.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
