@@ -14,7 +14,7 @@ room {
 
 android {
     namespace = "com.aarevalo.tasky"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.aarevalo.tasky"

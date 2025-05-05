@@ -13,7 +13,7 @@ ksp = "2.0.21-1.0.25"
 kotlinx-serialization = "1.7.3"
 hilt = "2.54"
 hiltNavigationCompose = "1.2.0"
-navigationCompose = "2.8.1"
+navigationCompose = "2.8.0-alpha10"
 
 retrofit = "2.10.0"
 okhttp = "4.12.0"
