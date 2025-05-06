@@ -4,4 +4,11 @@
     <string name="password">Password</string>
     <string name="eye_open">eye open</string>
     <string name="eye_close">eye closed</string>
+    <string name="register_title">Create your account</string>
+    <string name="name_hint">Name</string>
+    <string name="password_hint">Password</string>
+    <string name="email_hint">Email address</string>
+    <string name="register_button">GET STARTED</string>
+    <string name="already_have_account">ALREADY HAVE AN ACCOUNT?</string>
+    <string name="login_link">LOG IN</string>
 </resources>

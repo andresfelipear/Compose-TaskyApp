@@ -37,7 +37,7 @@ fun TaskyActionButton(
             disabledContainerColor = LocalExtendedColors.current.onSurfaceVariant70,
             disabledContentColor = MaterialTheme.colorScheme.primary,
         ),
-        shape = RoundedCornerShape(100.dp)
+        shape = RoundedCornerShape(38.dp)
     ) {
         when {
             isLoading -> {
