@@ -31,7 +31,7 @@ fun InputTextField(
     text: String,
     onValueChange: (String) -> Unit,
     isValidInput: Boolean = false,
-    hint: String = "",
+    hint: String,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
         color = MaterialTheme.colorScheme.onSurface
     ),
