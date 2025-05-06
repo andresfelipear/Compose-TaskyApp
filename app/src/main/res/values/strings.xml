@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Tasky</string>
     <string name="check_icon">check_icon</string>
+    <string name="password">Password</string>
+    <string name="eye_open">eye open</string>
+    <string name="eye_close">eye closed</string>
 </resources>

@@ -22,6 +22,8 @@ room = "2.7.1"
 coil3 = "3.0.4"
 uiTextGoogleFonts = "1.8.0"
 
+material_icons = "1.7.8"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -75,6 +77,9 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 #Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization"}
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+
+#Material Icons
+material_icons = { module = "androidx.compose.material:material-icons-extended", version.ref = "material_icons" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

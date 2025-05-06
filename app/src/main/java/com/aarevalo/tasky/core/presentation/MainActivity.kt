@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.auth.presentation.components.ActionButton
 import com.aarevalo.tasky.auth.presentation.components.InputTextField
+import com.aarevalo.tasky.auth.presentation.components.PasswordTextField
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -66,6 +67,12 @@ class MainActivity : ComponentActivity() {
                             onValueChange = {},
                             hint = "Hint",
                             isValidInput = true
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PasswordTextField(
+                            password = "123456",
+                            onPasswordChange = {},
+                            hint = "Password"
                         )
                     }
 
