@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.auth.presentation.components.ActionButton
+import com.aarevalo.tasky.auth.presentation.components.InputTextField
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,7 +28,8 @@ class MainActivity : ComponentActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(innerPadding),
+                            .padding(innerPadding)
+                            .padding(vertical = 28.dp, horizontal = 16.dp),
                     ) {
                         ActionButton(
                             text = "GET STARTED",
@@ -46,6 +45,20 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier,
                             isLoading = false,
                             isEnabled = true
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        InputTextField(
+                            text = "",
+                            onValueChange = {},
+                            hint = "Name",
+                            isValidInput = false
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        InputTextField(
+                            text = "Aidan",
+                            onValueChange = {},
+                            hint = "Hint",
+                            isValidInput = true
                         )
                     }
 

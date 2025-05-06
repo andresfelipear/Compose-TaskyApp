@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Tasky</string>
+    <string name="check_icon">check_icon</string>
 </resources>
