@@ -26,7 +26,7 @@ import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 
 @Composable
-fun InputTextField(
+fun TaskyInputTextField(
     modifier: Modifier = Modifier,
     text: String,
     onValueChange: (String) -> Unit,
@@ -81,8 +81,8 @@ fun InputTextField(
     apiLevel = 34
 )
 @Composable
-fun InputTextFieldPreview() {
-    InputTextField(
+fun TaskyInputTextFieldPreview() {
+    TaskyInputTextField(
         text = "Name",
         onValueChange = {},
         hint = "Hint",

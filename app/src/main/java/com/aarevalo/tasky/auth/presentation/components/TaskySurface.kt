@@ -10,7 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 
 @Composable
-fun LinkButton(
+fun TaskySurface(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     text: String,
@@ -27,8 +27,8 @@ fun LinkButton(
 
 @Preview(showBackground = true, apiLevel = 34)
 @Composable
-fun LinkButtonPreview() {
-    LinkButton(
+fun TaskySurfacePreview() {
+    TaskySurface(
         onClick = {},
         text = "LOG IN",
     )

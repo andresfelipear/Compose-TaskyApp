@@ -1,7 +1,6 @@
 package com.aarevalo.tasky.auth.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -15,13 +14,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
-fun ActionButton(
+fun TaskyActionButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -67,8 +65,8 @@ fun ActionButton(
 
 @Preview(showBackground = true, apiLevel = 34)
 @Composable
-fun ActionButtonPreview() {
+fun TaskyActionButtonPreview() {
     TaskyTheme {
-        ActionButton(text = "GET STARTED", onClick = {}, isLoading = true, isEnabled = true)
+        TaskyActionButton(text = "GET STARTED", onClick = {}, isLoading = true, isEnabled = true)
     }
 }

@@ -11,14 +11,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.aarevalo.tasky.auth.presentation.components.ActionButton
-import com.aarevalo.tasky.auth.presentation.components.InputTextField
-import com.aarevalo.tasky.auth.presentation.components.PasswordTextField
+import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
+import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
+import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,7 +44,7 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .padding(vertical = 28.dp, horizontal = 16.dp),
                     ) {
-                        ActionButton(
+                        TaskyActionButton(
                             text = "GET STARTED",
                             onClick = {},
                             modifier = Modifier,
@@ -47,7 +52,7 @@ class MainActivity : ComponentActivity() {
                             isEnabled = true
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        ActionButton(
+                        TaskyActionButton(
                             text = "LOGIN",
                             onClick = {},
                             modifier = Modifier,
@@ -55,24 +60,30 @@ class MainActivity : ComponentActivity() {
                             isEnabled = true
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        InputTextField(
+                        TaskyInputTextField(
                             text = "",
                             onValueChange = {},
                             hint = "Name",
                             isValidInput = false
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        InputTextField(
+                        TaskyInputTextField(
                             text = "Aidan",
                             onValueChange = {},
                             hint = "Hint",
                             isValidInput = true
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        PasswordTextField(
-                            password = "123456",
-                            onPasswordChange = {},
-                            hint = "Password"
+                        val passwordState by remember { mutableStateOf(TextFieldState(
+                            initialText = "12345",
+                        )) }
+                        var passwordVisibility by remember { mutableStateOf(true) }
+                        TaskyPasswordTextField(
+                            passwordState = passwordState,
+                            isPasswordVisible = passwordVisibility,
+                            onPasswordVisibilityChange = {
+                                passwordVisibility = it
+                            }
                         )
                     }
 

@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.BasicSecureTextField
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -18,16 +19,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.R
@@ -36,9 +31,10 @@ import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
-fun PasswordTextField(
-    password: String,
-    onPasswordChange: (String) -> Unit,
+fun TaskyPasswordTextField(
+    passwordState: TextFieldState,
+    isPasswordVisible: Boolean,
+    onPasswordVisibilityChange: (Boolean) -> Unit,
     hint: String = stringResource(id = R.string.password),
     modifier: Modifier = Modifier,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
@@ -47,14 +43,11 @@ fun PasswordTextField(
 ){
     val spacing = LocalSpacing.current
     val colors = LocalExtendedColors.current
-    var passwordVisible by remember { mutableStateOf(false) }
 
-    BasicTextField(
-        value = password,
-        onValueChange = onPasswordChange,
+    BasicSecureTextField(
+        state = passwordState,
         textStyle = textStyle,
-        singleLine = true,
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        textObfuscationMode = if (isPasswordVisible) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
         modifier = modifier
             .fillMaxWidth()
             .background(colors.surfaceHigher)
@@ -63,13 +56,13 @@ fun PasswordTextField(
                 vertical = spacing.spaceMedium,
                 horizontal = spacing.spaceExtraMedium
             ),
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             Row(
                 modifier = Modifier,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(modifier = Modifier){
-                    if (password.isEmpty()) {
+                    if (passwordState.text.isEmpty()) {
                         Text(
                             text = hint,
                             style = textStyle.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -78,10 +71,10 @@ fun PasswordTextField(
                     innerTextField()
                 }
                 IconButton(
-                    onClick = { passwordVisible = !passwordVisible },
+                    onClick = {onPasswordVisibilityChange(!isPasswordVisible)},
                     modifier = Modifier.padding(0.dp).size(20.dp)
                 ) {
-                    when (passwordVisible) {
+                    when (isPasswordVisible) {
                         true -> Icon(
                             imageVector = Icons.Filled.Visibility,
                             contentDescription = stringResource(id = R.string.eye_open),
@@ -103,11 +96,12 @@ fun PasswordTextField(
 
 @Preview(showBackground = true, apiLevel = 34)
 @Composable
-fun PasswordTextFieldPreview() {
+fun TaskyPasswordTextFieldPreview() {
     TaskyTheme {
-        PasswordTextField(
-            password = "",
-            onPasswordChange = {},
+        TaskyPasswordTextField(
+            passwordState = TextFieldState(initialText = "12345"),
+            isPasswordVisible = true,
+            onPasswordVisibilityChange = {}
         )
     }
 }
