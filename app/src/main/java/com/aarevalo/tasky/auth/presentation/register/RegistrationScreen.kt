@@ -13,17 +13,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
@@ -32,23 +30,13 @@ import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun RegistrationScreenRoot(
-    viewModel: RegistrationViewModel = viewModel(),
+    viewModel: RegistrationViewModel = hiltViewModel(),
     navController: NavController? = null
 ) {
     val state by viewModel.state.collectAsState()
-
-
-    LaunchedEffect(state.passwordState) {
-        snapshotFlow{ state.passwordState.value.text }
-            .distinctUntilChanged()
-            .collect {
-                viewModel.onAction(RegistrationAction.OnPasswordChanged(it.toString()))
-            }
-    }
 
     RegistrationScreen(
         onAction = { action ->
@@ -128,7 +116,7 @@ fun RegistrationScreen(
                 )
 
                 TaskyPasswordTextField(
-                    passwordState = state.passwordState.value,
+                    passwordState = state.passwordState,
                     isPasswordVisible = state.isPasswordVisible,
                     onPasswordVisibilityChange =
                     {
