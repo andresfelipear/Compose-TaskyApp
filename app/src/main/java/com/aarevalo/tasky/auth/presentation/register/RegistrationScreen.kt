@@ -13,13 +13,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
@@ -27,12 +32,36 @@ import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun RegistrationScreenRoot(
-    viewModel: RegistrationViewModel = hiltViewModel(),
-    onRegistrationSuccess: () -> Unit,
+    viewModel: RegistrationViewModel = viewModel(),
+    navController: NavController? = null
 ) {
+    val state by viewModel.state.collectAsState()
+
+
+    LaunchedEffect(state.passwordState) {
+        snapshotFlow{ state.passwordState.value.text }
+            .distinctUntilChanged()
+            .collect {
+                viewModel.onAction(RegistrationAction.OnPasswordChanged(it.toString()))
+            }
+    }
+
+    RegistrationScreen(
+        onAction = { action ->
+            when(action) {
+                is RegistrationAction.OnRegister -> {
+                    TODO()
+                }
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        },
+        state = state,
+    )
 }
 
 @Composable
@@ -48,7 +77,7 @@ fun RegistrationScreen(
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
-    ){
+    ) {
         Text(
             text = stringResource(id = R.string.register_title),
             style = MaterialTheme.typography.headlineLarge,
@@ -61,9 +90,17 @@ fun RegistrationScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 24.dp,
+                        topEnd = 24.dp
+                    )
+                )
                 .background(color = MaterialTheme.colorScheme.surface)
-                .padding(horizontal = spacing.spaceMedium, vertical = spacing.spaceLarge),
+                .padding(
+                    horizontal = spacing.spaceMedium,
+                    vertical = spacing.spaceLarge
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
@@ -71,11 +108,11 @@ fun RegistrationScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(spacing.spaceMedium)
-            ){
+            ) {
                 TaskyInputTextField(
                     text = state.name,
                     onValueChange = {
-                        onAction(RegistrationAction.NameChanged(it))
+                        onAction(RegistrationAction.OnNameChanged(it))
                     },
                     isValidInput = state.isValidName,
                     hint = stringResource(id = R.string.name_hint),
@@ -84,40 +121,38 @@ fun RegistrationScreen(
                 TaskyInputTextField(
                     text = state.email,
                     onValueChange = {
-                        onAction(RegistrationAction.EmailChanged(it))
+                        onAction(RegistrationAction.OnEmailChanged(it))
                     },
-                    isValidInput = state.isValidPassword,
+                    isValidInput = state.isValidEmail,
                     hint = stringResource(id = R.string.email_hint),
                 )
 
                 TaskyPasswordTextField(
                     passwordState = state.passwordState.value,
                     isPasswordVisible = state.isPasswordVisible,
-                    onPasswordVisibilityChange = {
-                        onAction(RegistrationAction.PasswordVisibilityChanged(it))
-                    }
-                )
+                    onPasswordVisibilityChange =
+                    {
+                        onAction(RegistrationAction.OnPasswordVisibilityChanged(it))
+                    })
             }
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(spacing.spaceExtraMedium)
             ) {
                 TaskyActionButton(
                     text = stringResource(id = R.string.register_button),
-                    onClick = { onAction(RegistrationAction.Register) },
+                    onClick = { onAction(RegistrationAction.OnRegister) },
                     modifier = Modifier.fillMaxWidth(),
                     isLoading = state.isLoading,
                     isEnabled = state.isValidName && state.isValidEmail && state.isValidPassword
                 )
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
-                ){
+                ) {
                     Text(
                         text = stringResource(id = R.string.already_have_account),
                         style = MaterialTheme.typography.labelSmall,
@@ -125,7 +160,7 @@ fun RegistrationScreen(
                     )
                     Spacer(modifier = Modifier.padding(spacing.spaceExtraSmall))
                     TaskySurface(
-                        onClick = { onAction(RegistrationAction.Login) },
+                        onClick = { onAction(RegistrationAction.OnGoToLogin) },
                         text = stringResource(id = R.string.login_link),
                     )
                 }
@@ -134,7 +169,10 @@ fun RegistrationScreen(
     }
 }
 
-@Preview(showBackground = true, apiLevel = 34)
+@Preview(
+    showBackground = true,
+    apiLevel = 34
+)
 @Composable
 fun RegistrationScreenPreview() {
     TaskyTheme {
