@@ -4,4 +4,15 @@
     <string name="password">Password</string>
     <string name="eye_open">eye open</string>
     <string name="eye_close">eye closed</string>
+    <string name="register_title">Create your account</string>
+    <string name="name_hint">Name</string>
+    <string name="password_hint">Password</string>
+    <string name="email_hint">Email address</string>
+    <string name="register_button">GET STARTED</string>
+    <string name="already_have_account">ALREADY HAVE AN ACCOUNT?</string>
+    <string name="login_link">LOG IN</string>
+    <string name="password_error_length">password must be at least %d long.</string>
+    <string name="password_error_uppercase">password must contain at least one uppercase letter.</string>
+    <string name="password_error_lowercase">password must contain at least one lowercase letter.</string>
+    <string name="password_error_digit">password must contain at least one digit</string>
 </resources>

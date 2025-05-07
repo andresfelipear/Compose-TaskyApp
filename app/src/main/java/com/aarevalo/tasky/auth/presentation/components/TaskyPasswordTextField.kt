@@ -71,7 +71,7 @@ fun TaskyPasswordTextField(
                     innerTextField()
                 }
                 IconButton(
-                    onClick = {onPasswordVisibilityChange(!isPasswordVisible)},
+                    onClick = {onPasswordVisibilityChange(isPasswordVisible)},
                     modifier = Modifier.padding(0.dp).size(20.dp)
                 ) {
                     when (isPasswordVisible) {

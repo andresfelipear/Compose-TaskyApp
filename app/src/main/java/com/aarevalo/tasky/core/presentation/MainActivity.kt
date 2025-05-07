@@ -6,25 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
-import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
-import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
-import com.aarevalo.tasky.ui.theme.LocalSpacing
+import com.aarevalo.tasky.auth.presentation.register.RegistrationScreenRoot
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -40,53 +27,10 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.onPrimary)
-                            .clip(RoundedCornerShape(LocalSpacing.current.spaceLarge))
                             .padding(innerPadding)
-                            .padding(vertical = 28.dp, horizontal = 16.dp),
                     ) {
-                        TaskyActionButton(
-                            text = "GET STARTED",
-                            onClick = {},
-                            modifier = Modifier,
-                            isLoading = false,
-                            isEnabled = true
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TaskyActionButton(
-                            text = "LOGIN",
-                            onClick = {},
-                            modifier = Modifier,
-                            isLoading = false,
-                            isEnabled = true
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TaskyInputTextField(
-                            text = "",
-                            onValueChange = {},
-                            hint = "Name",
-                            isValidInput = false
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TaskyInputTextField(
-                            text = "Aidan",
-                            onValueChange = {},
-                            hint = "Hint",
-                            isValidInput = true
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        val passwordState by remember { mutableStateOf(TextFieldState(
-                            initialText = "12345",
-                        )) }
-                        var passwordVisibility by remember { mutableStateOf(true) }
-                        TaskyPasswordTextField(
-                            passwordState = passwordState,
-                            isPasswordVisible = passwordVisibility,
-                            onPasswordVisibilityChange = {
-                                passwordVisibility = it
-                            }
-                        )
+                        RegistrationScreenRoot()
                     }
-
                 }
             }
         }
