@@ -15,4 +15,8 @@
     <string name="password_error_uppercase">password must contain at least one uppercase letter.</string>
     <string name="password_error_lowercase">password must contain at least one lowercase letter.</string>
     <string name="password_error_digit">password must contain at least one digit</string>
+    <string name="login_title">Welcome Back!</string>
+    <string name="signup_link">SIGN UP</string>
+    <string name="dont_have_account">DON\'T HAVE AN ACCOUNT?</string>
+    <string name="login_button">LOG IN</string>
 </resources>
