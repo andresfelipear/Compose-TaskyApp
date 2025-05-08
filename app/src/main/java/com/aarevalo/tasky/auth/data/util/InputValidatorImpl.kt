@@ -5,7 +5,7 @@ import com.aarevalo.tasky.R
 import com.aarevalo.tasky.auth.domain.model.AuthConstants
 import com.aarevalo.tasky.auth.domain.model.PasswordValidationResult
 import com.aarevalo.tasky.auth.domain.util.InputValidator
-import com.aarevalo.tasky.core.common.ui.UiText
+import com.aarevalo.tasky.core.util.UiText
 
 class InputValidatorImpl: InputValidator {
     override fun isValidEmailPattern(email: String): Boolean {

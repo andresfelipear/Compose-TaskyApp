@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.core.common.ui
+package com.aarevalo.tasky.core.util
 
 import android.content.Context
 import androidx.annotation.StringRes
