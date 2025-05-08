@@ -19,7 +19,7 @@ class MainViewModel: ViewModel() {
         viewModelScope.launch {
             delay(3000)
             _isCheckingAuth.value = false
-            _isAuthenticated.value = true
+            _isAuthenticated.value = false
         }
     }
 
