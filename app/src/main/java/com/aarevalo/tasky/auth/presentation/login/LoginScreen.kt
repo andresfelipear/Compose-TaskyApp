@@ -28,20 +28,21 @@ import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
+import com.aarevalo.tasky.core.navigation.Destination
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
 fun LoginScreenRoot(
     viewModel: LoginViewModel = hiltViewModel(),
-    navController: NavController? = null
+    navController: NavController
 ){
     val state by viewModel.state.collectAsState()
     LoginScreen(
         onAction = { action ->
             when(action) {
                 is LoginScreenAction.OnGoToRegister -> {
-                    TODO()
+                    navController.navigate(Destination.Route.RegisterRoute)
                 }
                 else -> Unit
             }
