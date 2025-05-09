@@ -22,6 +22,6 @@ interface TaskyAuthenticationApi {
     @GET("/authenticate")
     suspend fun checkIfUserIsAuthenticated()
 
-    @POST("/logout")
+    @GET("/logout")
     suspend fun logout()
 }
