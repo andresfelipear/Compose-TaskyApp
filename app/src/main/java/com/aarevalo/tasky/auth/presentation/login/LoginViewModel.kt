@@ -20,6 +20,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val inputValidator: InputValidator
 ) : ViewModel() {
+
     private val _state = MutableStateFlow(LoginScreenState())
     val state = _state
         .onStart {
@@ -50,6 +51,13 @@ class LoginViewModel @Inject constructor(
             is LoginScreenAction.OnLogin -> {
                 TODO()
             }
+
+            is LoginScreenAction.OnErrorMessageSeen -> {
+                _state.update {
+                    it.copy(errorMessage = null)
+                }
+            }
+
             else -> Unit
         }
     }

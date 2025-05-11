@@ -17,7 +17,7 @@ class AuthTokenInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(
             request = chain.request()
-                .newBuilder()
+            .newBuilder()
                 .addHeader("Authorization", "Bearer ${tokenPreferences.readAccessToken()}")
                 .build()
         )
