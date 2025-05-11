@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.data.remote.dto
+package com.aarevalo.tasky.core.data.remote.dto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
