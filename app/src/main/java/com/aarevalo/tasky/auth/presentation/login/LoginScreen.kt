@@ -2,6 +2,7 @@ package com.aarevalo.tasky.auth.presentation.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +18,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -95,89 +95,95 @@ fun LoginScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackBarState)
         },
-    ) {
-        Column(
+    ) { padding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(id = R.string.login_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(top = 70.dp)
-            )
-
-            Spacer(modifier = Modifier.height(spacing.spaceExtraLarge))
-
+                .background(color = MaterialTheme.colorScheme.background)
+                .padding(padding)
+        ){
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 24.dp,
-                            topEnd = 24.dp
-                        )
-                    )
-                    .background(color = MaterialTheme.colorScheme.surface)
-                    .padding(
-                        horizontal = spacing.spaceMedium,
-                        vertical = spacing.spaceLarge
-                    ),
+                    .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.spaceMedium)
-                ) {
-                    TaskyInputTextField(
-                        text = state.email,
-                        onValueChange = {
-                            onAction(LoginScreenAction.OnEmailChanged(it))
-                        },
-                        isValidInput = state.isValidEmail,
-                        hint = stringResource(id = R.string.email_hint),
-                    )
+                Text(
+                    text = stringResource(id = R.string.login_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(top = 70.dp)
+                )
 
-                    TaskyPasswordTextField(
-                        passwordState = state.passwordState,
-                        isPasswordVisible = state.isPasswordVisible,
-                        onPasswordVisibilityChange =
-                        {
-                            onAction(LoginScreenAction.OnPasswordVisibilityChanged(it))
-                        })
-                }
+                Spacer(modifier = Modifier.height(spacing.spaceExtraLarge))
 
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 24.dp,
+                                topEnd = 24.dp
+                            )
+                        )
+                        .background(color = MaterialTheme.colorScheme.surface)
+                        .padding(
+                            horizontal = spacing.spaceMedium,
+                            vertical = spacing.spaceLarge
+                        ),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.spaceExtraMedium)
+                    verticalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
-                    TaskyActionButton(
-                        text = stringResource(id = R.string.login_button),
-                        onClick = { onAction(LoginScreenAction.OnLogin) },
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        isLoading = state.isLoading,
-                        isEnabled = state.isValidEmail && state.isValidPassword
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(spacing.spaceMedium)
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.dont_have_account),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        TaskyInputTextField(
+                            text = state.email,
+                            onValueChange = {
+                                onAction(LoginScreenAction.OnEmailChanged(it))
+                            },
+                            isValidInput = state.isValidEmail,
+                            hint = stringResource(id = R.string.email_hint),
                         )
-                        Spacer(modifier = Modifier.padding(spacing.spaceExtraSmall))
-                        TaskySurface(
-                            onClick = { onAction(LoginScreenAction.OnGoToRegister) },
-                            text = stringResource(id = R.string.signup_link),
+
+                        TaskyPasswordTextField(
+                            passwordState = state.passwordState,
+                            isPasswordVisible = state.isPasswordVisible,
+                            onPasswordVisibilityChange =
+                            {
+                                onAction(LoginScreenAction.OnPasswordVisibilityChanged(it))
+                            })
+                    }
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(spacing.spaceExtraMedium)
+                    ) {
+                        TaskyActionButton(
+                            text = stringResource(id = R.string.login_button),
+                            onClick = { onAction(LoginScreenAction.OnLogin) },
+                            modifier = Modifier.fillMaxWidth(),
+                            isLoading = state.isLoading,
+                            isEnabled = state.isValidEmail && state.isValidPassword
                         )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.dont_have_account),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.padding(spacing.spaceExtraSmall))
+                            TaskySurface(
+                                onClick = { onAction(LoginScreenAction.OnGoToRegister) },
+                                text = stringResource(id = R.string.signup_link),
+                            )
+                        }
                     }
                 }
             }
