@@ -46,6 +46,7 @@ fun LoginScreenRoot(
     navController: NavController
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     val keyboard = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(key1 = state.isLoggedIn){
@@ -95,12 +96,12 @@ fun LoginScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackBarState)
         },
-    ) { padding ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.background)
-                .padding(padding)
+                .padding(innerPadding)
         ){
             Column(
                 modifier = Modifier
