@@ -1,15 +1,25 @@
 package com.aarevalo.tasky.core.di
 
-import android.app.Application
-import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
-import com.aarevalo.tasky.core.data.preferences.TokenPreferencesImp
-import com.aarevalo.tasky.core.data.preferences.UserPreferencesImp
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
+import com.aarevalo.tasky.core.data.preferences.EncryptTokenPreferences
+import com.aarevalo.tasky.core.data.preferences.SerializeUserPreferences
+import com.aarevalo.tasky.core.data.preferences.TokenPreferencesSerializer
+import com.aarevalo.tasky.core.data.preferences.UserPreferencesSerializer
 import com.aarevalo.tasky.core.domain.preferences.TokenPreferences
+import com.aarevalo.tasky.core.domain.preferences.TokenPreferencesData
 import com.aarevalo.tasky.core.domain.preferences.UserPreferences
+import com.aarevalo.tasky.core.domain.preferences.UserPreferencesData
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -17,27 +27,53 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    @Provides
+    private val Context.tokenDataStore by dataStore(
+        fileName = "token_preferences.json",
+        serializer = TokenPreferencesSerializer,
+        corruptionHandler = ReplaceFileCorruptionHandler(
+            produceNewData = { TokenPreferencesData() }
+        )
+    )
+
+    private val Context.userDataStore by dataStore(
+        fileName = "user_preferences.json",
+        serializer = UserPreferencesSerializer,
+        corruptionHandler = ReplaceFileCorruptionHandler(
+            produceNewData = { UserPreferencesData() }
+        )
+    )
+
     @Singleton
-    fun provideSharedPreferences(
-        app: Application
-    ): SharedPreferences {
-        return app.getSharedPreferences("shared_pref", MODE_PRIVATE)
+    @Provides
+    fun provideTokenDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<TokenPreferencesData> {
+        return context.tokenDataStore
     }
 
-    @Provides
     @Singleton
+    @Provides
+    fun provideUserPreferencesDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<UserPreferencesData> {
+        return context.userDataStore
+    }
+
+    @Singleton
+    @Provides
     fun provideTokenPreferences(
-        sharedPreferences: SharedPreferences
-    ) : TokenPreferences {
-        return TokenPreferencesImp(sharedPreferences)
+        tokenDataStore: DataStore<TokenPreferencesData>
+    ): TokenPreferences {
+        return EncryptTokenPreferences(tokenDataStore)
     }
 
-    @Provides
     @Singleton
+    @Provides
     fun provideUserPreferences(
-        sharedPreferences: SharedPreferences
-    ) : UserPreferences {
-        return UserPreferencesImp(sharedPreferences)
+        userDataStore: DataStore<UserPreferencesData>
+    ): UserPreferences {
+        return SerializeUserPreferences(userDataStore)
     }
+
+
 }
