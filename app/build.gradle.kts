@@ -118,4 +118,7 @@ dependencies {
 
     // Android Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+
+    // Data Store Preferences
+    implementation(libs.androidx.datastore.preferences)
 }
