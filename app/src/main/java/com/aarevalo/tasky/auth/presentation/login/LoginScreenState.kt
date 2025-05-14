@@ -1,7 +1,7 @@
 package com.aarevalo.tasky.auth.presentation.login
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.aarevalo.tasky.core.util.UiText
+import com.aarevalo.tasky.core.presentation.util.UiText
 
 data class LoginScreenState(
     val email: String = "",
