@@ -8,10 +8,4 @@ interface TokenPreferences {
     fun saveAccessTokenExpirationTimestamp(expirationTimestamp: Long)
     fun readAccessTokenExpirationTimestamp(): Long?
     fun clearAll()
-
-    companion object{
-        const val KEY_ACCESS_TOKEN = "access_token"
-        const val KEY_REFRESH_TOKEN = "refresh_token"
-        const val KEY_ACCESS_TOKEN_EXPIRATION_TIMESTAMP = "access_token_expiration_timestamp"
-    }
 }
