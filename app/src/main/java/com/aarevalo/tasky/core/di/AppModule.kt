@@ -2,12 +2,8 @@ package com.aarevalo.tasky.core.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStoreFile
 import com.aarevalo.tasky.core.data.preferences.EncryptTokenPreferences
 import com.aarevalo.tasky.core.data.preferences.SerializeUserPreferences
 import com.aarevalo.tasky.core.data.preferences.TokenPreferencesSerializer

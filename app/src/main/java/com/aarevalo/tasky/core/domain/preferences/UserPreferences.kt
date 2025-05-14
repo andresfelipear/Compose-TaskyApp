@@ -1,7 +1,5 @@
 package com.aarevalo.tasky.core.domain.preferences
 
-import kotlinx.serialization.Serializable
-
 interface UserPreferences {
     fun saveUserId(userId: String)
     fun loadUserId(): String?
