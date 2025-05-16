@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.core.util
+package com.aarevalo.tasky.core.presentation.util
 
 import android.content.Context
 import androidx.annotation.StringRes

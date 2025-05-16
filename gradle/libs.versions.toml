@@ -10,7 +10,6 @@ activityCompose = "1.10.1"
 composeBom = "2025.05.00"
 
 ksp = "2.0.21-1.0.25"
-kotlinx-serialization = "1.7.3"
 hilt = "2.54"
 hiltNavigationCompose = "1.2.0"
 navigationCompose = "2.8.0-alpha10"
@@ -25,6 +24,10 @@ uiTextGoogleFonts = "1.8.1"
 material_icons = "1.7.8"
 
 splashScreen = "1.0.1"
+
+androidxLifecycle = "2.9.0"
+kotlinx-serialization = "1.7.3"
+datastorePreferences = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +45,9 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen"}
+
+# Add lifecycle-viewmodel-savedstate here
+androidx-lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "androidxLifecycle" }
 
 #Navigation Compose
 jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref= "navigationCompose"}
@@ -83,6 +89,9 @@ androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text
 
 #Material Icons
 material_icons = { module = "androidx.compose.material:material-icons-extended", version.ref = "material_icons" }
+
+#Data Stored Preferences
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
