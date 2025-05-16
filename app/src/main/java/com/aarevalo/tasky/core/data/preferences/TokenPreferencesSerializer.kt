@@ -23,19 +23,12 @@ object TokenPreferencesSerializer : Serializer<TokenPreferencesData> {
             input.use { it.readBytes() }
         }
 
-        return try {
-            if(encryptedBytes.isEmpty()) {
-                defaultValue
-            } else {
-                val encryptedBytesDecoded = Base64.getDecoder()
-                    .decode(encryptedBytes)
-                val decryptedBytes = Crypto.decrypt(encryptedBytesDecoded)
-                val decodedJsonString = decryptedBytes.decodeToString()
-                Json.decodeFromString(decodedJsonString)
-            }
-        } catch(e: Exception) {
-            defaultValue
-        }
+        val encryptedBytesDecoded = Base64.getDecoder()
+            .decode(encryptedBytes)
+        val decryptedBytes = Crypto.decrypt(encryptedBytesDecoded)
+        val decodedJsonString = decryptedBytes.decodeToString()
+
+        return Json.decodeFromString(decodedJsonString)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

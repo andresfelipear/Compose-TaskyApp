@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.core.data.auth
 
+import androidx.datastore.core.IOException
 import com.aarevalo.tasky.core.data.remote.api.RefreshTokenApi
 import com.aarevalo.tasky.core.data.remote.dto.AccessTokenRequest
 import com.aarevalo.tasky.core.data.remote.dto.AccessTokenResponse
@@ -8,6 +9,7 @@ import com.aarevalo.tasky.core.domain.preferences.UserPreferences
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
+import retrofit2.HttpException
 
 class AuthTokenInterceptor(
     private val tokenPreferences: TokenPreferences,
@@ -34,9 +36,9 @@ class AuthTokenInterceptor(
 
             val accessTokenResponse: AccessTokenResponse = try {
                 refreshTokenApi.getAccessToken(request)
-            } catch (e: Exception){
+            } catch (e: IOException){
                 return@runBlocking response
-            } catch (e: Exception){
+            } catch (e: HttpException){
                 return@runBlocking response
             }
             tokenPreferences.saveAccessToken(accessTokenResponse.accessToken)
