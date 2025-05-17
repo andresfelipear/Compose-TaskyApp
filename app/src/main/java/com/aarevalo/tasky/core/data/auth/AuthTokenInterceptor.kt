@@ -1,7 +1,7 @@
 package com.aarevalo.tasky.core.data.auth
 
 import androidx.datastore.core.IOException
-import com.aarevalo.tasky.core.data.remote.api.RefreshTokenApi
+import com.aarevalo.tasky.core.data.remote.api.TaskyRefreshTokenApi
 import com.aarevalo.tasky.core.data.remote.dto.AccessTokenRequest
 import com.aarevalo.tasky.core.data.remote.dto.AccessTokenResponse
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
@@ -13,7 +13,7 @@ import retrofit2.HttpException
 
 class AuthTokenInterceptor(
     private val sessionStorage: SessionStorage,
-    private val refreshTokenApi: RefreshTokenApi
+    private val refreshTokenApi: TaskyRefreshTokenApi
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
 
