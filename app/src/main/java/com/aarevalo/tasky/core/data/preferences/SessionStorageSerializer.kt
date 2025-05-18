@@ -2,6 +2,7 @@ package com.aarevalo.tasky.core.data.preferences
 
 import androidx.datastore.core.DataStore
 import com.aarevalo.tasky.core.data.auth.AuthenticatedUserSerializable
+import com.aarevalo.tasky.core.data.auth.toAuthenticatedUser
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.user.AuthenticatedUser
 import kotlinx.coroutines.flow.firstOrNull

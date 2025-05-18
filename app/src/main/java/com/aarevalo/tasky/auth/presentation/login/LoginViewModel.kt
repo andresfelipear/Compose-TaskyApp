@@ -5,9 +5,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aarevalo.tasky.R
 import com.aarevalo.tasky.auth.domain.model.User
 import com.aarevalo.tasky.auth.domain.repository.AuthenticationRepository
 import com.aarevalo.tasky.auth.domain.util.InputValidator
+import com.aarevalo.tasky.core.domain.util.DataError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.presentation.ui.asUiText
+import com.aarevalo.tasky.core.presentation.util.UiText
 import javax.inject.Inject
 
 @HiltViewModel
@@ -111,10 +114,19 @@ class LoginViewModel @Inject constructor(
 
             when(result) {
                 is Result.Error -> {
-                    eventChannel.send(LoginScreenEvent.Error(result.error.asUiText()))
+                    if(result.error == DataError.Network.UNAUTHORIZED) {
+                        eventChannel.send(LoginScreenEvent.Error(
+                            UiText.StringResource(R.string.error_email_password_incorrect)
+                        ))
+                    } else {
+                        eventChannel.send(LoginScreenEvent.Error(result.error.asUiText()))
+                    }
                 }
                 is Result.Success -> {
                     savedStateHandle[KEY_IS_LOGGED] = true
+                    _state.update {
+                        it.copy(isLoggedIn = true)
+                    }
                     eventChannel.send(LoginScreenEvent.Success)
                 }
             }
