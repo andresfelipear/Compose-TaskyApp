@@ -100,7 +100,7 @@ class RegistrationViewModel @Inject constructor(
             }
             val result = authRepository.register(
                 User(
-                    name = state.value.name,
+                    fullName = state.value.name,
                     email = state.value.email,
                     password = state.value.passwordState.text.toString()
                 )
