@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.auth.presentation.login
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +47,9 @@ fun LoginScreenRoot(
     navController: NavController
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    val events = viewModel.event
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val keyboard = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(key1 = state.isLoggedIn){
@@ -55,6 +58,30 @@ fun LoginScreenRoot(
             navController.navigate(Destination.Route.AgendaRoute) {
                 popUpTo(Destination.Route.LoginRoute) {
                     inclusive = true
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = events){
+        events.collect { event ->
+            when(event) {
+                is LoginScreenEvent.Success -> {
+                    keyboardController?.hide()
+                    Toast.makeText(
+                        context,
+                        R.string.youre_logged_in,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    navController.navigate(Destination.Route.AgendaRoute)
+                }
+                is LoginScreenEvent.Error -> {
+                    keyboardController?.hide()
+                    Toast.makeText(
+                        context,
+                        event.errorMessage.asString(context),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }

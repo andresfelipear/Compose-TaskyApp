@@ -5,24 +5,30 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aarevalo.tasky.auth.domain.model.User
+import com.aarevalo.tasky.auth.domain.repository.AuthenticationRepository
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.aarevalo.tasky.core.domain.util.Result
+import com.aarevalo.tasky.core.presentation.ui.asUiText
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val inputValidator: InputValidator,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val authRepository: AuthenticationRepository
 ) : ViewModel() {
 
     companion object {
@@ -49,6 +55,9 @@ class LoginViewModel @Inject constructor(
             initialValue = _state.value
         )
 
+    private val eventChannel = Channel<LoginScreenEvent>()
+    val event = eventChannel.receiveAsFlow()
+
     fun onAction(action: LoginScreenAction) {
         when(action) {
             is LoginScreenAction.OnEmailChanged -> {
@@ -68,17 +77,7 @@ class LoginViewModel @Inject constructor(
             }
 
             is LoginScreenAction.OnLogin -> {
-                _state.update {
-                    it.copy(isLoading = true)
-                }
-                //Simulate login process
-                viewModelScope.launch {
-                    delay(2000)
-                    _state.update {
-                        it.copy(isLoading = false)
-                    }
-                    savedStateHandle[KEY_IS_LOGGED] = true
-                }
+                login()
             }
             else -> Unit
         }
@@ -93,5 +92,32 @@ class LoginViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun login() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(isLoading = true)
+            }
+            val result = authRepository.login(
+                User(
+                    email = state.value.email,
+                    password = state.value.passwordState.text.toString()
+                )
+            )
+            _state.update {
+                it.copy(isLoading = false)
+            }
+
+            when(result) {
+                is Result.Error -> {
+                    eventChannel.send(LoginScreenEvent.Error(result.error.asUiText()))
+                }
+                is Result.Success -> {
+                    savedStateHandle[KEY_IS_LOGGED] = true
+                    eventChannel.send(LoginScreenEvent.Success)
+                }
+            }
+        }
     }
 }

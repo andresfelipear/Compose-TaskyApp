@@ -7,7 +7,6 @@ import com.aarevalo.tasky.R
 import com.aarevalo.tasky.auth.domain.model.User
 import com.aarevalo.tasky.auth.domain.repository.AuthenticationRepository
 import com.aarevalo.tasky.auth.domain.util.InputValidator
-import com.aarevalo.tasky.auth.presentation.login.LoginScreenAction
 import com.aarevalo.tasky.core.domain.util.DataError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel

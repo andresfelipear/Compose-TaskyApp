@@ -29,4 +29,5 @@
     <string name="error_serialization">Oops, couldn\'t parse data.</string>
     <string name="error_unknown">An unknown error occurred.</string>
     <string name="registration_successful">Registration successfull! You can log in now.</string>
+    <string name="youre_logged_in">You\\\'re logged in.</string>
 </resources>
