@@ -20,5 +20,5 @@ interface TaskyAuthApi {
     @POST("login")
     suspend fun login(
         @Body request: LoginRequest
-    ): LoginResponse
+    ): Response<LoginResponse>
 }
