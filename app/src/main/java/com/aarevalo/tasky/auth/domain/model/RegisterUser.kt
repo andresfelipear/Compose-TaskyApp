@@ -1,7 +1,7 @@
 package com.aarevalo.tasky.auth.domain.model
 
 data class RegisterUser(
-    val fullName: String ? = "",
-    val email: String,
+    val name: String,
+    val email: String ? = null,
     val password: String
 )

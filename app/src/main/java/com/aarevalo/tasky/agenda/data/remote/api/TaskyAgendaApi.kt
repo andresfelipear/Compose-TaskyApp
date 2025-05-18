@@ -1,10 +1,10 @@
-package com.aarevalo.tasky.auth.data.remote.api
+package com.aarevalo.tasky.agenda.data.remote.api
 
 import com.aarevalo.tasky.BuildConfig
 import retrofit2.http.GET
 import retrofit2.http.Headers
 
-interface TaskyAuthenticatedApi {
+interface TaskyAgendaApi {
 
     @Headers("x-api-key: ${BuildConfig.API_KEY}")
     @GET("authenticate")

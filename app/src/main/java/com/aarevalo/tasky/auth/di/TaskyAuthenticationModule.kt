@@ -1,8 +1,7 @@
 package com.aarevalo.tasky.auth.di
 
 import com.aarevalo.tasky.BuildConfig
-import com.aarevalo.tasky.auth.data.remote.api.TaskyAuthenticatedApi
-import com.aarevalo.tasky.auth.data.remote.api.TaskyUnAuthenticatedApi
+import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.auth.data.util.InputValidatorImpl
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import com.squareup.moshi.Moshi
@@ -25,22 +24,8 @@ object TaskyAuthenticationModule {
     @Singleton
     fun provideAuthenticatedApi(
         moshi: Moshi,
-        @Named("authenticated")client: OkHttpClient
-    ): TaskyAuthenticatedApi{
-        return Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(client)
-            .build()
-            .create()
-    }
-
-    @Provides
-    @Singleton
-    fun provideUnAuthenticatedApi(
-        moshi: Moshi,
         @Named("unauthenticated")client: OkHttpClient
-    ): TaskyUnAuthenticatedApi {
+    ): TaskyAgendaApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
