@@ -4,7 +4,7 @@ import com.aarevalo.tasky.auth.domain.model.User
 
 fun RegisterRequest.toRegisterUser(): User {
     return User(
-        name = fullName,
+        fullName = fullName,
         email = email,
         password = password
     )
@@ -12,15 +12,15 @@ fun RegisterRequest.toRegisterUser(): User {
 
 fun User.toRegisterRequest(): RegisterRequest {
     return RegisterRequest(
-        fullName = name,
-        email = email ?: "",
+        fullName = fullName ?: "",
+        email = email,
         password = password
     )
 }
 
 fun User.toLoginRequest(): LoginRequest {
     return LoginRequest(
-        email = email ?: "",
+        email = email,
         password = password
     )
 }
