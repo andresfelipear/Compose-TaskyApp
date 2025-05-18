@@ -34,7 +34,6 @@ class LoginViewModel @Inject constructor(
             isLoggedIn = savedStateHandle[KEY_IS_LOGGED] ?: false,
             email = "",
             passwordState = TextFieldState(),
-            errorMessage = null,
             isPasswordVisible = false,
             isValidEmail = false,
         )
@@ -81,13 +80,6 @@ class LoginViewModel @Inject constructor(
                     savedStateHandle[KEY_IS_LOGGED] = true
                 }
             }
-
-            is LoginScreenAction.OnErrorMessageSeen -> {
-                _state.update {
-                    it.copy(errorMessage = null)
-                }
-            }
-
             else -> Unit
         }
     }

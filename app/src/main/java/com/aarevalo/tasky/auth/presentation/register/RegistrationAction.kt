@@ -6,5 +6,4 @@ sealed interface RegistrationAction {
     data class OnPasswordVisibilityChanged(val isPasswordVisible: Boolean): RegistrationAction
     data object OnRegister: RegistrationAction
     data object OnGoToLogin: RegistrationAction
-    data class OnPasswordChanged(val password: String): RegistrationAction
 }

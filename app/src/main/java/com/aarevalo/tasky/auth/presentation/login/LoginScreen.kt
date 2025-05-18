@@ -80,17 +80,7 @@ fun LoginScreen(
     state: LoginScreenState,
 ) {
     val spacing = LocalSpacing.current
-    val keyboard = LocalSoftwareKeyboardController.current
     val snackBarState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-
-    LaunchedEffect(key1 = state.errorMessage, key2 = snackBarState) {
-        state.errorMessage?.asString(context)?.let { message ->
-            keyboard?.hide()
-            snackBarState.showSnackbar(message = message)
-            onAction(LoginScreenAction.OnErrorMessageSeen)
-        }
-    }
 
     Scaffold(
         snackbarHost = {
