@@ -3,8 +3,6 @@ package com.aarevalo.tasky.auth.presentation.register
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aarevalo.tasky.auth.domain.model.AuthConstants.MAX_NAME_LENGTH
-import com.aarevalo.tasky.auth.domain.model.AuthConstants.MIN_NAME_LENGTH
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -79,6 +77,11 @@ class RegistrationViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    companion object{
+        const val MIN_NAME_LENGTH = 5
+        const val MAX_NAME_LENGTH = 49
     }
 }
 
