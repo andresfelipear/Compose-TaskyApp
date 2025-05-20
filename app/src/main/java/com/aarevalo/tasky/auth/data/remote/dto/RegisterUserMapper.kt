@@ -12,7 +12,7 @@ fun RegisterRequest.toRegisterUser(): User {
 
 fun User.toRegisterRequest(): RegisterRequest {
     return RegisterRequest(
-        fullName = fullName ?: "",
+        fullName = fullName,
         email = email,
         password = password
     )
