@@ -1,8 +1,6 @@
 package com.aarevalo.tasky.auth.presentation.login
 
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.R
@@ -30,22 +28,11 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val inputValidator: InputValidator,
-    private val savedStateHandle: SavedStateHandle,
     private val authRepository: AuthenticationRepository
 ) : ViewModel() {
 
-    companion object {
-        private const val KEY_IS_LOGGED = "isLogged"
-    }
-
     private val _state = MutableStateFlow(
-        LoginScreenState(
-            isLoggedIn = savedStateHandle[KEY_IS_LOGGED] ?: false,
-            email = "",
-            passwordState = TextFieldState(),
-            isPasswordVisible = false,
-            isValidEmail = false,
-        )
+        LoginScreenState()
     )
 
     val state = _state
@@ -123,7 +110,6 @@ class LoginViewModel @Inject constructor(
                     }
                 }
                 is Result.Success -> {
-                    savedStateHandle[KEY_IS_LOGGED] = true
                     _state.update {
                         it.copy(isLoggedIn = true)
                     }
