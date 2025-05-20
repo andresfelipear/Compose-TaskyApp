@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,19 +29,29 @@ class MainViewModel @Inject constructor(
             initialValue = false
         )
 
-    private val _isCheckingAuth = MutableStateFlow(true)
+    private val _isCheckingAuth = MutableStateFlow(false)
     val isCheckingAuth = _isCheckingAuth.asStateFlow()
 
     private fun checkAuth() {
         viewModelScope.launch {
+            println("session: ${sessionStorage.getSession()}")
             _isCheckingAuth.update {
                 true
             }
-            delay(2000)
             _isAuthenticated.update {
-                sessionStorage.getSession() != null
+                sessionStorage.getSession()?.accessToken.isNullOrBlank().not()
             }
             _isCheckingAuth.update {
+                false
+            }
+        }
+    }
+
+    // TODO: Remove this. This is only for testing purposes
+    private fun logout() {
+        viewModelScope.launch {
+            sessionStorage.setSession(null)
+            _isAuthenticated.update {
                 false
             }
         }

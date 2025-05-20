@@ -24,11 +24,11 @@ class SessionStorageSerializer @Inject constructor(
     override suspend fun setSession(session: AuthenticatedUser?) {
         dataStore.updateData { preferences ->
             preferences.copy(
-                accessToken = session?.accessToken ?: preferences.accessToken,
-                refreshToken = session?.refreshToken ?: preferences.refreshToken,
-                accessTokenExpirationTimestamp = session?.accessTokenExpirationTimestamp ?: preferences.accessTokenExpirationTimestamp,
-                userId = session?.userId ?: preferences.userId,
-                fullName = session?.fullName ?: preferences.fullName
+                accessToken = session?.accessToken ?: "",
+                refreshToken = session?.refreshToken ?: "",
+                accessTokenExpirationTimestamp = session?.accessTokenExpirationTimestamp ?: 0,
+                userId = session?.userId ?: "",
+                fullName = session?.fullName ?: ""
             )
         }
     }
