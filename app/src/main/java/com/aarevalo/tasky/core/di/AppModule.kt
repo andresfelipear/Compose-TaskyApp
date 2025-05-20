@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
 import com.aarevalo.tasky.BuildConfig
+import com.aarevalo.tasky.core.data.auth.ApiKeyInterceptor
 import com.aarevalo.tasky.core.data.auth.AuthTokenInterceptor
 import com.aarevalo.tasky.core.data.auth.AuthenticatedUserSerializable
 import com.aarevalo.tasky.core.data.preferences.EncryptAuthenticatedUser
@@ -30,13 +31,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private val Context.userDataStore by dataStore(
-        fileName = "user_preferences.json",
-        serializer = EncryptAuthenticatedUser,
-        corruptionHandler = ReplaceFileCorruptionHandler(
-            produceNewData = { AuthenticatedUserSerializable() }
-        )
-    )
+    private val Context.userDataStore by dataStore(fileName = "user_preferences.json",
+                                                   serializer = EncryptAuthenticatedUser,
+                                                   corruptionHandler = ReplaceFileCorruptionHandler(produceNewData = { AuthenticatedUserSerializable() }))
 
     @Singleton
     @Provides
@@ -60,39 +57,51 @@ object AppModule {
         sessionStorage: SessionStorage,
         refreshTokenApi: TaskyRefreshTokenApi
     ): AuthTokenInterceptor {
-        return AuthTokenInterceptor(sessionStorage, refreshTokenApi)
+        return AuthTokenInterceptor(
+            sessionStorage,
+            refreshTokenApi
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiKeyInterceptor(): ApiKeyInterceptor {
+        return ApiKeyInterceptor()
     }
 
     @Provides
     @Singleton
     @Named("unauthenticated")
-    fun provideUnauthenticatedOkHttpClient(): OkHttpClient {
+    fun provideUnauthenticatedOkHttpClient(
+        apiKeyInterceptor: ApiKeyInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                }
-            )
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+            .addInterceptor(apiKeyInterceptor)
             .build()
     }
 
     @Provides
     @Singleton
     @Named("authenticated")
-    fun provideOkHttpClient(authTokenInterceptor: AuthTokenInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        authTokenInterceptor: AuthTokenInterceptor,
+        apiKeyInterceptor: ApiKeyInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                }
-            )
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+            .addInterceptor(apiKeyInterceptor)
             .addInterceptor(authTokenInterceptor)
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideMoshi(): Moshi{
+    fun provideMoshi(): Moshi {
         return Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
@@ -103,7 +112,7 @@ object AppModule {
     fun provideRefreshTokenApi(
         moshi: Moshi,
         @Named("authenticated") client: OkHttpClient
-    ): TaskyRefreshTokenApi{
+    ): TaskyRefreshTokenApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
