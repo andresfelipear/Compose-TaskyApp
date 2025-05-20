@@ -31,4 +31,5 @@
     <string name="registration_successful">Registration successful! You can log in now.</string>
     <string name="youre_logged_in">You\\\'re logged in.</string>
     <string name="error_email_password_incorrect">The email or password is incorrect</string>
+    <string name="error_not_found">Resource not found</string>
 </resources>
