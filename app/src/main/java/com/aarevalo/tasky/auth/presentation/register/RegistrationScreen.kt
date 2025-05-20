@@ -18,7 +18,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -37,11 +36,10 @@ import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
-import com.aarevalo.tasky.auth.presentation.login.LoginScreenAction
 import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
-import org.hamcrest.StringDescription.asString
 
 @Composable
 fun RegistrationScreenRoot(
@@ -49,30 +47,30 @@ fun RegistrationScreenRoot(
     navController: NavController
 ) {
     val state by viewModel.state.collectAsState()
-    val events = viewModel.event
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(key1 = events){
-        events.collect { event ->
-            when(event) {
-                is RegistrationEvent.Success -> {
-                    keyboardController?.hide()
-                    Toast.makeText(
-                        context,
-                        R.string.registration_successful,
-                        Toast.LENGTH_LONG
-                    ).show()
-                    navController.navigate(Destination.Route.LoginRoute)
-                }
-                is RegistrationEvent.Error -> {
-                    keyboardController?.hide()
-                    Toast.makeText(
-                        context,
-                        event.errorMessage.asString(context),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+    ObserveAsEvents(viewModel.event) { event ->
+        when(event) {
+            is RegistrationEvent.Success -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.registration_successful,
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                navController.navigate(Destination.Route.LoginRoute)
+            }
+
+            is RegistrationEvent.Error -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    event.errorMessage.asString(context),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
             }
         }
     }
@@ -83,6 +81,7 @@ fun RegistrationScreenRoot(
                 is RegistrationAction.OnGoToLogin -> {
                     navController.navigate(Destination.Route.LoginRoute)
                 }
+
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -112,8 +111,7 @@ fun RegistrationScreen(
                 .padding(innerPadding)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
@@ -126,7 +124,8 @@ fun RegistrationScreen(
                 Spacer(modifier = Modifier.height(spacing.spaceExtraLarge))
 
                 Column(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                         .clip(
                             RoundedCornerShape(
                                 topStart = 24.dp,

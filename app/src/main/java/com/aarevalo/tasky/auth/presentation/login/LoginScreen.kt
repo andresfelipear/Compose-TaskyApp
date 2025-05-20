@@ -18,7 +18,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -38,6 +37,7 @@ import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
@@ -47,24 +47,11 @@ fun LoginScreenRoot(
     navController: NavController
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val events = viewModel.event
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val keyboard = LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(key1 = state.isLoggedIn){
-        if(state.isLoggedIn) {
-            keyboard?.hide()
-            navController.navigate(Destination.Route.AgendaRoute) {
-                popUpTo(Destination.Route.LoginRoute) {
-                    inclusive = true
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = events){
-        events.collect { event ->
+    ObserveAsEvents(viewModel.event){
+        event ->
             when(event) {
                 is LoginScreenEvent.Success -> {
                     keyboardController?.hide()
@@ -84,7 +71,6 @@ fun LoginScreenRoot(
                     ).show()
                 }
             }
-        }
     }
 
     LoginScreen(
