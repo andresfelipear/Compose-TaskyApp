@@ -90,10 +90,8 @@ class LoginViewModel @Inject constructor(
                 it.copy(isLoading = true)
             }
             val result = authRepository.login(
-                User(
                     email = state.value.email,
                     password = state.value.passwordState.text.toString()
-                )
             )
             _state.update {
                 it.copy(isLoading = false)
