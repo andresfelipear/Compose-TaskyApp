@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,9 +34,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
+import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AgendaScreenRoute(
@@ -44,8 +47,22 @@ fun AgendaScreenRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+
+    if(state.showDatePicker){
+        CustomDatePicker(
+            datePickerState = state.datePickerState,
+            onDateChanged = { date ->
+                viewModel.onAction(AgendaScreenAction.OnDateChanged(date))
+            },
+            onShowDatePicker = { showDatePicker ->
+                viewModel.onAction(AgendaScreenAction.OnShowDatePicker(showDatePicker))
+            }
+        )
+    }
+
     AgendaScreen(
-        state = state
+        state = state,
+        onAction = viewModel::onAction
     )
 
 }
@@ -96,6 +113,9 @@ fun AgendaScreen(
                     month = state.date.month.toString()
                         .uppercase(),
                     initials = state.initials,
+                    onOpenCalendar = {
+                        onAction(AgendaScreenAction.OnShowDatePicker(true))
+                    }
                 )
 
                 Column(
@@ -123,6 +143,7 @@ fun AgendaScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(

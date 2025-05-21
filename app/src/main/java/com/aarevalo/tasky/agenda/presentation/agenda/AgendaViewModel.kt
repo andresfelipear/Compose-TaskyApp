@@ -2,6 +2,7 @@ package com.aarevalo.tasky.agenda.presentation.agenda
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.auth.presentation.login.LoginScreenEvent
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
@@ -38,6 +40,26 @@ class AgendaViewModel @Inject constructor(
 
     private val eventChannel = Channel<LoginScreenEvent>()
     val event = eventChannel.receiveAsFlow()
+
+    fun onAction(action: AgendaScreenAction) {
+        when(action) {
+            is AgendaScreenAction.OnDateChanged -> {
+                _state.update {
+                    it.copy(
+                        date = action.date
+                    )
+                }
+            }
+            is AgendaScreenAction.OnShowDatePicker -> {
+                _state.update {
+                    it.copy(
+                        showDatePicker = action.showDatePicker
+                    )
+                }
+            }
+            else -> Unit
+        }
+    }
 
     private fun loadInitialData() {
         viewModelScope.launch {

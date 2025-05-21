@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +29,7 @@ fun AgendaScreenHeader(
     month: String,
     initials: String,
     modifier: Modifier = Modifier,
-    onOpenCalendar: () -> Unit = {},
+    onOpenCalendar: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
 
@@ -97,6 +96,7 @@ fun AgendaScreenHeaderPreview() {
         AgendaScreenHeader(
             month = LocalDate.now().month.toString(),
             initials = "jd",
+            onOpenCalendar = {}
         )
     }
 }
