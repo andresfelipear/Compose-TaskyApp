@@ -1,7 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +37,6 @@ import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AgendaScreenRoute(
     viewModel: AgendaViewModel = hiltViewModel(),
@@ -67,7 +64,6 @@ fun AgendaScreenRoute(
 
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AgendaScreen(
     onAction: (AgendaScreenAction) -> Unit = {},
@@ -144,7 +140,6 @@ fun AgendaScreen(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(
     showBackground = true,

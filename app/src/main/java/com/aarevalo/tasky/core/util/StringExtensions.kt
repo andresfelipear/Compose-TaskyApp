@@ -1,17 +1,16 @@
 package com.aarevalo.tasky.core.util
 
 fun String.toInitials(): String {
-    val nameParts = this.trim().split(" ", "-")
-    if(nameParts.isEmpty()){
-        return ""
-    }
+    val fullName = this.trim()
+    val nameParts = fullName
+        .split(" ")
+        .filter { it.isNotBlank() }
 
-    val firstInitial = nameParts.firstOrNull()?.firstOrNull()?.uppercaseChar() ?: '?'
-    val lastInitial = if (nameParts.size > 1) {
-        nameParts.lastOrNull()?.firstOrNull()?.uppercaseChar() ?: '?'
+    val initials = if(nameParts.size == 1){
+        fullName.take(2)
     } else {
-        nameParts.firstOrNull()?.getOrNull(1)?.uppercaseChar() ?: '?'
+        nameParts[0].first().toString() + nameParts.last().first()
     }
 
-    return "$firstInitial$lastInitial".trim().replace(" ", "")
+    return initials.uppercase()
 }
