@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
@@ -79,6 +79,11 @@ fun AgendaScreen(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Spacer(modifier = Modifier.height(spacing.spaceMedium))
+                AgendaScreenHeader(
+                    month = LocalDate.now().month.toString(),
+                    initials = "jd",
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
