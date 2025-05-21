@@ -1,7 +1,7 @@
 package com.aarevalo.tasky.auth.data.repository
 
 import com.aarevalo.tasky.auth.data.remote.api.TaskyAuthApi
-import com.aarevalo.tasky.auth.data.remote.dto.toLoginRequest
+import com.aarevalo.tasky.auth.data.remote.dto.LoginRequest
 import com.aarevalo.tasky.auth.data.remote.dto.toRegisterRequest
 import com.aarevalo.tasky.auth.domain.model.User
 import com.aarevalo.tasky.auth.domain.repository.AuthenticationRepository
@@ -26,8 +26,8 @@ class AuthenticationRepositoryImpl @Inject constructor(
         return responseToResult(response)
     }
 
-    override suspend fun login(user: User): EmptyResult<DataError.Network> {
-        val request = user.toLoginRequest()
+    override suspend fun login(email: String, password: String): EmptyResult<DataError.Network> {
+        val request = LoginRequest(email, password)
         val response = responseToResult(api.login(request))
         if (response is Result.Success) {
             sessionStorage.setSession(
@@ -35,6 +35,7 @@ class AuthenticationRepositoryImpl @Inject constructor(
                     accessToken = response.data.accessToken,
                     refreshToken = response.data.refreshToken,
                     userId = response.data.userId,
+                    fullName = response.data.fullName,
                     accessTokenExpirationTimestamp = response.data.accessTokenExpirationTimestamp
                 )
             )

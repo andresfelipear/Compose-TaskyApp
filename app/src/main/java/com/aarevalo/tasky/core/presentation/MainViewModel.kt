@@ -34,7 +34,6 @@ class MainViewModel @Inject constructor(
 
     private fun checkAuth() {
         viewModelScope.launch {
-            println("session: ${sessionStorage.getSession()}")
             _isCheckingAuth.update {
                 true
             }

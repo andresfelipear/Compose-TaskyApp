@@ -6,5 +6,5 @@ import com.aarevalo.tasky.core.domain.util.EmptyResult
 
 interface AuthenticationRepository {
     suspend fun register(user: User): EmptyResult<DataError.Network>
-    suspend fun login(user: User): EmptyResult<DataError.Network>
+    suspend fun login(email: String, password: String): EmptyResult<DataError.Network>
 }

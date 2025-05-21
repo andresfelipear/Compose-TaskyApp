@@ -17,10 +17,3 @@ fun User.toRegisterRequest(): RegisterRequest {
         password = password
     )
 }
-
-fun User.toLoginRequest(): LoginRequest {
-    return LoginRequest(
-        email = email,
-        password = password
-    )
-}
