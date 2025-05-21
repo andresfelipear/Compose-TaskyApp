@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,65 +30,74 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
-import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AgendaScreenRoute(
     viewModel: AgendaViewModel = hiltViewModel(),
     navController: NavController
-){
-    AgendaScreen()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    AgendaScreen(
+        state = state
+    )
 
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AgendaScreen(
-){
+    onAction: (AgendaScreenAction) -> Unit = {},
+    state: AgendaScreenState
+) {
 
     val spacing = LocalSpacing.current
     val snackBarState = remember { SnackbarHostState() }
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarState)
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.width(68.dp).height(68.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ){
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+    Scaffold(snackbarHost = {
+        SnackbarHost(hostState = snackBarState)
+    },
+             floatingActionButton = {
+                 FloatingActionButton(
+                     onClick = { /*TODO*/ },
+                     modifier = Modifier
+                         .width(68.dp)
+                         .height(68.dp),
+                     containerColor = MaterialTheme.colorScheme.primary,
+                     contentColor = MaterialTheme.colorScheme.onPrimary,
+                 ) {
+                     Icon(
+                         imageVector = Icons.Default.Add,
+                         contentDescription = "Add",
+                         modifier = Modifier.size(24.dp)
+                     )
+                 }
+             }
 
-    ){ innerPadding ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-        ){
+        ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(modifier = Modifier.height(spacing.spaceMedium))
+                Spacer(modifier = Modifier.height(30.dp))
+
                 AgendaScreenHeader(
-                    month = LocalDate.now().month.toString(),
-                    initials = "jd",
+                    month = state.date.month.toString()
+                        .uppercase(),
+                    initials = state.initials,
                 )
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -115,9 +125,14 @@ fun AgendaScreen(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-@Preview(showBackground = true, apiLevel = 34)
-fun AgendaScreenPreview(){
+@Preview(
+    showBackground = true,
+    apiLevel = 34
+)
+fun AgendaScreenPreview() {
     TaskyTheme {
-        AgendaScreen()
+        AgendaScreen(
+            state = AgendaScreenState()
+        )
     }
 }
