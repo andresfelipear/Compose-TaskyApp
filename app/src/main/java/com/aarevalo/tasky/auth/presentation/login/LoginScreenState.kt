@@ -6,7 +6,6 @@ import com.aarevalo.tasky.core.presentation.util.UiText
 data class LoginScreenState(
     val email: String = "",
     val passwordState: TextFieldState = TextFieldState(),
-    val errorMessage: UiText? = null,
     val isPasswordVisible: Boolean = false,
     val isValidEmail: Boolean = false,
     val isValidPassword: Boolean = false,

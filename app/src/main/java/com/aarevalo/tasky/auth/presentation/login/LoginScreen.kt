@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.auth.presentation.login
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +18,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +37,7 @@ import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
@@ -46,18 +47,30 @@ fun LoginScreenRoot(
     navController: NavController
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
-    val keyboard = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(key1 = state.isLoggedIn){
-        if(state.isLoggedIn) {
-            keyboard?.hide()
-            navController.navigate(Destination.Route.AgendaRoute) {
-                popUpTo(Destination.Route.LoginRoute) {
-                    inclusive = true
+    ObserveAsEvents(viewModel.event){
+        event ->
+            when(event) {
+                is LoginScreenEvent.Success -> {
+                    keyboardController?.hide()
+                    Toast.makeText(
+                        context,
+                        R.string.youre_logged_in,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    navController.navigate(Destination.Route.AgendaRoute)
+                }
+                is LoginScreenEvent.Error -> {
+                    keyboardController?.hide()
+                    Toast.makeText(
+                        context,
+                        event.errorMessage.asString(context),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
-        }
     }
 
     LoginScreen(
@@ -80,17 +93,7 @@ fun LoginScreen(
     state: LoginScreenState,
 ) {
     val spacing = LocalSpacing.current
-    val keyboard = LocalSoftwareKeyboardController.current
     val snackBarState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-
-    LaunchedEffect(key1 = state.errorMessage, key2 = snackBarState) {
-        state.errorMessage?.asString(context)?.let { message ->
-            keyboard?.hide()
-            snackBarState.showSnackbar(message = message)
-            onAction(LoginScreenAction.OnErrorMessageSeen)
-        }
-    }
 
     Scaffold(
         snackbarHost = {

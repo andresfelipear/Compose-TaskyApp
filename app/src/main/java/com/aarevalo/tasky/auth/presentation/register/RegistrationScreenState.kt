@@ -1,6 +1,7 @@
 package com.aarevalo.tasky.auth.presentation.register
 
 import androidx.compose.foundation.text.input.TextFieldState
+import com.aarevalo.tasky.core.presentation.util.UiText
 
 data class RegistrationScreenState(
     val name: String = "",
@@ -11,5 +12,4 @@ data class RegistrationScreenState(
     val isValidPassword: Boolean = false,
     val isLoading: Boolean = false,
     val isPasswordVisible: Boolean = false,
-    val error: String? = null,
 )
