@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -58,12 +60,14 @@ fun AgendaScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /*TODO*/ },
+                modifier = Modifier.width(68.dp).height(68.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ){
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
