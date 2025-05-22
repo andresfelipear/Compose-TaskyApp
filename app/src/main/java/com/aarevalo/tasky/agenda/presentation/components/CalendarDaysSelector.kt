@@ -3,7 +3,6 @@ package com.aarevalo.tasky.agenda.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -15,13 +14,13 @@ import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
 
-const val OFFSET_TO_REVEAL_FROM_PREVIOUS_ITEM_DP = 30
+private const val OFFSET_TO_REVEAL_FROM_PREVIOUS_ITEM_DP = 30
 
 @Composable
 fun CalendarDaysSelector(
+    modifier: Modifier = Modifier,
     selectedDate: LocalDate,
     onDaySelected: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier,
     days: List<LocalDate>,
 ){
     val density = LocalDensity.current

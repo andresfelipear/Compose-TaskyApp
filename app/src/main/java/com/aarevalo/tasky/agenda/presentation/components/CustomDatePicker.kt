@@ -16,14 +16,14 @@ import androidx.compose.ui.res.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomDatePicker(
-    datePickerState: DatePickerState,
+    modifier: Modifier = Modifier,
     colors: DatePickerColors = DatePickerDefaults.colors(
         titleContentColor = MaterialTheme.colorScheme.primary,
         headlineContentColor = MaterialTheme.colorScheme.primary,
     ),
-    modifier: Modifier = Modifier,
     onDateSelectedCalendar: () -> Unit,
-    onShowDatePicker: (Boolean) -> Unit
+    onShowDatePicker: (Boolean) -> Unit,
+    datePickerState: DatePickerState,
 ){
     DatePickerDialog(
         onDismissRequest = {

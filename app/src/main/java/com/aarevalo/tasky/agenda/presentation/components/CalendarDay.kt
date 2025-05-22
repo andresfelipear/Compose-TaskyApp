@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
-import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
 
@@ -27,11 +25,10 @@ import java.time.LocalDate
 fun CalendarDay(
     modifier: Modifier = Modifier,
     date: LocalDate,
+    onDayClick: (LocalDate) -> Unit,
     isSelected: Boolean,
-    onDayClick: (LocalDate) -> Unit
 ){
     val colors = LocalExtendedColors.current
-    val spacing = LocalSpacing.current
 
     Column(
         modifier = modifier

@@ -28,7 +28,9 @@ class AgendaViewModel @Inject constructor(
 ): ViewModel(){
 
 
-    private val _state = MutableStateFlow(AgendaScreenState())
+    private val _state = MutableStateFlow(AgendaScreenState(
+        relatedDates = getRelatedDates(LocalDate.now())
+    ))
     val state = _state
         .onStart {
             loadInitialData()
@@ -91,9 +93,12 @@ class AgendaViewModel @Inject constructor(
     }
 
     private fun getRelatedDates(date: LocalDate): List<LocalDate>{
-        return generateSequence(date.minusDays(RANGE_DAYS)) {
+        val start = date.minusDays(RANGE_DAYS)
+        val end   = date.plusDays(RANGE_DAYS)
+
+        return generateSequence(start) {
             it.plusDays(1)
-        }.takeWhile({ !it.isAfter(date.plusDays(15))})
+        }.takeWhile{ !it.isAfter(end)}
             .toList()
     }
 }

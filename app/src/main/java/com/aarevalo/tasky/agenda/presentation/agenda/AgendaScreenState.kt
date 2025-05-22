@@ -13,10 +13,7 @@ data class AgendaScreenState (
     val datePickerState: DatePickerState = DatePickerState(
         locale = CalendarLocale.getDefault(),
     ),
-    val relatedDates: List<LocalDate> = generateSequence(LocalDate.now().minusDays(RANGE_DAYS)) {
-        it.plusDays(1)
-    }.takeWhile({ !it.isAfter(LocalDate.now().plusDays(15))})
-        .toList()
+    val relatedDates: List<LocalDate>
 ){
     companion object{
         const val RANGE_DAYS: Long = 15
