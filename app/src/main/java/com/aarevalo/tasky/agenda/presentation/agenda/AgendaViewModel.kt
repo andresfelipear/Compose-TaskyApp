@@ -16,7 +16,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,10 +45,14 @@ class AgendaViewModel @Inject constructor(
     fun onAction(action: AgendaScreenAction) {
         when(action) {
             is AgendaScreenAction.OnDateChanged -> {
-                _state.update {
-                    it.copy(
+                println("Date changed: ${action.date}")
+                _state.update { currentState ->
+                    currentState.copy(
                         selectedDate = action.date,
-                        relatedDates = getRelatedDates(action.date)
+                        relatedDates = getRelatedDates(action.date),
+                        datePickerState = currentState.datePickerState.apply {
+                            selectedDateMillis = action.date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+                        }
                     )
                 }
             }
@@ -55,6 +61,17 @@ class AgendaViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         showDatePicker = action.showDatePicker
+                    )
+                }
+            }
+            is AgendaScreenAction.OnDateSelectedCalendar -> {
+                _state.update {
+                    val selectedDateMillis = it.datePickerState.selectedDateMillis
+                    val selectedDate = Instant.ofEpochMilli(selectedDateMillis!!).atZone(ZoneOffset.UTC).toLocalDate()
+                    it.copy(
+                        showDatePicker = false,
+                        selectedDate = selectedDate,
+                        relatedDates = getRelatedDates(selectedDate)
                     )
                 }
             }

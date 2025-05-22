@@ -49,8 +49,8 @@ fun AgendaScreenRoute(
     if(state.showDatePicker){
         CustomDatePicker(
             datePickerState = state.datePickerState,
-            onDateChanged = { date ->
-                viewModel.onAction(AgendaScreenAction.OnDateChanged(date))
+            onDateSelectedCalendar = {
+                viewModel.onAction(AgendaScreenAction.OnDateSelectedCalendar)
             },
             onShowDatePicker = { showDatePicker ->
                 viewModel.onAction(AgendaScreenAction.OnShowDatePicker(showDatePicker))
