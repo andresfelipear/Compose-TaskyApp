@@ -1,7 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -26,10 +24,10 @@ import java.time.LocalDate
 
 @Composable
 fun AgendaScreenHeader(
-    month: String,
-    initials: String,
     modifier: Modifier = Modifier,
+    month: String,
     onOpenCalendar: () -> Unit,
+    initials: String,
 ) {
     val spacing = LocalSpacing.current
 
@@ -88,7 +86,6 @@ fun AgendaScreenHeader(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true, apiLevel = 34)
 fun AgendaScreenHeaderPreview() {
