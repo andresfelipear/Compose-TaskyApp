@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
+import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
@@ -106,7 +107,7 @@ fun AgendaScreen(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 AgendaScreenHeader(
-                    month = state.date.month.toString()
+                    month = state.selectedDate.month.toString()
                         .uppercase(),
                     initials = state.initials,
                     onOpenCalendar = {
@@ -132,6 +133,13 @@ fun AgendaScreen(
                     verticalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
 
+                    CalendarDaysSelector(
+                        selectedDate = state.selectedDate,
+                        onDaySelected = {
+                            onAction(AgendaScreenAction.OnDateChanged(it))
+                        },
+                        days = state.relatedDates,
+                    )
                 }
 
             }

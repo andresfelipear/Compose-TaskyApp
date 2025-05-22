@@ -1,10 +1,9 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
 import com.aarevalo.tasky.auth.presentation.login.LoginScreenEvent
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.util.toInitials
@@ -17,10 +16,10 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
     private val sessionStorage: SessionStorage
@@ -46,10 +45,12 @@ class AgendaViewModel @Inject constructor(
             is AgendaScreenAction.OnDateChanged -> {
                 _state.update {
                     it.copy(
-                        date = action.date
+                        selectedDate = action.date,
+                        relatedDates = getRelatedDates(action.date)
                     )
                 }
             }
+
             is AgendaScreenAction.OnShowDatePicker -> {
                 _state.update {
                     it.copy(
@@ -64,12 +65,18 @@ class AgendaViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch {
             val session = sessionStorage.getSession()
-            println("there is a access token?: ${session?.accessToken.isNullOrBlank().not()}")
             _state.update {
                 it.copy(
                     initials = session?.fullName!!.toInitials()
                 )
             }
         }
+    }
+
+    private fun getRelatedDates(date: LocalDate): List<LocalDate>{
+        return generateSequence(date.minusDays(RANGE_DAYS)) {
+            it.plusDays(1)
+        }.takeWhile({ !it.isAfter(date.plusDays(15))})
+            .toList()
     }
 }

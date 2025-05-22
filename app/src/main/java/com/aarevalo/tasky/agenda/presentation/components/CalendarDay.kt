@@ -1,8 +1,12 @@
 package com.aarevalo.tasky.agenda.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,29 +21,33 @@ import androidx.compose.ui.unit.sp
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
-import java.time.DayOfWeek
+import java.time.LocalDate
 
 @Composable
 fun CalendarDay(
     modifier: Modifier = Modifier,
-    day: Int,
+    date: LocalDate,
     isSelected: Boolean,
-    isToday: Boolean,
-    onDayClick: (Int) -> Unit
+    onDayClick: (LocalDate) -> Unit
 ){
     val colors = LocalExtendedColors.current
     val spacing = LocalSpacing.current
 
     Column(
         modifier = modifier
+            .width(40.dp)
+            .height(61.dp)
             .clip(shape = RoundedCornerShape(100.dp))
             .background(color = if(isSelected) colors.supplementary else MaterialTheme.colorScheme.surface)
-            .padding(spacing.spaceMedium),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clickable {
+                onDayClick(date)
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             modifier = Modifier,
-            text = DayOfWeek.of(day).toString().take(1),
+            text = date.dayOfWeek.toString().take(1),
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight(700),
                 fontSize = 11.sp
@@ -48,7 +56,7 @@ fun CalendarDay(
         )
         Text(
             modifier = Modifier,
-            text = day.toString(),
+            text = date.dayOfMonth.toString(),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -61,9 +69,8 @@ fun CalendarDay(
 fun CalendarDayPreview(){
     TaskyTheme {
         CalendarDay(
-            day = 1,
+            date = LocalDate.now(),
             isSelected = true,
-            isToday = false,
             onDayClick = {}
         )
     }
