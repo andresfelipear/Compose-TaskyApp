@@ -28,9 +28,7 @@ class AgendaViewModel @Inject constructor(
 ): ViewModel(){
 
 
-    private val _state = MutableStateFlow(AgendaScreenState(
-        relatedDates = getRelatedDates(LocalDate.now())
-    ))
+    private val _state = MutableStateFlow(AgendaScreenState())
     val state = _state
         .onStart {
             loadInitialData()
