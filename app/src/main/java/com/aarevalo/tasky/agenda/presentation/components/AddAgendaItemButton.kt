@@ -43,13 +43,13 @@ fun AddAgendaItemButton(
             dropDownMenuItems = dropDownMenuItems,
             onItemClick = {
                 onClick(it)
-            }
+            },
         )
 
         Icon(
+            modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.Add,
             contentDescription = "Add",
-            modifier = Modifier.size(24.dp)
         )
     }
 }
