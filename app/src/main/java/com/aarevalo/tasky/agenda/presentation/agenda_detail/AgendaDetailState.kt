@@ -1,0 +1,43 @@
+package com.aarevalo.tasky.agenda.presentation.agenda_detail
+
+import com.aarevalo.tasky.agenda.domain.Attendee
+import com.aarevalo.tasky.agenda.domain.ReminderType
+import com.aarevalo.tasky.core.presentation.util.UiText
+import java.time.LocalDate
+import java.time.LocalTime
+
+data class AgendaDetailState(
+    val isEditable: Boolean = true,
+    val reminderType: ReminderType = ReminderType.OneHourBefore,
+    val fromTime: LocalTime = LocalTime.now(),
+    val fromDate: LocalDate = LocalDate.now(),
+    val description: String = "Event description",
+    val title: String = "New Event",
+    val isSelectingReminder: Boolean = false,
+    val isLoadingItem: Boolean = false,
+    val isSavingItem: Boolean = false,
+    val infoMessage: UiText? = null,
+    val isConfirmingToDeleteItem: Boolean = false,
+    val isDeletingItem: Boolean = false,
+    val isItemDeleted: Boolean = false,
+    val isItemCreated: Boolean = false,
+    val isLoggedIn: Boolean = true,
+    val isFromDateDialogVisible: Boolean = false,
+    val isFromTimeDialogVisible: Boolean = false,
+    val isToDateDialogVisible: Boolean = false,
+    val isToTimeDialogVisible: Boolean = false,
+    val details: AgendaItemDetails = AgendaItemDetails.Event()
+)
+
+sealed interface AgendaItemDetails{
+    data class Event(
+        val attendees: List<Attendee> = emptyList(),
+    ): AgendaItemDetails
+
+    data class Task(
+        val isDone: Boolean = false,
+    ): AgendaItemDetails
+
+    data object Reminder: AgendaItemDetails
+
+}
