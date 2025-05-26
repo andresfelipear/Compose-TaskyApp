@@ -64,6 +64,7 @@ fun AgendaItem(
         )
         .padding(
             bottom = 16.dp,
+            top = 8.dp
         )
     ) {
         Row(
@@ -91,7 +92,7 @@ fun AgendaItem(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .height(74.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
