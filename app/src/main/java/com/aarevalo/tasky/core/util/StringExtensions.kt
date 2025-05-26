@@ -3,6 +3,7 @@ package com.aarevalo.tasky.core.util
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 fun String.toInitials(): String {
     val fullName = this.trim()
@@ -26,4 +27,8 @@ fun String.toShortDateTime(date: LocalDate, time: LocalTime): String {
     val shortTime = time.format(formatter)
 
     return "${shortDate}, $shortTime"
+}
+
+fun String.toTitleCase(): String{
+    return this.lowercase().replaceFirstChar { if(it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 }
