@@ -6,6 +6,8 @@ import com.aarevalo.tasky.core.presentation.util.UiText
 import java.time.LocalDate
 import java.time.LocalTime
 
+private const val TO_TIME_ADDITION_MINUTES = 30L
+
 data class AgendaDetailState(
     val isEditable: Boolean = true,
     val reminderType: ReminderType = ReminderType.OneHourBefore,
@@ -32,6 +34,8 @@ data class AgendaDetailState(
 sealed interface AgendaItemDetails{
     data class Event(
         val attendees: List<Attendee> = emptyList(),
+        val toTime: LocalTime = LocalTime.now().plusMinutes(TO_TIME_ADDITION_MINUTES),
+        val toDate: LocalDate = LocalDate.now()
     ): AgendaItemDetails
 
     data class Task(
@@ -39,5 +43,4 @@ sealed interface AgendaItemDetails{
     ): AgendaItemDetails
 
     data object Reminder: AgendaItemDetails
-
 }

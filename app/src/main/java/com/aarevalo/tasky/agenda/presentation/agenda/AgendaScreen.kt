@@ -27,11 +27,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.agenda.presentation.components.AddAgendaItemButton
-import com.aarevalo.tasky.agenda.presentation.components.AgendaItem
+import com.aarevalo.tasky.agenda.presentation.components.AgendaList
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
 import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
-import com.aarevalo.tasky.agenda.presentation.components.TimeNeedle
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalSpacing
@@ -149,16 +148,10 @@ fun AgendaScreen(
                         textAlign = androidx.compose.ui.text.style.TextAlign.Left
                     )
 
-                    AgendaItem(
-                        agendaScreenState = state,
-
+                    AgendaList(
+                        state = state,
                     )
-
-                    TimeNeedle()
-
-
                 }
-
             }
         }
     }

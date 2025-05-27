@@ -26,46 +26,64 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState
+import com.aarevalo.tasky.agenda.domain.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.util.toShortDateTime
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
-fun AgendaItem(
+fun AgendaItemComponent(
     modifier: Modifier = Modifier,
-    agendaScreenState: AgendaScreenState,
+    agendaItem: AgendaItem,
 ) {
     val colors = LocalExtendedColors.current
 
-    val textColor = when(agendaScreenState.details) {
+    val textColor = when(agendaItem.details) {
         is AgendaItemDetails.Task -> MaterialTheme.colorScheme.onPrimary
         else -> MaterialTheme.colorScheme.primary
     }
 
-    val titleTextDecoration = when(agendaScreenState.details) {
+    val titleTextDecoration = when(agendaItem.details) {
         is AgendaItemDetails.Task -> TextDecoration.LineThrough
         else -> TextDecoration.None
     }
 
-    val color = when(agendaScreenState.details) {
+    val color = when(agendaItem.details) {
         is AgendaItemDetails.Event -> colors.tertiary
         is AgendaItemDetails.Task -> MaterialTheme.colorScheme.secondary
         is AgendaItemDetails.Reminder -> colors.surfaceHigher
     }
+
+    val textDateTime = when(agendaItem.details) {
+        is AgendaItemDetails.Event -> {
+            "".toShortDateTime(
+                agendaItem.fromDate,
+                agendaItem.fromTime
+            ) + " - " + "".toShortDateTime(
+                agendaItem.details.toDate,
+                agendaItem.details.toTime
+            )
+        }
+
+        else -> "".toShortDateTime(
+            agendaItem.fromDate,
+            agendaItem.fromTime
+        )
+    }
     Column(
-        modifier = Modifier.fillMaxWidth()
-        .clip(
-            RoundedCornerShape(16.dp)
-        )
-        .background(
-            color = color,
-        )
-        .padding(
-            bottom = 16.dp,
-            top = 8.dp
-        )
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(
+                RoundedCornerShape(16.dp)
+            )
+            .background(
+                color = color,
+            )
+            .padding(
+                bottom = 16.dp,
+                top = 8.dp
+            )
     ) {
         Row(
             modifier = modifier
@@ -73,9 +91,8 @@ fun AgendaItem(
             IconButton(modifier = Modifier.width(40.dp),
                        onClick = { /*TODO*/ }) {
                 Icon(
-                    modifier = Modifier
-                        .size(16.dp),
-                    imageVector = if(agendaScreenState.details is AgendaItemDetails.Task && agendaScreenState.details.isDone) Icons.Default.CheckCircleOutline else Icons.Default.RadioButtonUnchecked,
+                    modifier = Modifier.size(16.dp),
+                    imageVector = if(agendaItem.details is AgendaItemDetails.Task && agendaItem.details.isDone) Icons.Default.CheckCircleOutline else Icons.Default.RadioButtonUnchecked,
                     contentDescription = "Mark as done",
                     tint = textColor
                 )
@@ -92,12 +109,12 @@ fun AgendaItem(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(74.dp),
+                        .height(64.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         modifier = Modifier,
-                        text = agendaScreenState.title,
+                        text = agendaItem.title,
                         style = MaterialTheme.typography.headlineMedium.copy(
                             textDecoration = titleTextDecoration
                         ),
@@ -106,7 +123,7 @@ fun AgendaItem(
 
                     Text(
                         modifier = Modifier,
-                        text = agendaScreenState.description,
+                        text = agendaItem.description,
                         style = MaterialTheme.typography.bodySmall,
                         color = textColor
                     )
@@ -130,12 +147,11 @@ fun AgendaItem(
                 .fillMaxWidth()
                 .padding(end = 12.dp),
             textAlign = TextAlign.End,
-            text = "".toShortDateTime(agendaScreenState.fromDate, agendaScreenState.fromTime),
+            text = textDateTime,
             style = MaterialTheme.typography.bodySmall,
             color = textColor
         )
     }
-
 
 
 }
@@ -148,11 +164,12 @@ fun AgendaItem(
 )
 fun AgendaItemPreview() {
     TaskyTheme {
-        AgendaItem(
-            agendaScreenState = AgendaScreenState(
-                details = AgendaItemDetails.Task(
-                    isDone = true
-                )
+        AgendaItemComponent(
+            agendaItem = AgendaItem(
+                id = "1",
+                title = "Event title",
+                description = "Event description",
+                details = AgendaItemDetails.Task()
             )
         )
     }

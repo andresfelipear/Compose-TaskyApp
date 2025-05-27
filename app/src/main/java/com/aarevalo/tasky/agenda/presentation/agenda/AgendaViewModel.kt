@@ -75,7 +75,6 @@ class AgendaViewModel @Inject constructor(
                     )
                 }
             }
-            else -> Unit
         }
     }
 
