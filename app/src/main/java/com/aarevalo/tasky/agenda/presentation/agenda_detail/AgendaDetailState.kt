@@ -10,7 +10,7 @@ private const val TO_TIME_ADDITION_MINUTES = 30L
 
 data class AgendaDetailState(
     val isEditable: Boolean = true,
-    val reminderType: ReminderType = ReminderType.OneHourBefore,
+    val reminderType: ReminderType = ReminderType.ONE_HOUR,
     val fromTime: LocalTime = LocalTime.now(),
     val fromDate: LocalDate = LocalDate.now(),
     val description: String = "Event description",

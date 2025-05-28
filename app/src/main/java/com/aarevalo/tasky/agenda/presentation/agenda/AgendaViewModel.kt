@@ -45,7 +45,6 @@ class AgendaViewModel @Inject constructor(
     fun onAction(action: AgendaScreenAction) {
         when(action) {
             is AgendaScreenAction.OnDateChanged -> {
-                println("Date changed: ${action.date}")
                 _state.update { currentState ->
                     currentState.copy(
                         selectedDate = action.date,

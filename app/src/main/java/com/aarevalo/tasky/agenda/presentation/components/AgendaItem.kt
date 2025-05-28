@@ -28,7 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.agenda.domain.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
-import com.aarevalo.tasky.core.util.toShortDateTime
+import com.aarevalo.tasky.core.util.formattedDateTimeToString
+import com.aarevalo.tasky.core.util.formattedFromToDateTimeToString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
@@ -57,18 +58,17 @@ fun AgendaItemComponent(
 
     val textDateTime = when(agendaItem.details) {
         is AgendaItemDetails.Event -> {
-            "".toShortDateTime(
-                agendaItem.fromDate,
-                agendaItem.fromTime
-            ) + " - " + "".toShortDateTime(
-                agendaItem.details.toDate,
-                agendaItem.details.toTime
+            formattedFromToDateTimeToString(
+                dateFrom = agendaItem.fromDate,
+                timeFrom = agendaItem.fromTime,
+                dateTo = agendaItem.details.toDate,
+                timeTo = agendaItem.details.toTime
             )
         }
 
-        else -> "".toShortDateTime(
-            agendaItem.fromDate,
-            agendaItem.fromTime
+        else -> formattedDateTimeToString(
+            date = agendaItem.fromDate,
+            time = agendaItem.fromTime
         )
     }
     Column(
