@@ -28,9 +28,7 @@ class AgendaViewModel @Inject constructor(
 ): ViewModel(){
 
 
-    private val _state = MutableStateFlow(AgendaScreenState(
-        relatedDates = getRelatedDates(LocalDate.now())
-    ))
+    private val _state = MutableStateFlow(AgendaScreenState())
     val state = _state
         .onStart {
             loadInitialData()
@@ -47,7 +45,6 @@ class AgendaViewModel @Inject constructor(
     fun onAction(action: AgendaScreenAction) {
         when(action) {
             is AgendaScreenAction.OnDateChanged -> {
-                println("Date changed: ${action.date}")
                 _state.update { currentState ->
                     currentState.copy(
                         selectedDate = action.date,
@@ -77,7 +74,6 @@ class AgendaViewModel @Inject constructor(
                     )
                 }
             }
-            else -> Unit
         }
     }
 

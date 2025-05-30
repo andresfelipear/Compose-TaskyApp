@@ -32,4 +32,7 @@
     <string name="youre_logged_in">You\'re logged in.</string>
     <string name="error_email_password_incorrect">The email or password is incorrect</string>
     <string name="error_not_found">Resource not found</string>
+    <string name="add_task">Task</string>
+    <string name="add_event">Event</string>
+    <string name="add_reminder">Reminder</string>
 </resources>

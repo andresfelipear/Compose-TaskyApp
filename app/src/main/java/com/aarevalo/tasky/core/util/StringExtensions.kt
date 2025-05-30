@@ -1,5 +1,7 @@
 package com.aarevalo.tasky.core.util
 
+import java.util.Locale
+
 fun String.toInitials(): String {
     val fullName = this.trim()
     val nameParts = fullName
@@ -13,4 +15,8 @@ fun String.toInitials(): String {
     }
 
     return initials.uppercase()
+}
+
+fun String.toTitleCase(): String{
+    return this.lowercase().replaceFirstChar { if(it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 }
