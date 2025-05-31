@@ -39,4 +39,5 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="today">Today</string>
+    <string name="logout">logout</string>
 </resources>

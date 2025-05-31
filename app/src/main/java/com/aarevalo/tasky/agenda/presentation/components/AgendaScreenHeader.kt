@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
@@ -28,6 +29,7 @@ fun AgendaScreenHeader(
     month: String,
     onOpenCalendar: () -> Unit,
     initials: String,
+    dropDownMenuItems: List<TaskyDropDownMenuItem>
 ) {
     val spacing = LocalSpacing.current
 
@@ -80,6 +82,7 @@ fun AgendaScreenHeader(
 
             AvatarIcon(
                 initials = initials,
+                dropDownMenuItems = dropDownMenuItems
             )
         }
 
@@ -93,7 +96,8 @@ fun AgendaScreenHeaderPreview() {
         AgendaScreenHeader(
             month = LocalDate.now().month.toString(),
             initials = "jd",
-            onOpenCalendar = {}
+            onOpenCalendar = {},
+            dropDownMenuItems = listOf()
         )
     }
 }

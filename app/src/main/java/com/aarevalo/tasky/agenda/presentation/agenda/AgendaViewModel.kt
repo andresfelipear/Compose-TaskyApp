@@ -74,6 +74,7 @@ class AgendaViewModel @Inject constructor(
                     )
                 }
             }
+            else -> {}
         }
     }
 

@@ -133,12 +133,24 @@ fun AgendaScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
-                AgendaScreenHeader(month = state.selectedDate.month.toString()
-                    .uppercase(),
-                                   initials = state.initials,
-                                   onOpenCalendar = {
-                                       onAction(AgendaScreenAction.OnShowDatePicker(true))
-                                   })
+                AgendaScreenHeader(
+                    month = state.selectedDate.month.toString().uppercase(),
+                    initials = state.initials,
+                    onOpenCalendar =
+                    {
+                        onAction(AgendaScreenAction.OnShowDatePicker(true))
+                    },
+                    dropDownMenuItems = listOf(
+                        TaskyDropDownMenuItem(
+                            text = stringResource(id = R.string.logout),
+                            onClick = {
+                                onAction(
+                                    AgendaScreenAction.OnLogout
+                                )
+                            }
+                        )
+                    )
+                )
 
                 Column(
                     modifier = Modifier
