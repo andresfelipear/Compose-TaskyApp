@@ -35,4 +35,8 @@
     <string name="add_task">Task</string>
     <string name="add_event">Event</string>
     <string name="add_reminder">Reminder</string>
+    <string name="open">Open</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="today">Today</string>
 </resources>

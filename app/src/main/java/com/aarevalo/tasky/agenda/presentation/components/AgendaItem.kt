@@ -20,14 +20,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.agenda.domain.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
+import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
+import com.aarevalo.tasky.core.presentation.components.TaskyDropDownMenu
 import com.aarevalo.tasky.core.util.formattedDateTimeToString
 import com.aarevalo.tasky.core.util.formattedFromToDateTimeToString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
@@ -37,6 +42,7 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 fun AgendaItemComponent(
     modifier: Modifier = Modifier,
     agendaItem: AgendaItem,
+    dropDownMenuItems: List<TaskyDropDownMenuItem>,
 ) {
     val colors = LocalExtendedColors.current
 
@@ -71,6 +77,11 @@ fun AgendaItemComponent(
             time = agendaItem.fromTime
         )
     }
+
+    val isContextMenuVisible = rememberSaveable{
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,8 +142,17 @@ fun AgendaItemComponent(
                 }
             }
 
-            IconButton(modifier = Modifier.width(40.dp),
-                       onClick = { /*TODO*/ }) {
+            IconButton(
+                modifier = Modifier.width(40.dp),
+                onClick = {
+                    isContextMenuVisible.value = true
+                }) {
+
+                TaskyDropDownMenu(
+                    isContextMenuVisible = isContextMenuVisible,
+                    dropDownMenuItems = dropDownMenuItems,
+                )
+
                 Icon(
                     modifier = Modifier.size(16.dp),
                     imageVector = Icons.Default.MoreHoriz,
@@ -152,8 +172,6 @@ fun AgendaItemComponent(
             color = textColor
         )
     }
-
-
 }
 
 @ExperimentalMaterial3Api
@@ -169,8 +187,13 @@ fun AgendaItemPreview() {
                 id = "1",
                 title = "Event title",
                 description = "Event description",
-                details = AgendaItemDetails.Task()
-            )
-        )
+                details = AgendaItemDetails.Task(),
+                ),
+            dropDownMenuItems = listOf(
+                TaskyDropDownMenuItem(
+                    text = "Edit",
+                    onClick = { /*TODO*/ }
+            ),
+        ))
     }
 }

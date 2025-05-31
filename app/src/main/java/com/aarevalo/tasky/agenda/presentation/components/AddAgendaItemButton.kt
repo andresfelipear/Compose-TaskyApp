@@ -21,7 +21,6 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 @Composable
 fun AddAgendaItemButton(
     modifier: Modifier = Modifier,
-    onClick: (TaskyDropDownMenuItem) -> Unit,
     dropDownMenuItems: List<TaskyDropDownMenuItem>
 ){
     val isContextMenuVisible = rememberSaveable{
@@ -41,9 +40,6 @@ fun AddAgendaItemButton(
         TaskyDropDownMenu(
             isContextMenuVisible = isContextMenuVisible,
             dropDownMenuItems = dropDownMenuItems,
-            onItemClick = {
-                onClick(it)
-            },
         )
 
         Icon(
@@ -59,7 +55,6 @@ fun AddAgendaItemButton(
 fun AddAgendaItemButtonPreview(){
     TaskyTheme {
         AddAgendaItemButton(
-            onClick = {},
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(
                     text = "Item 1",
