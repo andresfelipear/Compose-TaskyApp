@@ -42,5 +42,6 @@ sealed interface AgendaItemDetails{
         val isDone: Boolean = false,
     ): AgendaItemDetails
 
+
     data object Reminder: AgendaItemDetails
 }

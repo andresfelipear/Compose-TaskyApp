@@ -41,7 +41,7 @@ fun CalendarDaysSelector(
 
     LazyRow(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues( end = 8.dp, start = 8.dp, bottom = 12.dp, top = 0.dp),
+        contentPadding = PaddingValues( horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         state = lazyListState
     ) {

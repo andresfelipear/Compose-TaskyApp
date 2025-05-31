@@ -4,8 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +32,7 @@ fun CalendarDay(
 
     Column(
         modifier = modifier
-            .width(40.dp)
+            .defaultMinSize(minWidth = 50.dp)
             .height(61.dp)
             .clip(shape = RoundedCornerShape(100.dp))
             .background(color = if(isSelected) colors.supplementary else MaterialTheme.colorScheme.surface)

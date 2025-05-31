@@ -21,6 +21,7 @@ fun TaskyDropDownMenu(
     isContextMenuVisible: MutableState<Boolean>,
     dropDownMenuItems: List<TaskyDropDownMenuItem>,
     onItemClick: (TaskyDropDownMenuItem) -> Unit = {},
+    extraOffset: Int = 0,
 ) {
     DropdownMenu(
         modifier = modifier
@@ -28,7 +29,7 @@ fun TaskyDropDownMenu(
         expanded = isContextMenuVisible.value,
         onDismissRequest = { isContextMenuVisible.value = false },
         offset = DpOffset.Zero.copy(
-            y = OFFSET_Y.dp
+            y = OFFSET_Y.dp + extraOffset.dp
         )
     ) {
         dropDownMenuItems.forEach { item ->
