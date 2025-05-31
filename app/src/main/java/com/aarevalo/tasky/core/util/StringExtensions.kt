@@ -18,5 +18,14 @@ fun String.toInitials(): String {
 }
 
 fun String.toTitleCase(): String{
-    return this.lowercase().replaceFirstChar { if(it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+    val stringParts = this.split(" ")
+
+    return stringParts.joinToString(
+        separator = " ",
+        transform = { stringPart ->
+            stringPart.replaceFirstChar {
+                it.titlecase(Locale.getDefault())
+            }
+        }
+    )
 }

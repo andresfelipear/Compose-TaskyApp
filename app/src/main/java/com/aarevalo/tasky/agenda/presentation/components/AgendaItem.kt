@@ -4,12 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -51,7 +50,9 @@ fun AgendaItemComponent(
     }
 
     val titleTextDecoration = when(agendaItem.details) {
-        is AgendaItemDetails.Task -> TextDecoration.LineThrough
+        is AgendaItemDetails.Task -> {
+            if(agendaItem.details.isDone) TextDecoration.LineThrough else TextDecoration.None
+        }
         else -> TextDecoration.None
     }
 
@@ -85,7 +86,7 @@ fun AgendaItemComponent(
         modifier = Modifier
             .fillMaxWidth()
             .clip(
-                RoundedCornerShape(16.dp)
+                MaterialTheme.shapes.large
             )
             .background(
                 color = color,
@@ -118,8 +119,8 @@ fun AgendaItemComponent(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
+                        .defaultMinSize(minHeight = 64.dp)
+                        .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -150,6 +151,7 @@ fun AgendaItemComponent(
                 TaskyDropDownMenu(
                     isContextMenuVisible = isContextMenuVisible,
                     dropDownMenuItems = dropDownMenuItems,
+                    extraOffset = 20
                 )
 
                 Icon(

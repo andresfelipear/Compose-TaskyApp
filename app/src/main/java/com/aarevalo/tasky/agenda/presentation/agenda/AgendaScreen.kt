@@ -38,6 +38,7 @@ import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -180,7 +181,9 @@ fun AgendaScreen(
 
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = if(state.selectedDate == LocalDate.now()) stringResource(id = R.string.today) else state.selectedDate.dayOfWeek.toString()
+                        text = if(state.selectedDate == LocalDate.now()) stringResource(id = R.string.today) else state.selectedDate.format(
+                            DateTimeFormatter.ofPattern("dd MMM yyyy")
+                        )
                             .toTitleCase(),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary,
