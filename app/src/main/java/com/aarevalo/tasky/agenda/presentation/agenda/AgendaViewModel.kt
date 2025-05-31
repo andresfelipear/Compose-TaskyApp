@@ -3,9 +3,7 @@ package com.aarevalo.tasky.agenda.presentation.agenda
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aarevalo.tasky.agenda.domain.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
-import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.auth.presentation.login.LoginScreenEvent
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.util.toInitials
@@ -20,7 +18,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneOffset
 import javax.inject.Inject
 
@@ -31,40 +28,7 @@ class AgendaViewModel @Inject constructor(
 ): ViewModel(){
 
 
-    private val _state = MutableStateFlow(AgendaScreenState(
-        agendaItems = listOf(
-            AgendaItem(
-                id = "1",
-                title = "Event 1",
-                description = "Event 1 description",
-                fromTime = LocalTime.now()
-                    .plusMinutes(31)
-            ),
-            AgendaItem(
-                id = "2",
-                title = "Event 2",
-                description = "Event 2 description",
-                fromTime = LocalTime.now()
-                    .plusMinutes(32),
-                details = AgendaItemDetails.Task()
-            ),
-            AgendaItem(
-                id = "3",
-                title = "Event 1",
-                description = "Event 1 description",
-                fromTime = LocalTime.now()
-                    .plusMinutes(33)
-            ),
-            AgendaItem(
-                id = "4",
-                title = "Event 2",
-                description = "Event 2 description",
-                fromTime = LocalTime.now()
-                    .plusMinutes(0),
-                details = AgendaItemDetails.Reminder
-            )
-        )
-    ))
+    private val _state = MutableStateFlow(AgendaScreenState())
 
     val state = _state
         .onStart {
@@ -111,7 +75,12 @@ class AgendaViewModel @Inject constructor(
                     )
                 }
             }
-            else -> {}
+            is AgendaScreenAction.OnNavigateToAgendaDetail -> {
+                TODO()
+            }
+            is AgendaScreenAction.OnLogout -> {
+                TODO()
+            }
         }
     }
 
