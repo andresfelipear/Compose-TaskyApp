@@ -11,5 +11,4 @@ data class AgendaItem(
     val description: String = "Event description",
     val title: String = "New Event",
     val details: AgendaItemDetails = AgendaItemDetails.Event(),
-    val type: AgendaItemType = AgendaItemType.EVENT
 )

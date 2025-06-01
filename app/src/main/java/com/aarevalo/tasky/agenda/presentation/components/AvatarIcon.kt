@@ -9,8 +9,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +30,7 @@ fun AvatarIcon(
     initials: String,
     dropDownMenuItems: List<TaskyDropDownMenuItem>
 ){
-    val isContextMenuVisible = rememberSaveable{
+    var isContextMenuVisible by rememberSaveable{
         mutableStateOf(false)
     }
 
@@ -38,7 +40,7 @@ fun AvatarIcon(
             .clip(CircleShape)
             .background(color = MaterialTheme.colorScheme.surface)
             .clickable {
-                isContextMenuVisible.value = true
+                isContextMenuVisible = true
             },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -47,6 +49,9 @@ fun AvatarIcon(
             modifier = Modifier,
             isContextMenuVisible = isContextMenuVisible,
             dropDownMenuItems = dropDownMenuItems,
+            onDismissRequest = {
+                isContextMenuVisible = false
+            },
             extraOffset = EXTRA_OFFSET_DROPDOWN_MENU,
         )
 

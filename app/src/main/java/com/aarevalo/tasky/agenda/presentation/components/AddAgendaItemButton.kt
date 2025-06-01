@@ -9,8 +9,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,7 +25,7 @@ fun AddAgendaItemButton(
     modifier: Modifier = Modifier,
     dropDownMenuItems: List<TaskyDropDownMenuItem>
 ){
-    val isContextMenuVisible = rememberSaveable{
+    var isContextMenuVisible by rememberSaveable{
         mutableStateOf(false)
     }
 
@@ -32,13 +34,16 @@ fun AddAgendaItemButton(
             .width(68.dp)
             .height(68.dp),
         onClick = {
-            isContextMenuVisible.value = true
+            isContextMenuVisible = true
         },
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
     ) {
         TaskyDropDownMenu(
             isContextMenuVisible = isContextMenuVisible,
+            onDismissRequest = {
+                isContextMenuVisible = false
+            },
             dropDownMenuItems = dropDownMenuItems,
         )
 

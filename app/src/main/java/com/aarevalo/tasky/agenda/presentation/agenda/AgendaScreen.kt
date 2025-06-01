@@ -27,7 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
-import com.aarevalo.tasky.agenda.domain.AgendaItemType
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.agenda.presentation.components.AddAgendaItemButton
 import com.aarevalo.tasky.agenda.presentation.components.AgendaList
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
@@ -91,7 +91,7 @@ fun AgendaScreen(
                                     agendaItemId = null,
                                     isEditable = true,
                                     startDate = state.selectedDate,
-                                    type = AgendaItemType.EVENT
+                                    type = AgendaItemDetails.Event()
                                 )
                             )
                         }),
@@ -103,7 +103,7 @@ fun AgendaScreen(
                                     agendaItemId = null,
                                     isEditable = true,
                                     startDate = state.selectedDate,
-                                    type = AgendaItemType.TASK
+                                    type = AgendaItemDetails.Task()
                                 )
                             )
                         }),
@@ -115,7 +115,7 @@ fun AgendaScreen(
                                     agendaItemId = null,
                                     isEditable = true,
                                     startDate = state.selectedDate,
-                                    type = AgendaItemType.REMINDER
+                                    type = AgendaItemDetails.Reminder
                                 )
                             )
                         }),

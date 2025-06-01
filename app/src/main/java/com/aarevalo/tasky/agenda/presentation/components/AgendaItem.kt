@@ -19,8 +19,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -78,7 +80,7 @@ fun AgendaItemComponent(
         )
     }
 
-    val isContextMenuVisible = rememberSaveable{
+    var isContextMenuVisible by rememberSaveable{
         mutableStateOf(false)
     }
 
@@ -145,12 +147,15 @@ fun AgendaItemComponent(
             IconButton(
                 modifier = Modifier.width(40.dp),
                 onClick = {
-                    isContextMenuVisible.value = true
+                    isContextMenuVisible = true
                 }) {
 
                 TaskyDropDownMenu(
                     isContextMenuVisible = isContextMenuVisible,
                     dropDownMenuItems = dropDownMenuItems,
+                    onDismissRequest = {
+                        isContextMenuVisible = false
+                    },
                     extraOffset = 20
                 )
 

@@ -1,6 +1,6 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
-import com.aarevalo.tasky.agenda.domain.AgendaItemType
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import java.time.LocalDate
 
 sealed interface AgendaScreenAction {
@@ -12,6 +12,6 @@ sealed interface AgendaScreenAction {
         val agendaItemId: String?,
         val isEditable: Boolean,
         val startDate: LocalDate = LocalDate.now(),
-        val type: AgendaItemType
+        val type: AgendaItemDetails
     ) : AgendaScreenAction
 }

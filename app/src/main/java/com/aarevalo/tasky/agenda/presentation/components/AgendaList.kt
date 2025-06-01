@@ -59,7 +59,7 @@ fun AgendaList(
                                     AgendaScreenAction.OnNavigateToAgendaDetail(
                                         agendaItemId = agendaItem.id,
                                         isEditable = false,
-                                        type = agendaItem.type
+                                        type = agendaItem.details
                                     )
                                 )
                             }
@@ -71,7 +71,7 @@ fun AgendaList(
                                     AgendaScreenAction.OnNavigateToAgendaDetail(
                                         agendaItemId = agendaItem.id,
                                         isEditable = true,
-                                        type = agendaItem.type
+                                        type = agendaItem.details
                                     )
                                 )
                             }
@@ -83,7 +83,7 @@ fun AgendaList(
                                     AgendaScreenAction.OnNavigateToAgendaDetail(
                                         agendaItemId = agendaItem.id,
                                         isEditable = false,
-                                        type = agendaItem.type
+                                        type = agendaItem.details
                                     )
                                 )
                             }
