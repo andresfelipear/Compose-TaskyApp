@@ -3,7 +3,7 @@ package com.aarevalo.tasky.agenda.presentation.agenda
 import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.aarevalo.tasky.agenda.domain.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
 import java.time.LocalDate
 import java.time.LocalTime

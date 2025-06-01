@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.domain
+package com.aarevalo.tasky.agenda.domain.model
 
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import java.time.LocalDate

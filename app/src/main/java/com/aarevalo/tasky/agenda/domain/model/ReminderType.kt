@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.domain
+package com.aarevalo.tasky.agenda.domain.model
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days

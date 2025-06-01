@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,6 +37,8 @@ import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
 import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
+import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
@@ -47,6 +52,34 @@ fun AgendaScreenRoute(
     navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    ObserveAsEvents(viewModel.event) { event ->
+        when(event) {
+            is AgendaScreenEvent.SuccessLogout -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.logout_successful,
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                navController.navigate(Destination.Route.LoginRoute)
+            }
+
+            is AgendaScreenEvent.Error -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    event.errorMessage.asString(context),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+            }
+            else -> Unit
+        }
+    }
 
 
     if(state.showDatePicker) {

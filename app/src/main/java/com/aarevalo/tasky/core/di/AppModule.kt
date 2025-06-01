@@ -111,7 +111,7 @@ object AppModule {
     @Singleton
     fun provideRefreshTokenApi(
         moshi: Moshi,
-        @Named("authenticated") client: OkHttpClient
+        @Named("unauthenticated") client: OkHttpClient
     ): TaskyRefreshTokenApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)

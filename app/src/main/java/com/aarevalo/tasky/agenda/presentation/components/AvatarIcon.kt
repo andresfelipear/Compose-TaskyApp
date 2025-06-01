@@ -53,6 +53,7 @@ fun AvatarIcon(
                 isContextMenuVisible = false
             },
             extraOffset = EXTRA_OFFSET_DROPDOWN_MENU,
+            textColor = MaterialTheme.colorScheme.error,
         )
 
         Text(
