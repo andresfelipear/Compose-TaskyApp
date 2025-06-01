@@ -10,5 +10,5 @@ data class AgendaItem(
     val fromDate: LocalDate = LocalDate.now(),
     val description: String = "Event description",
     val title: String = "New Event",
-    val details: AgendaItemDetails = AgendaItemDetails.Event()
+    val details: AgendaItemDetails = AgendaItemDetails.Event(),
 )

@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.agenda.presentation.components.AddAgendaItemButton
 import com.aarevalo.tasky.agenda.presentation.components.AgendaList
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
@@ -36,6 +38,7 @@ import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +49,7 @@ fun AgendaScreenRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
 
-    if(state.showDatePicker){
+    if(state.showDatePicker) {
         CustomDatePicker(
             datePickerState = state.datePickerState,
             onDateSelectedCalendar = {
@@ -54,8 +57,7 @@ fun AgendaScreenRoute(
             },
             onShowDatePicker = { showDatePicker ->
                 viewModel.onAction(AgendaScreenAction.OnShowDatePicker(showDatePicker))
-            }
-        )
+            })
     }
 
     AgendaScreen(
@@ -67,32 +69,59 @@ fun AgendaScreenRoute(
 
 @Composable
 fun AgendaScreen(
-    onAction: (AgendaScreenAction) -> Unit = {},
-    state: AgendaScreenState
+    state: AgendaScreenState,
+    onAction: (AgendaScreenAction) -> Unit
 ) {
 
     val spacing = LocalSpacing.current
     val snackBarState = remember { SnackbarHostState() }
 
-    Scaffold(snackbarHost = {
-        SnackbarHost(hostState = snackBarState)
-    },
-             floatingActionButton = {
-                 AddAgendaItemButton(
-                     onClick = {/* TODO */},
-                     dropDownMenuItems = listOf(
-                         TaskyDropDownMenuItem(text = stringResource(
-                             id = com.aarevalo.tasky.R.string.add_event
-                         )),
-                         TaskyDropDownMenuItem(text = stringResource(
-                             id = com.aarevalo.tasky.R.string.add_task
-                         )),
-                         TaskyDropDownMenuItem(text = stringResource(
-                             id = com.aarevalo.tasky.R.string.add_reminder
-                         )),
-                     )
-                 )
-             }
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarState)
+        },
+        floatingActionButton = {
+            AddAgendaItemButton(
+                dropDownMenuItems = listOf(
+                    TaskyDropDownMenuItem(
+                        text = stringResource(id = R.string.add_event),
+                        onClick = {
+                            onAction(
+                                AgendaScreenAction.OnNavigateToAgendaDetail(
+                                    agendaItemId = null,
+                                    isEditable = true,
+                                    startDate = state.selectedDate,
+                                    type = AgendaItemDetails.Event()
+                                )
+                            )
+                        }),
+                    TaskyDropDownMenuItem(
+                        text = stringResource(id = R.string.add_task),
+                        onClick = {
+                            onAction(
+                                AgendaScreenAction.OnNavigateToAgendaDetail(
+                                    agendaItemId = null,
+                                    isEditable = true,
+                                    startDate = state.selectedDate,
+                                    type = AgendaItemDetails.Task()
+                                )
+                            )
+                        }),
+                    TaskyDropDownMenuItem(
+                        text = stringResource(id = R.string.add_reminder),
+                        onClick = {
+                            onAction(
+                                AgendaScreenAction.OnNavigateToAgendaDetail(
+                                    agendaItemId = null,
+                                    isEditable = true,
+                                    startDate = state.selectedDate,
+                                    type = AgendaItemDetails.Reminder
+                                )
+                            )
+                        }),
+                )
+            )
+        }
 
     ) { innerPadding ->
         Box(
@@ -106,12 +135,22 @@ fun AgendaScreen(
             ) {
 
                 AgendaScreenHeader(
-                    month = state.selectedDate.month.toString()
-                        .uppercase(),
+                    month = state.selectedDate.month.toString().uppercase(),
                     initials = state.initials,
-                    onOpenCalendar = {
+                    onOpenCalendar =
+                    {
                         onAction(AgendaScreenAction.OnShowDatePicker(true))
-                    }
+                    },
+                    dropDownMenuItems = listOf(
+                        TaskyDropDownMenuItem(
+                            text = stringResource(id = R.string.logout),
+                            onClick = {
+                                onAction(
+                                    AgendaScreenAction.OnLogout
+                                )
+                            }
+                        )
+                    )
                 )
 
                 Column(
@@ -142,7 +181,10 @@ fun AgendaScreen(
 
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = if(state.selectedDate == LocalDate.now()) "Today" else state.selectedDate.dayOfWeek.toString().toTitleCase(),
+                        text = if(state.selectedDate == LocalDate.now()) stringResource(id = R.string.today) else state.selectedDate.format(
+                            DateTimeFormatter.ofPattern("dd MMM yyyy")
+                        )
+                            .toTitleCase(),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Left
@@ -150,6 +192,7 @@ fun AgendaScreen(
 
                     AgendaList(
                         state = state,
+                        onAction = onAction
                     )
                 }
             }
@@ -166,7 +209,7 @@ fun AgendaScreen(
 fun AgendaScreenPreview() {
     TaskyTheme {
         AgendaScreen(
-            state = AgendaScreenState()
-        )
+            state = AgendaScreenState(),
+            onAction = {})
     }
 }

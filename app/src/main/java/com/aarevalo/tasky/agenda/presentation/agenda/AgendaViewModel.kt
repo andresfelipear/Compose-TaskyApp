@@ -29,6 +29,7 @@ class AgendaViewModel @Inject constructor(
 
 
     private val _state = MutableStateFlow(AgendaScreenState())
+
     val state = _state
         .onStart {
             loadInitialData()
@@ -73,6 +74,12 @@ class AgendaViewModel @Inject constructor(
                         relatedDates = getRelatedDates(selectedDate)
                     )
                 }
+            }
+            is AgendaScreenAction.OnNavigateToAgendaDetail -> {
+                TODO()
+            }
+            is AgendaScreenAction.OnLogout -> {
+                TODO()
             }
         }
     }

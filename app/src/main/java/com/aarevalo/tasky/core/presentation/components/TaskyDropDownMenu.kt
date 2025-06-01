@@ -5,7 +5,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 
 import androidx.compose.ui.Modifier
@@ -18,24 +17,28 @@ private const val OFFSET_Y = -20
 @Composable
 fun TaskyDropDownMenu(
     modifier: Modifier = Modifier,
-    isContextMenuVisible: MutableState<Boolean>,
+    isContextMenuVisible: Boolean,
+    onDismissRequest: () -> Unit,
     dropDownMenuItems: List<TaskyDropDownMenuItem>,
     onItemClick: (TaskyDropDownMenuItem) -> Unit = {},
+    extraOffset: Int = 0,
 ) {
     DropdownMenu(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface),
-        expanded = isContextMenuVisible.value,
-        onDismissRequest = { isContextMenuVisible.value = false },
+        expanded = isContextMenuVisible,
+        onDismissRequest = {
+            onDismissRequest()
+        },
         offset = DpOffset.Zero.copy(
-            y = OFFSET_Y.dp
+            y = OFFSET_Y.dp + extraOffset.dp
         )
     ) {
         dropDownMenuItems.forEach { item ->
             DropdownMenuItem(
                 onClick = {
                     onItemClick(item)
-                    isContextMenuVisible.value = false
+                    onDismissRequest()
                 },
                 text = {
                     Text(

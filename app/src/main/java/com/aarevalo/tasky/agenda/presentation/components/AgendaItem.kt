@@ -4,12 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -20,6 +19,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +31,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.agenda.domain.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
+import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
+import com.aarevalo.tasky.core.presentation.components.TaskyDropDownMenu
 import com.aarevalo.tasky.core.util.formattedDateTimeToString
 import com.aarevalo.tasky.core.util.formattedFromToDateTimeToString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
@@ -37,6 +42,7 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 fun AgendaItemComponent(
     modifier: Modifier = Modifier,
     agendaItem: AgendaItem,
+    dropDownMenuItems: List<TaskyDropDownMenuItem>,
 ) {
     val colors = LocalExtendedColors.current
 
@@ -46,7 +52,9 @@ fun AgendaItemComponent(
     }
 
     val titleTextDecoration = when(agendaItem.details) {
-        is AgendaItemDetails.Task -> TextDecoration.LineThrough
+        is AgendaItemDetails.Task -> {
+            if(agendaItem.details.isDone) TextDecoration.LineThrough else TextDecoration.None
+        }
         else -> TextDecoration.None
     }
 
@@ -71,11 +79,16 @@ fun AgendaItemComponent(
             time = agendaItem.fromTime
         )
     }
+
+    var isContextMenuVisible by rememberSaveable{
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(
-                RoundedCornerShape(16.dp)
+                MaterialTheme.shapes.large
             )
             .background(
                 color = color,
@@ -108,8 +121,8 @@ fun AgendaItemComponent(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
+                        .defaultMinSize(minHeight = 64.dp)
+                        .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -131,8 +144,21 @@ fun AgendaItemComponent(
                 }
             }
 
-            IconButton(modifier = Modifier.width(40.dp),
-                       onClick = { /*TODO*/ }) {
+            IconButton(
+                modifier = Modifier.width(40.dp),
+                onClick = {
+                    isContextMenuVisible = true
+                }) {
+
+                TaskyDropDownMenu(
+                    isContextMenuVisible = isContextMenuVisible,
+                    dropDownMenuItems = dropDownMenuItems,
+                    onDismissRequest = {
+                        isContextMenuVisible = false
+                    },
+                    extraOffset = 20
+                )
+
                 Icon(
                     modifier = Modifier.size(16.dp),
                     imageVector = Icons.Default.MoreHoriz,
@@ -152,8 +178,6 @@ fun AgendaItemComponent(
             color = textColor
         )
     }
-
-
 }
 
 @ExperimentalMaterial3Api
@@ -169,8 +193,13 @@ fun AgendaItemPreview() {
                 id = "1",
                 title = "Event title",
                 description = "Event description",
-                details = AgendaItemDetails.Task()
-            )
-        )
+                details = AgendaItemDetails.Task(),
+                ),
+            dropDownMenuItems = listOf(
+                TaskyDropDownMenuItem(
+                    text = "Edit",
+                    onClick = { /*TODO*/ }
+            ),
+        ))
     }
 }
