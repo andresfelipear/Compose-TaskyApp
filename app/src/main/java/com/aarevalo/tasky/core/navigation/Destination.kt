@@ -26,5 +26,11 @@ sealed interface Destination {
         data object EditTextRoute : Route
         @Serializable
         data object EventDetailRoute : Route
+        @Serializable
+        data class PhotoPreviewRoute(
+            val photoUri: String,
+            val photoKey: String,
+            val isEditable: Boolean
+        ) : Route
     }
 }
