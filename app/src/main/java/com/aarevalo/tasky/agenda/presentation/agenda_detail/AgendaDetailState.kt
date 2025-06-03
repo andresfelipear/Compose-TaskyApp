@@ -3,6 +3,7 @@ package com.aarevalo.tasky.agenda.presentation.agenda_detail
 import androidx.compose.foundation.text.input.TextFieldState
 import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
+import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.presentation.util.UiText
 import java.time.LocalDate
@@ -37,6 +38,8 @@ sealed interface AgendaItemDetails{
     data class Event(
         val toTime: LocalTime = LocalTime.now().plusMinutes(TO_TIME_ADDITION_MINUTES),
         val toDate: LocalDate = LocalDate.now(),
+        val photos: List<EventPhoto> = emptyList(),
+        val photoTooLargeMessage: UiText? = null,
         val attendees: List<Attendee> = emptyList(),
         val isUserEventCreator: Boolean = false,
         val eventCreator: Attendee? = null,
