@@ -2,7 +2,7 @@ package com.aarevalo.tasky.agenda.di
 
 import com.aarevalo.tasky.BuildConfig
 import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
-import com.aarevalo.tasky.agenda.data.repository.AgendaRepositoryImpl
+import com.aarevalo.tasky.agenda.data.repository.OfflineFirstAgendaRepository
 import com.aarevalo.tasky.agenda.domain.repository.AgendaRepository
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.squareup.moshi.Moshi
@@ -41,7 +41,7 @@ object TaskyAgendaModule {
         api: TaskyAgendaApi,
         sessionStorage: SessionStorage
     ) : AgendaRepository {
-        return AgendaRepositoryImpl(api, sessionStorage)
+        return OfflineFirstAgendaRepository(api, sessionStorage)
     }
 
 

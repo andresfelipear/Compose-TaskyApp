@@ -9,7 +9,7 @@ import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.domain.util.asEmptyDataResult
 import javax.inject.Inject
 
-class AgendaRepositoryImpl @Inject constructor(
+class OfflineFirstAgendaRepository @Inject constructor(
     private val api: TaskyAgendaApi,
     private val sessionStorage: SessionStorage
 ): AgendaRepository {
