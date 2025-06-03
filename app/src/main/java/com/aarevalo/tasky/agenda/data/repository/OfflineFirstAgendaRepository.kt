@@ -18,5 +18,4 @@ class AgendaRepositoryImpl @Inject constructor(
         sessionStorage.setSession(null)
         return response.asEmptyDataResult()
     }
-
 }
