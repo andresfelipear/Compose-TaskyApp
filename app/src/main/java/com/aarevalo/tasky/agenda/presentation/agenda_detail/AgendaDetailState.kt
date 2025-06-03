@@ -1,7 +1,7 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
-import com.aarevalo.tasky.agenda.domain.Attendee
-import com.aarevalo.tasky.agenda.domain.ReminderType
+import com.aarevalo.tasky.agenda.domain.model.Attendee
+import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.presentation.util.UiText
 import java.time.LocalDate
 import java.time.LocalTime

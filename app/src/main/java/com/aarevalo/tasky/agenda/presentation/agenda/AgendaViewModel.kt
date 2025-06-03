@@ -3,9 +3,11 @@ package com.aarevalo.tasky.agenda.presentation.agenda
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aarevalo.tasky.agenda.domain.repository.AgendaRepository
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
-import com.aarevalo.tasky.auth.presentation.login.LoginScreenEvent
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
+import com.aarevalo.tasky.core.domain.util.Result
+import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.core.util.toInitials
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -24,11 +26,13 @@ import javax.inject.Inject
 @OptIn(ExperimentalMaterial3Api::class)
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
-    private val sessionStorage: SessionStorage
+    private val sessionStorage: SessionStorage,
+    private val agendaRepository: AgendaRepository
 ): ViewModel(){
 
 
-    private val _state = MutableStateFlow(AgendaScreenState())
+    private val _state = MutableStateFlow(AgendaScreenState(
+    ))
 
     val state = _state
         .onStart {
@@ -40,7 +44,7 @@ class AgendaViewModel @Inject constructor(
             initialValue = _state.value
         )
 
-    private val eventChannel = Channel<LoginScreenEvent>()
+    private val eventChannel = Channel<AgendaScreenEvent>()
     val event = eventChannel.receiveAsFlow()
 
     fun onAction(action: AgendaScreenAction) {
@@ -75,12 +79,25 @@ class AgendaViewModel @Inject constructor(
                     )
                 }
             }
+            is AgendaScreenAction.OnLogout -> {
+                viewModelScope.launch {
+                    when(val result = agendaRepository.logout()) {
+                        is Result.Error -> {
+                            eventChannel.send(
+                                AgendaScreenEvent.Error(
+                                    result.error.asUiText()
+                                ))
+                        }
+                        is Result.Success -> {
+                            eventChannel.send(AgendaScreenEvent.SuccessLogout)
+                        }
+                    }
+                }
+            }
             is AgendaScreenAction.OnNavigateToAgendaDetail -> {
                 TODO()
             }
-            is AgendaScreenAction.OnLogout -> {
-                TODO()
-            }
+
         }
     }
 
@@ -89,7 +106,7 @@ class AgendaViewModel @Inject constructor(
             val session = sessionStorage.getSession()
             _state.update {
                 it.copy(
-                    initials = session?.fullName!!.toInitials()
+                    initials = session?.fullName!!.toInitials(),
                 )
             }
         }

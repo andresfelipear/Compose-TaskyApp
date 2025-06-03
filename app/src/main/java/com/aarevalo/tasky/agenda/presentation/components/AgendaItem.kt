@@ -29,7 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.aarevalo.tasky.agenda.domain.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.TaskyDropDownMenu

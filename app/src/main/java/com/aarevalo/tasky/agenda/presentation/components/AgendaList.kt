@@ -12,7 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.R
-import com.aarevalo.tasky.agenda.domain.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenAction
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
