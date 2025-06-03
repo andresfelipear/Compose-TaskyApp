@@ -41,4 +41,8 @@
     <string name="today">Today</string>
     <string name="logout">Log out</string>
     <string name="logout_successful">You are logged out!</string>
+    <string name="go_back">Go back</string>
+    <string name="photo_preview_title">Photo</string>
+    <string name="delete_photo">Delete Photo</string>
+    <string name="photo_preview_image">preview image</string>
 </resources>
