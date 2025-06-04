@@ -113,6 +113,26 @@ fun AgendaScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackBarState)
         },
+        topBar = {
+            AgendaScreenHeader(
+                month = state.selectedDate.month.toString().uppercase(),
+                initials = state.initials,
+                onOpenCalendar =
+                {
+                    onAction(AgendaScreenAction.OnShowDatePicker(true))
+                },
+                dropDownMenuItems = listOf(
+                    TaskyDropDownMenuItem(
+                        text = stringResource(id = R.string.logout),
+                        onClick = {
+                            onAction(
+                                AgendaScreenAction.OnLogout
+                            )
+                        }
+                    )
+                )
+            )
+        },
         floatingActionButton = {
             AddAgendaItemButton(
                 dropDownMenuItems = listOf(
@@ -162,72 +182,48 @@ fun AgendaScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 24.dp,
+                            topEnd = 24.dp
+                        )
+                    )
+                    .background(color = MaterialTheme.colorScheme.surface)
+                    .padding(
+                        horizontal = spacing.spaceMedium,
+                        vertical = spacing.spaceLarge
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
 
-                AgendaScreenHeader(
-                    month = state.selectedDate.month.toString().uppercase(),
-                    initials = state.initials,
-                    onOpenCalendar =
-                    {
-                        onAction(AgendaScreenAction.OnShowDatePicker(true))
+                CalendarDaysSelector(
+                    selectedDate = state.selectedDate,
+                    onDaySelected = {
+                        onAction(AgendaScreenAction.OnDateChanged(it))
                     },
-                    dropDownMenuItems = listOf(
-                        TaskyDropDownMenuItem(
-                            text = stringResource(id = R.string.logout),
-                            onClick = {
-                                onAction(
-                                    AgendaScreenAction.OnLogout
-                                )
-                            }
-                        )
-                    )
+                    days = state.relatedDates,
                 )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 24.dp,
-                                topEnd = 24.dp
-                            )
-                        )
-                        .background(color = MaterialTheme.colorScheme.surface)
-                        .padding(
-                            horizontal = spacing.spaceMedium,
-                            vertical = spacing.spaceLarge
-                        ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-
-                    CalendarDaysSelector(
-                        selectedDate = state.selectedDate,
-                        onDaySelected = {
-                            onAction(AgendaScreenAction.OnDateChanged(it))
-                        },
-                        days = state.relatedDates,
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = if(state.selectedDate == LocalDate.now()) stringResource(id = R.string.today) else state.selectedDate.format(
+                        DateTimeFormatter.ofPattern("dd MMM yyyy")
                     )
+                        .toTitleCase(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Left
+                )
 
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = if(state.selectedDate == LocalDate.now()) stringResource(id = R.string.today) else state.selectedDate.format(
-                            DateTimeFormatter.ofPattern("dd MMM yyyy")
-                        )
-                            .toTitleCase(),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Left
-                    )
-
-                    AgendaList(
-                        state = state,
-                        onAction = onAction
-                    )
-                }
+                AgendaList(
+                    state = state,
+                    onAction = onAction
+                )
             }
         }
     }
