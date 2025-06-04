@@ -3,15 +3,15 @@ package com.aarevalo.tasky.agenda.presentation.agenda_detail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CheckCircleOutline
@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -70,6 +71,12 @@ fun AgendaDetailScreen(
     val colors = LocalExtendedColors.current
     val spacing = LocalSpacing.current
 
+    val type = when(state.details){
+        is AgendaItemDetails.Event -> "event"
+        is AgendaItemDetails.Reminder -> "reminder"
+        is AgendaItemDetails.Task -> "task"
+    }
+
     Scaffold(
         snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
         topBar = {
@@ -91,7 +98,7 @@ fun AgendaDetailScreen(
                 contentMiddle = {
                     Text(
                         text = stringResource(
-                            id = R.string.detail_screen_title, "EVENT"
+                            id = R.string.detail_screen_title, type
                         ).uppercase(),
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -113,39 +120,35 @@ fun AgendaDetailScreen(
                 })
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 24.dp,
+                        topEnd = 24.dp
+                    )
+                )
+                .background(color = MaterialTheme.colorScheme.surface)
+                .padding(
+                    horizontal = spacing.spaceMedium,
+                    vertical = spacing.spaceLarge
+                ),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 24.dp,
-                            topEnd = 24.dp
-                        )
-                    )
-                    .background(color = MaterialTheme.colorScheme.surface)
-                    .padding(
-                        horizontal = spacing.spaceMedium,
-                        vertical = spacing.spaceLarge
-                    ),
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
 
                 EventType(
                     type = state.details
                 )
-                Column(
-                    modifier = Modifier
-                        .padding(
-                            vertical = 20.dp
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Column {
                     Row(
                         modifier = Modifier
                             .drawBehind {
@@ -155,7 +158,10 @@ fun AgendaDetailScreen(
                                     end = Offset(size.width, size.height),
                                     strokeWidth = 1.dp.toPx()
                                 )
-                            },
+                            }
+                            .padding(
+                                bottom = 24.dp,
+                            ),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ){
@@ -199,11 +205,81 @@ fun AgendaDetailScreen(
                             }
                         }
                     }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .drawBehind {
+                                drawLine(
+                                    color = colors.surfaceHigher,
+                                    start = Offset(
+                                        0f,
+                                        size.height
+                                    ),
+                                    end = Offset(
+                                        size.width,
+                                        size.height
+                                    ),
+                                    strokeWidth = 1.dp.toPx()
+                                )
+                            }
+                            .padding(
+                                bottom = 20.dp,
+                                top = 20.dp
+                            ),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = state.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            minLines = 2
+                        )
+
+                        if(state.isEditable) {
+                            IconButton(modifier = Modifier.size(20.dp),
+                                       onClick = {/* TODO */
+                                       }) {
+                                Icon(
+                                    modifier = Modifier.size(20.dp),
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                    contentDescription = stringResource(id = R.string.edit),
+                                    tint = colors.onSurfaceVariant70
+                                )
+                            }
+                        }
+                    }
                 }
-
-
-
             }
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .drawBehind {
+                        drawLine(
+                            color = colors.surfaceHigher,
+                            start = Offset(
+                                0f,
+                                0f,
+                            ),
+                            end = Offset(
+                                size.width,
+                                0f,
+                            ),
+                            strokeWidth = 1.dp.toPx()
+                        )
+                    }
+                    .padding(
+                        top = 16.dp,
+                    )
+                    .clickable {
+                        /* TODO */
+                    },
+                text = stringResource(id = R.string.delete_item, type).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
