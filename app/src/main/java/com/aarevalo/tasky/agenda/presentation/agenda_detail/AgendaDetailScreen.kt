@@ -5,10 +5,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -20,7 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,16 +40,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
-import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenAction
-import com.aarevalo.tasky.agenda.presentation.components.AgendaList
-import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
+import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.core.presentation.components.AppBar
-import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun AgendaDetailScreenRoot(
@@ -75,7 +82,7 @@ fun AgendaDetailScreen(
                         },
                         text = stringResource(id = R.string.cancel),
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             lineHeight = 12.sp,
                             letterSpacing = 0.sp
                         )
@@ -87,7 +94,7 @@ fun AgendaDetailScreen(
                             id = R.string.detail_screen_title, "EVENT"
                         ).uppercase(),
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onPrimary,
                         ),
                     )
                 },
@@ -126,9 +133,73 @@ fun AgendaDetailScreen(
                         horizontal = spacing.spaceMedium,
                         vertical = spacing.spaceLarge
                     ),
-                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+
+                EventType(
+                    type = state.details
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(
+                            vertical = 20.dp
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .drawBehind {
+                                drawLine(
+                                    color = colors.surfaceHigher,
+                                    start = Offset(0f, size.height),
+                                    end = Offset(size.width, size.height),
+                                    strokeWidth = 1.dp.toPx()
+                                )
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        IconButton(
+                            modifier = Modifier.size(20.dp),
+                            onClick = { /*TODO*/ }) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = if(state.details is AgendaItemDetails.Task && state.details.isDone) Icons.Default.CheckCircleOutline else Icons.Default.RadioButtonUnchecked,
+                                contentDescription = stringResource(id = R.string.done),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = state.title,
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    textDecoration = if(state.details is AgendaItemDetails.Task && state.details.isDone) TextDecoration.LineThrough else TextDecoration.None
+                                ),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            if(state.isEditable){
+                                IconButton(
+                                    modifier = Modifier.size(20.dp),
+                                    onClick = {
+                                        /* TODO */
+                                    }
+                                ){
+                                    Icon(
+                                        modifier = Modifier.size(20.dp),
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                        contentDescription = stringResource(id = R.string.edit),
+                                        tint = colors.onSurfaceVariant70
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
 
 
 
@@ -143,7 +214,11 @@ fun AgendaDetailScreen(
 fun AgendaDetailScreenPreview(){
     TaskyTheme {
         AgendaDetailScreen(
-            state = AgendaDetailScreenState(),
+            state = AgendaDetailScreenState(
+                title = "Event title",
+                description = "Event description",
+                details = AgendaItemDetails.Task()
+            ),
             onAction = {}
         )
     }
