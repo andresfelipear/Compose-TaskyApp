@@ -11,7 +11,7 @@ import java.time.LocalTime
 
 private const val TO_TIME_ADDITION_MINUTES = 30L
 
-data class AgendaDetailState(
+data class AgendaDetailScreenState(
     val isEditable: Boolean = true,
     val reminderType: ReminderType = ReminderType.ONE_HOUR,
     val fromTime: LocalTime = LocalTime.now(),

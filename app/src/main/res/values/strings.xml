@@ -48,4 +48,9 @@
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="edit_text_title">Edit %s</string>
+    <string name="detail_screen_title">Edit %s</string>
+    <string name="agenda_type_icon">Agenda Type Icon</string>
+    <string name="event">EVENT</string>
+    <string name="reminder">REMINDER</string>
+    <string name="task">TASK</string>
 </resources>
