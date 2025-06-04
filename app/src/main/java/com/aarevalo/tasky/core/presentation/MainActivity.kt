@@ -13,11 +13,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.aarevalo.tasky.agenda.presentation.EventDetails.EventDetailScreenRoot
+import androidx.navigation.toRoute
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenRoute
-import com.aarevalo.tasky.agenda.presentation.editText.EditTextScreenRoot
-import com.aarevalo.tasky.agenda.presentation.remainderDetail.ReminderDetailScreenRoot
-import com.aarevalo.tasky.agenda.presentation.taskDetail.TaskDetailScreenRoot
+import com.aarevalo.tasky.agenda.presentation.edit_text.EditTextScreenRoot
+import com.aarevalo.tasky.agenda.presentation.photo_preview.PhotoPreviewScreenRoot
 import com.aarevalo.tasky.auth.presentation.login.LoginScreenRoot
 import com.aarevalo.tasky.auth.presentation.register.RegistrationScreenRoot
 import com.aarevalo.tasky.core.navigation.Destination
@@ -77,23 +76,19 @@ fun TaskyRoot(
                             navController = navController
                         )
                     }
-                    composable<Destination.Route.TaskDetailRoute> {
-                        TaskDetailScreenRoot(
-                            navController = navController
-                        )
-                    }
-                    composable<Destination.Route.EditTextRoute> {
+
+                    composable<Destination.Route.EditTextRoute> { backStackEntry ->
+                        val editTextRoute = backStackEntry.toRoute<Destination.Route.EditTextRoute>()
                         EditTextScreenRoot(
+                            route = editTextRoute,
                             navController = navController
                         )
                     }
-                    composable<Destination.Route.EventDetailRoute> {
-                        EventDetailScreenRoot(
-                            navController = navController
-                        )
-                    }
-                    composable<Destination.Route.ReminderDetailRoute> {
-                        ReminderDetailScreenRoot(
+
+                    composable<Destination.Route.PhotoPreviewRoute> { backStackEntry ->
+                        val photoPreviewRoute = backStackEntry.toRoute<Destination.Route.PhotoPreviewRoute>()
+                        PhotoPreviewScreenRoot(
+                            route = photoPreviewRoute,
                             navController = navController
                         )
                     }

@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
@@ -25,14 +26,15 @@ fun AppBar(
     modifier: Modifier = Modifier,
     contentStart: @Composable () -> Unit,
     contentMiddle: @Composable () -> Unit = {},
-    contentEnd: @Composable () -> Unit
+    contentEnd: @Composable () -> Unit,
+    backgroundColor: Color = MaterialTheme.colorScheme.primary
 ){
     val spacing = LocalSpacing.current
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.primary)
+            .background(color = backgroundColor)
             .padding(
                 horizontal = spacing.spaceMedium,
                 vertical = spacing.spaceSmall
