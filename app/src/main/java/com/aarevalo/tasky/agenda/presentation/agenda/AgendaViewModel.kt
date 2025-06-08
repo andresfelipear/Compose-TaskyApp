@@ -1,6 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.repository.AgendaRepository
@@ -55,10 +54,10 @@ class AgendaViewModel @Inject constructor(
                 }
             }
 
-            is AgendaScreenAction.OnShowDatePicker -> {
+            is AgendaScreenAction.OnChangeDatePickerVisibility -> {
                 _state.update {
                     it.copy(
-                        showDatePicker = action.showDatePicker
+                        showDatePicker = !it.showDatePicker
                     )
                 }
             }

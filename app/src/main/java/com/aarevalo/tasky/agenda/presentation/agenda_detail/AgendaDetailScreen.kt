@@ -42,12 +42,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgendaDetailScreenRoot(
     navController: NavController,
@@ -55,16 +57,16 @@ fun AgendaDetailScreenRoot(
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-//    if(state.isFromDateDialogVisible) {
-//        CustomDatePicker(
-//            datePickerState = state.datePickerState,
-//            onDateSelectedCalendar = {
-//                viewModel.onAction(AgendaScreenAction.OnDateSelectedCalendar)
-//            },
-//            onShowDatePicker = { showDatePicker ->
-//                viewModel.onAction(AgendaScreenAction.OnShowDatePicker(showDatePicker))
-//            })
-//    }
+    if(state.isFromDateDialogVisible) {
+        CustomDatePicker(
+            currentDate = state.fromDate,
+            onDateSelected = {
+                viewModel.onAction(AgendaDetailScreenAction.OnFromDateChanged(it))
+            },
+            onChangeDatePickerVisibility = {
+                viewModel.onAction(AgendaDetailScreenAction.OnChangeFromDateDialogVisibility)
+            })
+    }
 
     AgendaDetailScreen(
         state = state,

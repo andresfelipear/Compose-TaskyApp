@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 sealed interface AgendaScreenAction {
     data class OnDateChanged(val date: LocalDate) : AgendaScreenAction
-    data class OnShowDatePicker(val showDatePicker: Boolean) : AgendaScreenAction
+    data object OnChangeDatePickerVisibility: AgendaScreenAction
     data class OnDateSelectedCalendar(val date:LocalDate) : AgendaScreenAction
     data object OnLogout : AgendaScreenAction
     data class OnNavigateToAgendaDetail(

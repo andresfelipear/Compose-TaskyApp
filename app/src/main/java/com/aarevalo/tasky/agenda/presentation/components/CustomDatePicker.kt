@@ -24,30 +24,30 @@ fun CustomDatePicker(
         titleContentColor = MaterialTheme.colorScheme.primary,
         headlineContentColor = MaterialTheme.colorScheme.primary,
     ),
-    onDateSelectedCalendar: (LocalDate) -> Unit,
-    onShowDatePicker: (Boolean) -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
+    onChangeDatePickerVisibility: () -> Unit,
     currentDate: LocalDate
 ){
-    val datePickerState1 = rememberDatePickerState(
+    val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = currentDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
     )
 
     DatePickerDialog(
         onDismissRequest = {
-            onShowDatePicker(false)
+            onChangeDatePickerVisibility()
         },
         confirmButton = {
             TextButton(onClick = {
-                val selectedDateMillis = datePickerState1.selectedDateMillis
+                val selectedDateMillis = datePickerState.selectedDateMillis
                 val selectedDate = Instant.ofEpochMilli(selectedDateMillis!!).atZone(ZoneOffset.UTC).toLocalDate()
-                onDateSelectedCalendar(selectedDate)
+                onDateSelected(selectedDate)
             }) {
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = {
-                onShowDatePicker(false)
+                onChangeDatePickerVisibility()
             }) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }
@@ -56,7 +56,7 @@ fun CustomDatePicker(
     ) {
         DatePicker(
             modifier = modifier,
-            state = datePickerState1,
+            state = datePickerState,
             colors = colors
         )
     }
