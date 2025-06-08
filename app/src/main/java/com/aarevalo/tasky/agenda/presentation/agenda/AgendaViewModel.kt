@@ -18,12 +18,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import javax.inject.Inject
 
-@OptIn(ExperimentalMaterial3Api::class)
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
     private val sessionStorage: SessionStorage,
