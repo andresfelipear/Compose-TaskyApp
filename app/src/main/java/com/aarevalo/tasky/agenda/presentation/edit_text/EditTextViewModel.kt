@@ -5,11 +5,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.model.EditTextFieldType
+import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -33,9 +32,8 @@ class EditTextViewModel @Inject constructor(
             setType()
             setInitialText()
         }
-        .stateIn(
+        .stateInWhileSubscribed(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
             initialValue = _state.value
         )
 
