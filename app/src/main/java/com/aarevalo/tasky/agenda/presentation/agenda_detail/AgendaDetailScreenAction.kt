@@ -1,8 +1,11 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
 import java.time.LocalDate
+import java.time.LocalTime
 
 sealed interface AgendaDetailScreenAction {
     data object OnChangeFromDateDialogVisibility: AgendaDetailScreenAction
     data class OnFromDateChanged(val date: LocalDate): AgendaDetailScreenAction
+    data object OnChangeFromTimeDialogVisibility: AgendaDetailScreenAction
+    data class OnFromTimeChanged(val time: LocalTime): AgendaDetailScreenAction
 }

@@ -1,6 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,7 +25,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DateTimeSelector(
     modifier: Modifier = Modifier,
-    isEditable: Boolean = false
+    isEditable: Boolean = false,
+    onSelectDateClicked: () -> Unit,
+    onSelectTimeClicked: () -> Unit
 ){
     val colors = LocalExtendedColors.current
 
@@ -64,17 +65,18 @@ fun DateTimeSelector(
                 ).toString(),
                 isEditable = isEditable,
                 onClick = {
-                    /* TODO */
+                    onSelectTimeClicked()
                 }
             )
 
             PickerButton(
+                modifier = Modifier.fillMaxWidth(),
                 textContent = LocalDate.now().format(
                     DateTimeFormatter.ofPattern("MMM dd, yyyy")
                 ).toString(),
                 isEditable = isEditable,
                 onClick = {
-                    /* TODO */
+                    onSelectDateClicked()
                 }
             )
         }
@@ -86,7 +88,9 @@ fun DateTimeSelector(
 fun DateTimeSelectorPreview(){
     TaskyTheme {
         DateTimeSelector(
-            isEditable = true
+            isEditable = true,
+            onSelectDateClicked = {},
+            onSelectTimeClicked = {}
         )
     }
 }

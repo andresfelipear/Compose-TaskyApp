@@ -43,6 +43,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
+import com.aarevalo.tasky.agenda.presentation.components.CustomTimePicker
+import com.aarevalo.tasky.agenda.presentation.components.DateTimeSelector
 import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
@@ -66,6 +68,18 @@ fun AgendaDetailScreenRoot(
             onChangeDatePickerVisibility = {
                 viewModel.onAction(AgendaDetailScreenAction.OnChangeFromDateDialogVisibility)
             })
+    }
+
+    if(state.isFromTimeDialogVisible) {
+        CustomTimePicker(
+            currentTime = state.fromTime,
+            onTimeSelected = {
+                viewModel.onAction(AgendaDetailScreenAction.OnFromTimeChanged(it))
+            },
+            onChangeTimePickerVisibility = {
+                viewModel.onAction(AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility)
+            }
+        )
     }
 
     AgendaDetailScreen(
@@ -189,6 +203,7 @@ fun AgendaDetailScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -263,6 +278,16 @@ fun AgendaDetailScreen(
                             }
                         }
                     }
+
+                    DateTimeSelector(
+                        isEditable = state.isEditable,
+                        onSelectDateClicked = {
+                            onAction(AgendaDetailScreenAction.OnChangeFromDateDialogVisibility)
+                        },
+                        onSelectTimeClicked = {
+                            onAction(AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility)
+                        }
+                    )
                 }
             }
 

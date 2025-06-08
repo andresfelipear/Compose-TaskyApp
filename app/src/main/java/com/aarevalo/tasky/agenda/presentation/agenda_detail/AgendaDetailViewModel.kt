@@ -34,6 +34,20 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
             }
+            is AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility -> {
+                _state.update {
+                    it.copy(
+                        isFromTimeDialogVisible = !it.isFromTimeDialogVisible
+                    )
+                }
+            }
+            is AgendaDetailScreenAction.OnFromTimeChanged -> {
+                _state.update {
+                    it.copy(
+                        fromTime = action.time
+                    )
+                }
+            }
         }
     }
 

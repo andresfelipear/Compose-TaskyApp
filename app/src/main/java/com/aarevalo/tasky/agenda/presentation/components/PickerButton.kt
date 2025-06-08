@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -47,28 +48,33 @@ fun PickerButton(
                 start = 12.dp,
                 end = 20.dp
             ),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = textContent,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = textContent,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
 
-        if(isEditable){
-            IconButton(
-                modifier = Modifier.size(20.dp),
-                onClick = {
-                    onClick()
+            if(isEditable){
+                IconButton(
+                    modifier = Modifier.size(20.dp),
+                    onClick = {
+                        onClick()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(id = R.string.dropdown),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(id = R.string.dropdown),
-                    tint = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }
@@ -79,6 +85,7 @@ fun PickerButton(
 fun PickerButtonPreview(){
     TaskyTheme {
         PickerButton(
+            modifier = Modifier.width(200.dp),
             textContent = "08:00",
             isEditable = true,
             onClick = {}
