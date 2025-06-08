@@ -57,7 +57,7 @@ fun AgendaDetailScreenRoot(
     AgendaDetailScreen(
         state = state,
         onAction = {
-
+            /* TODO */
         }
     )
 }
@@ -233,7 +233,7 @@ fun AgendaDetailScreen(
                             text = state.description,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
-                            minLines = 2
+                            maxLines = 3
                         )
 
                         if(state.isEditable) {

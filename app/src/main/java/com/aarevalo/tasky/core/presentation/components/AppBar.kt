@@ -44,13 +44,11 @@ fun AppBar(
     ) {
         Box(
             modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.CenterStart
         ){
             contentStart()
         }
         Box(
             modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.Center
         ){
             contentMiddle()
         }
