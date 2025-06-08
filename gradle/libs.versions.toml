@@ -14,12 +14,12 @@ hilt = "2.54"
 hiltNavigationCompose = "1.2.0"
 navigationCompose = "2.8.0-alpha10"
 
-retrofit = "2.10.0"
+retrofit = "2.11.0"
 okhttp = "4.12.0"
 moshi = "1.15.1"
 room = "2.7.1"
 coil3 = "3.0.4"
-uiTextGoogleFonts = "1.8.1"
+uiTextGoogleFonts = "1.8.2"
 
 material_icons = "1.7.8"
 
@@ -27,7 +27,8 @@ splashScreen = "1.0.1"
 
 androidxLifecycle = "2.9.0"
 kotlinx-serialization = "1.7.3"
-datastorePreferences = "1.1.1"
+kotlin-parcelize = "1.9.0"
+datastorePreferences = "1.1.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -102,5 +103,6 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin-parcelize"}
 
 

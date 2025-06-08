@@ -14,17 +14,27 @@ sealed interface Destination {
     sealed interface Route : Destination {
         @Serializable
         data object LoginRoute : Route
+
         @Serializable
         data object RegisterRoute : Route
+
         @Serializable
         data object AgendaRoute : Route
+
         @Serializable
-        data object TaskDetailRoute : Route
+        data object AgendaDetailRoute : Route
+
         @Serializable
-        data object ReminderDetailRoute : Route
+        data class EditTextRoute(
+            val title: String,
+            val text: String
+        ) : Route
+
         @Serializable
-        data object EditTextRoute : Route
-        @Serializable
-        data object EventDetailRoute : Route
+        data class PhotoPreviewRoute(
+            val photoUri: String,
+            val photoKey: String,
+            val isEditable: Boolean
+        ) : Route
     }
 }

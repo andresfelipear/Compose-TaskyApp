@@ -25,10 +25,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
@@ -106,7 +108,7 @@ fun AgendaItemComponent(
                 Icon(
                     modifier = Modifier.size(16.dp),
                     imageVector = if(agendaItem.details is AgendaItemDetails.Task && agendaItem.details.isDone) Icons.Default.CheckCircleOutline else Icons.Default.RadioButtonUnchecked,
-                    contentDescription = "Mark as done",
+                    contentDescription = stringResource(id = R.string.done),
                     tint = textColor
                 )
             }

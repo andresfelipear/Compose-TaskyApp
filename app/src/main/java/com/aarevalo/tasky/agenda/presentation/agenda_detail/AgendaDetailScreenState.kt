@@ -1,6 +1,9 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
+import androidx.compose.foundation.text.input.TextFieldState
+import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
+import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.presentation.util.UiText
 import java.time.LocalDate
@@ -8,7 +11,7 @@ import java.time.LocalTime
 
 private const val TO_TIME_ADDITION_MINUTES = 30L
 
-data class AgendaDetailState(
+data class AgendaDetailScreenState(
     val isEditable: Boolean = true,
     val reminderType: ReminderType = ReminderType.ONE_HOUR,
     val fromTime: LocalTime = LocalTime.now(),
@@ -33,10 +36,21 @@ data class AgendaDetailState(
 
 sealed interface AgendaItemDetails{
     data class Event(
-        val attendees: List<Attendee> = emptyList(),
         val toTime: LocalTime = LocalTime.now().plusMinutes(TO_TIME_ADDITION_MINUTES),
-        val toDate: LocalDate = LocalDate.now()
-    ): AgendaItemDetails
+        val toDate: LocalDate = LocalDate.now(),
+        val photos: List<EventPhoto> = emptyList(),
+        val attendees: List<Attendee> = emptyList(),
+        val isUserEventCreator: Boolean = false,
+        val eventCreator: Attendee? = null,
+        val isCheckingForAttendeesExistence: Boolean = false,
+        val canAddVisitor: Boolean = false,
+        val isAddingAttendee: Boolean = false,
+        val filterType: VisitorFilterType = VisitorFilterType.ALL,
+        val newAttendeeEmail: TextFieldState = TextFieldState(),
+        val localAttendee: Attendee? = null,
+        val canEditPhotos: Boolean = false,
+        val isAddingPhoto: Boolean = false,
+        ): AgendaItemDetails
 
     data class Task(
         val isDone: Boolean = false,
