@@ -27,20 +27,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.EditTextFieldType
-import com.aarevalo.tasky.core.navigation.Destination
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
 fun EditTextScreenRoot(
-    route: Destination.Route.EditTextRoute,
     navController: NavController,
     viewModel: EditTextViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    EditTextScreen(route = route,
-                   state = state,
+    EditTextScreen(state = state,
                    onAction = { action ->
                        when(action) {
                            is EditTextScreenAction.GoBack -> {
@@ -56,7 +53,6 @@ fun EditTextScreenRoot(
 
 @Composable
 fun EditTextScreen(
-    route: Destination.Route.EditTextRoute,
     state: EditTextScreenState,
     onAction: (EditTextScreenAction) -> Unit
 ) {
@@ -91,7 +87,7 @@ fun EditTextScreen(
                             Text(
                                 text = stringResource(
                                     id = R.string.edit_text_title,
-                                    route.title
+                                    state.type.toString()
                                 ).uppercase(),
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     color = MaterialTheme.colorScheme.primary,
@@ -160,10 +156,6 @@ fun EditTextScreen(
 fun EditTextScreenPreview() {
     TaskyTheme {
         EditTextScreen(
-            route = Destination.Route.EditTextRoute(
-            title = "Title",
-            text = "Text"
-        ),
             state = EditTextScreenState(
                 type = EditTextFieldType.TITLE,
                 textFieldContent = TextFieldState(
