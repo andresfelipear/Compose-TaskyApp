@@ -77,10 +77,8 @@ fun TaskyRoot(
                         )
                     }
 
-                    composable<Destination.Route.EditTextRoute> { backStackEntry ->
-                        val editTextRoute = backStackEntry.toRoute<Destination.Route.EditTextRoute>()
+                    composable<Destination.Route.EditTextRoute> {
                         EditTextScreenRoot(
-                            route = editTextRoute,
                             navController = navController
                         )
                     }

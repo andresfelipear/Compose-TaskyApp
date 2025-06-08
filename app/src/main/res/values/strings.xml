@@ -55,4 +55,6 @@
     <string name="task">TASK</string>
     <string name="done">done</string>
     <string name="delete_item">delete %s</string>
+    <string name="date_time_at">At</string>
+    <string name="dropdown">dropdown</string>
 </resources>

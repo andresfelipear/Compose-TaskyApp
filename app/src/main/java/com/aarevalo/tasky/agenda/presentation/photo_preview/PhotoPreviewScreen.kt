@@ -83,7 +83,7 @@ fun PhotoPreviewScreen(
                 IconButton(
                     onClick = {
                         onAction(PhotoPreviewAction.GoBack(
-                            photoId = photo.key(),
+                            photoId = photo.key,
                             wasDeleted = false
                         ))
                     }
@@ -108,7 +108,7 @@ fun PhotoPreviewScreen(
                     IconButton(
                         onClick = {
                             onAction(PhotoPreviewAction.GoBack(
-                                photoId = photo.key(),
+                                photoId = photo.key,
                                 wasDeleted = true
                             ))
                         }
@@ -145,7 +145,7 @@ fun PhotoPreviewScreen(
                         RoundedCornerShape(5.dp)
                     ),
                 painter = rememberAsyncImagePainter(
-                    model = photo.uri(),
+                    model = photo.uri,
                     error = painterResource(id = R.drawable.ic_launcher_background),
                     placeholder = painterResource(id = R.drawable.ic_launcher_background)
                 ),

@@ -84,13 +84,14 @@ fun AgendaScreenRoute(
 
     if(state.showDatePicker) {
         CustomDatePicker(
-            datePickerState = state.datePickerState,
+            currentDate = state.selectedDate,
             onDateSelectedCalendar = {
-                viewModel.onAction(AgendaScreenAction.OnDateSelectedCalendar)
+                viewModel.onAction(AgendaScreenAction.OnDateSelectedCalendar(it))
             },
             onShowDatePicker = { showDatePicker ->
                 viewModel.onAction(AgendaScreenAction.OnShowDatePicker(showDatePicker))
-            })
+            }
+        )
     }
 
     AgendaScreen(
@@ -229,7 +230,6 @@ fun AgendaScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview(
     showBackground = true,

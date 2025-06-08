@@ -54,9 +54,6 @@ class AgendaViewModel @Inject constructor(
                     currentState.copy(
                         selectedDate = action.date,
                         relatedDates = getRelatedDates(action.date),
-                        datePickerState = currentState.datePickerState.apply {
-                            selectedDateMillis = action.date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-                        }
                     )
                 }
             }
@@ -69,9 +66,8 @@ class AgendaViewModel @Inject constructor(
                 }
             }
             is AgendaScreenAction.OnDateSelectedCalendar -> {
+                val selectedDate = action.date
                 _state.update {
-                    val selectedDateMillis = it.datePickerState.selectedDateMillis
-                    val selectedDate = Instant.ofEpochMilli(selectedDateMillis!!).atZone(ZoneOffset.UTC).toLocalDate()
                     it.copy(
                         showDatePicker = false,
                         selectedDate = selectedDate,

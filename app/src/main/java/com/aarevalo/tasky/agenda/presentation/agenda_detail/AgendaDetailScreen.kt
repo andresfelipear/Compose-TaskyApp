@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,18 +43,33 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenAction
+import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
+import java.time.ZoneOffset
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgendaDetailScreenRoot(
     navController: NavController,
     viewModel: AgendaDetailViewModel = hiltViewModel(),
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+//    if(state.isFromDateDialogVisible) {
+//        CustomDatePicker(
+//            datePickerState = state.datePickerState,
+//            onDateSelectedCalendar = {
+//                viewModel.onAction(AgendaScreenAction.OnDateSelectedCalendar)
+//            },
+//            onShowDatePicker = { showDatePicker ->
+//                viewModel.onAction(AgendaScreenAction.OnShowDatePicker(showDatePicker))
+//            })
+//    }
 
     AgendaDetailScreen(
         state = state,
@@ -122,8 +139,8 @@ fun AgendaDetailScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(innerPadding)
+                .fillMaxSize()
                 .clip(
                     RoundedCornerShape(
                         topStart = 24.dp,
