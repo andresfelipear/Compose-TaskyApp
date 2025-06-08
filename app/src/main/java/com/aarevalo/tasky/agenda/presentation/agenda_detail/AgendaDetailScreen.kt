@@ -42,11 +42,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.CustomTimePicker
 import com.aarevalo.tasky.agenda.presentation.components.DateTimeSelector
 import com.aarevalo.tasky.agenda.presentation.components.EventType
+import com.aarevalo.tasky.agenda.presentation.components.ReminderButton
+import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.AppBar
+import com.aarevalo.tasky.core.util.toHumanReadableString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
@@ -84,9 +88,7 @@ fun AgendaDetailScreenRoot(
 
     AgendaDetailScreen(
         state = state,
-        onAction = {
-            /* TODO */
-        }
+        onAction = viewModel::onAction
     )
 }
 
@@ -287,6 +289,19 @@ fun AgendaDetailScreen(
                         onSelectTimeClicked = {
                             onAction(AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility)
                         }
+                    )
+
+                    ReminderButton(
+                        isEditable = state.isEditable,
+                        dropDownMenuItems =
+                            ReminderType.entries.map{ reminderType ->
+                                TaskyDropDownMenuItem(
+                                    text = stringResource(R.string.reminder_type, reminderType.duration.toHumanReadableString()),
+                                    onClick = {
+                                        onAction(AgendaDetailScreenAction.OnReminderTypeChanged(reminderType))
+                                    }
+                                )
+                            }
                     )
                 }
             }

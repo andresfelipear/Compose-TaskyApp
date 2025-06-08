@@ -48,7 +48,13 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
             }
+            is AgendaDetailScreenAction.OnReminderTypeChanged -> {
+                _state.update {
+                    it.copy(
+                        reminderType = action.reminderType
+                    )
+                }
+            }
         }
     }
-
 }

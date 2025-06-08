@@ -59,4 +59,5 @@
     <string name="dropdown">dropdown</string>
     <string name="time_picker_title">Select %s time</string>
     <string name="time_picker_start">start</string>
+    <string name="reminder_type">%s before</string>
 </resources>
