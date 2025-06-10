@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
@@ -33,11 +34,12 @@ fun TaskyActionButton(
         disabledContainerColor = LocalExtendedColors.current.onSurfaceVariant70,
         disabledContentColor = MaterialTheme.colorScheme.primary,
     ),
-    border: BorderStroke? = null
+    border: BorderStroke? = null,
+    verticalPadding: Dp = LocalSpacing.current.spaceMedium
 ) {
     Button(
-        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
+        onClick = onClick,
         enabled = isEnabled,
         colors = colors,
         shape = RoundedCornerShape(38.dp),
@@ -48,7 +50,7 @@ fun TaskyActionButton(
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
-                        .padding(vertical = LocalSpacing.current.spaceMedium)
+                        .padding(vertical = verticalPadding)
                 )
             }
             else -> {
@@ -57,7 +59,7 @@ fun TaskyActionButton(
                     style = textStyle.copy(textAlign = TextAlign.Center),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = LocalSpacing.current.spaceMedium),
+                        .padding(vertical = verticalPadding),
                 )
             }
 
