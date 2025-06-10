@@ -7,9 +7,9 @@ enum class VisitorFilterType {
 
     fun toHumanReadableString(): String {
         return when(this){
-            VisitorFilterType.ALL -> "All"
-            VisitorFilterType.GOING -> "Going"
-            VisitorFilterType.NOT_GOING -> "Not Going"
+           ALL -> "All"
+            GOING -> "Going"
+            NOT_GOING -> "Not Going"
         }
     }
 }
