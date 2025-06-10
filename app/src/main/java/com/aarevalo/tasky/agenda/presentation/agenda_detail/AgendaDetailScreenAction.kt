@@ -12,4 +12,8 @@ sealed interface AgendaDetailScreenAction {
     data class OnReminderTypeChanged(val reminderType: ReminderType): AgendaDetailScreenAction
     data object OnDeleteItem: AgendaDetailScreenAction
     data object OnChangeDeleteDialogVisibility: AgendaDetailScreenAction
+    data object OnChangeToTimeDialogVisibility: AgendaDetailScreenAction
+    data object OnChangeToDateDialogVisibility: AgendaDetailScreenAction
+    data class OnToTimeChanged(val time: LocalTime): AgendaDetailScreenAction
+    data class OnToDateChanged(val date: LocalDate): AgendaDetailScreenAction
 }

@@ -87,6 +87,33 @@ fun AgendaDetailScreenRoot(
         )
     }
 
+    if(state.details is AgendaItemDetails.Event){
+        if(state.isToDateDialogVisible) {
+            CustomDatePicker(
+                currentDate = (state.details as AgendaItemDetails.Event).toDate,
+                onDateSelected = {
+                    viewModel.onAction(AgendaDetailScreenAction.OnToDateChanged(it))
+                },
+                onChangeDatePickerVisibility = {
+                    viewModel.onAction(AgendaDetailScreenAction.OnChangeToDateDialogVisibility)
+                }
+            )
+        }
+
+        if(state.isToTimeDialogVisible) {
+            CustomTimePicker(
+                currentTime = (state.details as AgendaItemDetails.Event).toTime,
+                onTimeSelected = {
+                    viewModel.onAction(AgendaDetailScreenAction.OnToTimeChanged(it))
+                },
+                onChangeTimePickerVisibility = {
+                    viewModel.onAction(AgendaDetailScreenAction.OnChangeToTimeDialogVisibility)
+                }
+            )
+        }
+    }
+
+
     AgendaDetailScreen(
         state = state,
         onAction = viewModel::onAction
@@ -300,8 +327,24 @@ fun AgendaDetailScreen(
                         },
                         onSelectTimeClicked = {
                             onAction(AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility)
-                        }
+                        },
+                        date = state.fromDate,
+                        time = state.fromTime
                     )
+
+                    if(state.details is AgendaItemDetails.Event){
+                        DateTimeSelector(
+                            isEditable = state.isEditable,
+                            onSelectDateClicked = {
+                                onAction(AgendaDetailScreenAction.OnChangeToDateDialogVisibility)
+                            },
+                            onSelectTimeClicked = {
+                                onAction(AgendaDetailScreenAction.OnChangeToTimeDialogVisibility)
+                            },
+                            date = state.details.toDate,
+                            time = state.details.toTime
+                        )
+                    }
 
                     ReminderButton(
                         isEditable = state.isEditable,

@@ -27,7 +27,9 @@ fun DateTimeSelector(
     modifier: Modifier = Modifier,
     isEditable: Boolean = false,
     onSelectDateClicked: () -> Unit,
-    onSelectTimeClicked: () -> Unit
+    onSelectTimeClicked: () -> Unit,
+    date: LocalDate,
+    time: LocalTime
 ){
     val colors = LocalExtendedColors.current
 
@@ -60,7 +62,7 @@ fun DateTimeSelector(
         ) {
             PickerButton(
                 modifier = Modifier.width(120.dp),
-                textContent = LocalTime.now().format(
+                textContent = time.format(
                     DateTimeFormatter.ofPattern("hh:mm")
                 ).toString(),
                 isEditable = isEditable,
@@ -71,7 +73,7 @@ fun DateTimeSelector(
 
             PickerButton(
                 modifier = Modifier.fillMaxWidth(),
-                textContent = LocalDate.now().format(
+                textContent = date.format(
                     DateTimeFormatter.ofPattern("MMM dd, yyyy")
                 ).toString(),
                 isEditable = isEditable,
@@ -90,7 +92,9 @@ fun DateTimeSelectorPreview(){
         DateTimeSelector(
             isEditable = true,
             onSelectDateClicked = {},
-            onSelectTimeClicked = {}
+            onSelectTimeClicked = {},
+            date = LocalDate.now(),
+            time = LocalTime.now()
         )
     }
 }

@@ -45,13 +45,47 @@ class AgendaDetailViewModel @Inject constructor(
             }
 
             is AgendaDetailScreenAction.OnFromTimeChanged -> {
-                println("From Time Changed ${action.time}")
                 _state.update {
                     it.copy(
                         fromTime = action.time
                     )
                 }
-                println("From Time Changed ${_state.value.fromTime}")
+            }
+
+            is AgendaDetailScreenAction.OnChangeToDateDialogVisibility -> {
+                _state.update {
+                    it.copy(
+                        isToDateDialogVisible = !it.isToDateDialogVisible
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnChangeToTimeDialogVisibility -> {
+                _state.update {
+                    it.copy(
+                        isToTimeDialogVisible = !it.isToTimeDialogVisible
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnToDateChanged -> {
+                _state.update {
+                    it.copy(
+                        details = (it.details as AgendaItemDetails.Event).copy(
+                            toDate = action.date
+                        )
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnToTimeChanged -> {
+                _state.update {
+                    it.copy(
+                        details = (it.details as AgendaItemDetails.Event).copy(
+                            toTime = action.time
+                        )
+                    )
+                }
             }
 
             is AgendaDetailScreenAction.OnReminderTypeChanged -> {
