@@ -45,6 +45,7 @@ fun AddAgendaItemButton(
                 isContextMenuVisible = false
             },
             dropDownMenuItems = dropDownMenuItems,
+            offsetY = (-10).dp
         )
 
         Icon(

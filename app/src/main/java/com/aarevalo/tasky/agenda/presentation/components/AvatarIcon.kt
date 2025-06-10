@@ -22,8 +22,6 @@ import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.TaskyDropDownMenu
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
-private const val EXTRA_OFFSET_DROPDOWN_MENU = 30
-
 @Composable
 fun AvatarIcon(
     modifier: Modifier = Modifier,
@@ -52,7 +50,7 @@ fun AvatarIcon(
             onDismissRequest = {
                 isContextMenuVisible = false
             },
-            extraOffset = EXTRA_OFFSET_DROPDOWN_MENU,
+            offsetY = 10.dp,
             textColor = MaterialTheme.colorScheme.error,
         )
 

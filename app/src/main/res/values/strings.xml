@@ -60,4 +60,6 @@
     <string name="time_picker_title">Select %s time</string>
     <string name="time_picker_start">start</string>
     <string name="reminder_type">%s before</string>
+    <string name="delete_item_confirmation_title">Delete %s?</string>
+    <string name="delete_item_confirmation_description">This action cannot be reversed</string>
 </resources>

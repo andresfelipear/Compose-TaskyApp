@@ -158,7 +158,6 @@ fun AgendaItemComponent(
                     onDismissRequest = {
                         isContextMenuVisible = false
                     },
-                    extraOffset = 20
                 )
 
                 Icon(

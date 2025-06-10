@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.auth.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,19 +26,22 @@ fun TaskyActionButton(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     isLoading: Boolean = false,
-    textStyle: TextStyle = MaterialTheme.typography.labelMedium
+    textStyle: TextStyle = MaterialTheme.typography.labelMedium,
+    colors: ButtonColors = ButtonColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        disabledContainerColor = LocalExtendedColors.current.onSurfaceVariant70,
+        disabledContentColor = MaterialTheme.colorScheme.primary,
+    ),
+    border: BorderStroke? = null
 ) {
     Button(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         enabled = isEnabled,
-        colors = ButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = LocalExtendedColors.current.onSurfaceVariant70,
-            disabledContentColor = MaterialTheme.colorScheme.primary,
-        ),
-        shape = RoundedCornerShape(38.dp)
+        colors = colors,
+        shape = RoundedCornerShape(38.dp),
+        border = border
     ) {
         when {
             isLoading -> {
@@ -50,9 +54,8 @@ fun TaskyActionButton(
             else -> {
                 Text(
                     text = text,
-                    style =textStyle.copy(textAlign = TextAlign.Center),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = modifier
+                    style = textStyle.copy(textAlign = TextAlign.Center),
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = LocalSpacing.current.spaceMedium),
                 )
@@ -67,6 +70,6 @@ fun TaskyActionButton(
 @Composable
 fun TaskyActionButtonPreview() {
     TaskyTheme {
-        TaskyActionButton(text = "GET STARTED", onClick = {}, isLoading = true, isEnabled = true)
+        TaskyActionButton(text = "GET STARTED", onClick = {}, isLoading = false, isEnabled = true)
     }
 }

@@ -50,6 +50,7 @@ fun CustomTimePicker(
                     timePickerState.minute
                 )
             )
+            onChangeTimePickerVisibility()
         }
     ){
         TimePicker(

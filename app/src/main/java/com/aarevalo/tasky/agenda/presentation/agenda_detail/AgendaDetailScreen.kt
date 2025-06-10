@@ -46,6 +46,7 @@ import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.CustomTimePicker
 import com.aarevalo.tasky.agenda.presentation.components.DateTimeSelector
+import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemButton
 import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.agenda.presentation.components.ReminderButton
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
@@ -107,6 +108,18 @@ fun AgendaDetailScreen(
         is AgendaItemDetails.Task -> "task"
     }
 
+    DeleteAgendaItemButton(
+        showConfirmationDialog = state.isConfirmingToDeleteItem,
+        onDismissConfirmationDialog = {
+            onAction(AgendaDetailScreenAction.OnChangeDeleteDialogVisibility)
+        },
+        onConfirmDeleteAgendaItem = {
+            onAction(AgendaDetailScreenAction.OnDeleteItem)
+        },
+        elementName = type,
+        isDeletingItem = state.isDeletingItem
+    )
+
     Scaffold(
         snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
         topBar = {
@@ -165,12 +178,11 @@ fun AgendaDetailScreen(
                     horizontal = spacing.spaceMedium,
                     vertical = spacing.spaceLarge
                 ),
-            verticalArrangement = Arrangement.SpaceBetween
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
@@ -301,7 +313,8 @@ fun AgendaDetailScreen(
                                         onAction(AgendaDetailScreenAction.OnReminderTypeChanged(reminderType))
                                     }
                                 )
-                            }
+                            },
+                        reminderType = state.reminderType
                     )
                 }
             }
@@ -327,7 +340,7 @@ fun AgendaDetailScreen(
                         top = 16.dp,
                     )
                     .clickable {
-                        /* TODO */
+                        onAction(AgendaDetailScreenAction.OnChangeDeleteDialogVisibility)
                     },
                 text = stringResource(id = R.string.delete_item, type).uppercase(),
                 style = MaterialTheme.typography.labelSmall,

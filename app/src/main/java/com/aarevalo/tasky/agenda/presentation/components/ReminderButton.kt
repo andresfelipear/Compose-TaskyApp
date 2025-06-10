@@ -1,6 +1,7 @@
 package com.aarevalo.tasky.agenda.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,8 +31,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.TaskyDropDownMenu
+import com.aarevalo.tasky.core.util.toHumanReadableString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
@@ -39,7 +42,8 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 fun ReminderButton(
     modifier: Modifier = Modifier,
     isEditable: Boolean = false,
-    dropDownMenuItems: List<TaskyDropDownMenuItem>
+    dropDownMenuItems: List<TaskyDropDownMenuItem>,
+    reminderType: ReminderType
 ){
     val colors = LocalExtendedColors.current
 
@@ -47,77 +51,82 @@ fun ReminderButton(
         mutableStateOf(false)
     }
 
-    Button(
-        onClick = {
-            if(isEditable){
-                isContextMenuVisible = true
-            }
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .drawBehind {
-                drawLine(
-                    color = colors.surfaceHigher,
-                    start = Offset(0f, size.height),
-                    end = Offset(size.width, size.height),
-                    strokeWidth = 1.dp.toPx()
-                )
+    Box(
+        modifier = modifier.fillMaxWidth()
+    ){
+        Button(
+            onClick = {
+                if(isEditable){
+                    isContextMenuVisible = true
+                }
             },
-        contentPadding = PaddingValues(0.dp),
-        shape = RoundedCornerShape(0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.onPrimary,
-            contentColor = MaterialTheme.colorScheme.primary
-        )
-    ) {
-        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    vertical = 20.dp
-                ),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                modifier = Modifier.size(32.dp),
-                onClick = {
-                    isContextMenuVisible = true
+                .drawBehind {
+                    drawLine(
+                        color = colors.surfaceHigher,
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 1.dp.toPx()
+                    )
                 },
-                enabled = isEditable,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = colors.surfaceHigher,
-                    contentColor = colors.onSurfaceVariant70
-                )
-            ){
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Default.NotificationsNone,
-                    contentDescription = stringResource(id = R.string.reminder),
-                    tint = colors.onSurfaceVariant70
-                )
-            }
-
+            contentPadding = PaddingValues(0.dp),
+            shape = RoundedCornerShape(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onPrimary,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = 20.dp
+                    ),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "30 minutes before",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                if(isEditable){
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(id = R.string.dropdown),
-                        tint = MaterialTheme.colorScheme.primary
+                IconButton(
+                    modifier = Modifier.size(32.dp),
+                    onClick = {
+                        isContextMenuVisible = true
+                    },
+                    enabled = isEditable,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = colors.surfaceHigher,
+                        contentColor = colors.onSurfaceVariant70
                     )
+                ){
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        imageVector = Icons.Default.NotificationsNone,
+                        contentDescription = stringResource(id = R.string.reminder),
+                        tint = colors.onSurfaceVariant70
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.reminder_type, reminderType.duration.toHumanReadableString()),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if(isEditable){
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = stringResource(id = R.string.dropdown),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
+
         TaskyDropDownMenu(
             isContextMenuVisible = isContextMenuVisible,
             onDismissRequest = {
@@ -127,6 +136,7 @@ fun ReminderButton(
         )
     }
 }
+
 
 @Preview(showBackground = true, apiLevel = 34)
 @Composable
@@ -138,7 +148,8 @@ fun ReminderButtonPreview(){
                 TaskyDropDownMenuItem(
                     text = "Item 1",
                 ),
-            )
+            ),
+            reminderType = ReminderType.ONE_HOUR
         )
     }
 }

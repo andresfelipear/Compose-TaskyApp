@@ -27,6 +27,7 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
             }
+
             is AgendaDetailScreenAction.OnFromDateChanged -> {
                 _state.update {
                     it.copy(
@@ -34,6 +35,7 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
             }
+
             is AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility -> {
                 _state.update {
                     it.copy(
@@ -41,17 +43,45 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
             }
+
             is AgendaDetailScreenAction.OnFromTimeChanged -> {
+                println("From Time Changed ${action.time}")
                 _state.update {
                     it.copy(
                         fromTime = action.time
                     )
                 }
+                println("From Time Changed ${_state.value.fromTime}")
             }
+
             is AgendaDetailScreenAction.OnReminderTypeChanged -> {
                 _state.update {
                     it.copy(
                         reminderType = action.reminderType
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnDeleteItem -> {
+                _state.update {
+                    it.copy(
+                        isDeletingItem = true,
+                    )
+                }
+                /** TODO delete item */
+                _state.update {
+                    it.copy(
+                        isConfirmingToDeleteItem = false,
+                        isDeletingItem = false,
+                        isItemDeleted = true
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnChangeDeleteDialogVisibility -> {
+                _state.update {
+                    it.copy(
+                        isConfirmingToDeleteItem = !it.isConfirmingToDeleteItem
                     )
                 }
             }
