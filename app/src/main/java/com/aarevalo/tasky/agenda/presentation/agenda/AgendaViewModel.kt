@@ -65,9 +65,9 @@ class AgendaViewModel @Inject constructor(
                 val selectedDate = action.date
                 _state.update {
                     it.copy(
-                        showDatePicker = false,
                         selectedDate = selectedDate,
-                        relatedDates = getRelatedDates(selectedDate)
+                        relatedDates = getRelatedDates(selectedDate),
+                        showDatePicker = false,
                     )
                 }
             }

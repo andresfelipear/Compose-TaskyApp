@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.auth.presentation.components
+package com.aarevalo.tasky.core.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,7 +32,7 @@ fun TaskyActionButton(
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
         disabledContainerColor = LocalExtendedColors.current.onSurfaceVariant70,
-        disabledContentColor = MaterialTheme.colorScheme.primary,
+        disabledContentColor = MaterialTheme.colorScheme.onPrimary,
     ),
     border: BorderStroke? = null,
     verticalPadding: Dp = LocalSpacing.current.spaceMedium

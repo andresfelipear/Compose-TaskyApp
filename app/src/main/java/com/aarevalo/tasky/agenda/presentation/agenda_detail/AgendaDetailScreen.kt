@@ -46,9 +46,10 @@ import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.CustomTimePicker
 import com.aarevalo.tasky.agenda.presentation.components.DateTimeSelector
-import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemButton
+import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.agenda.presentation.components.ReminderButton
+import com.aarevalo.tasky.agenda.presentation.components.VisitorsSection
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.core.util.toHumanReadableString
@@ -135,7 +136,7 @@ fun AgendaDetailScreen(
         is AgendaItemDetails.Task -> "task"
     }
 
-    DeleteAgendaItemButton(
+    DeleteAgendaItemDialog(
         showConfirmationDialog = state.isConfirmingToDeleteItem,
         onDismissConfirmationDialog = {
             onAction(AgendaDetailScreenAction.OnChangeDeleteDialogVisibility)
@@ -358,6 +359,22 @@ fun AgendaDetailScreen(
                                 )
                             },
                         reminderType = state.reminderType
+                    )
+                }
+
+                if(state.details is AgendaItemDetails.Event){
+                    VisitorsSection(
+                        isEditing = state.isEditable,
+                        eventDetails = state.details,
+                        onFilterTypeChanged = {
+                            onAction(AgendaDetailScreenAction.OnFilterTypeChanged(it))
+                        },
+                        onDeleteAttendee = {
+                            onAction(AgendaDetailScreenAction.OnDeleteAttendee(it))
+                        },
+                        onAddNewAttendee = {
+                            onAction(AgendaDetailScreenAction.OnChangeIsAddingAttendeeVisibility)
+                        }
                     )
                 }
             }

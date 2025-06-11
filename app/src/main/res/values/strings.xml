@@ -68,4 +68,7 @@
     <string name="not_going">Not going</string>
     <string name="delete_attendee">delete attendee</string>
     <string name="add_new_attendee">Add New Attendee</string>
+    <string name="add">add</string>
+    <string name="add_attendee_title">ADD VISITOR</string>
+    <string name="close">Close</string>
 </resources>

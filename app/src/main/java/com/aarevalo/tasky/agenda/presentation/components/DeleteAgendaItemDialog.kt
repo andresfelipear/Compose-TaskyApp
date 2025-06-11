@@ -17,13 +17,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aarevalo.tasky.R
-import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
+import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
-fun DeleteAgendaItemButton(
+fun DeleteAgendaItemDialog(
     modifier: Modifier = Modifier,
     showConfirmationDialog: Boolean,
     onDismissConfirmationDialog: () -> Unit,
@@ -36,6 +36,7 @@ fun DeleteAgendaItemButton(
 
     if(showConfirmationDialog){
         AlertDialog(
+            modifier = modifier,
             onDismissRequest = onDismissConfirmationDialog,
             title = {
                 Column(
@@ -107,7 +108,7 @@ fun DeleteAgendaItemButton(
 @Composable
 fun DeleteAgendaItemButtonPreview(){
     TaskyTheme {
-        DeleteAgendaItemButton(
+        DeleteAgendaItemDialog(
             showConfirmationDialog = true,
             onDismissConfirmationDialog = {},
             onConfirmDeleteAgendaItem = {},

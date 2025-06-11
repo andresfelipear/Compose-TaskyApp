@@ -41,7 +41,6 @@ fun CustomDatePicker(
                 val selectedDateMillis = datePickerState.selectedDateMillis
                 val selectedDate = Instant.ofEpochMilli(selectedDateMillis!!).atZone(ZoneOffset.UTC).toLocalDate()
                 onDateSelected(selectedDate)
-                onChangeDatePickerVisibility()
             }) {
                 Text(text = stringResource(id = android.R.string.ok))
             }

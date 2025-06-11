@@ -1,6 +1,7 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
+import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -16,4 +17,7 @@ sealed interface AgendaDetailScreenAction {
     data object OnChangeToDateDialogVisibility: AgendaDetailScreenAction
     data class OnToTimeChanged(val time: LocalTime): AgendaDetailScreenAction
     data class OnToDateChanged(val date: LocalDate): AgendaDetailScreenAction
+    data class OnFilterTypeChanged(val filterType: VisitorFilterType): AgendaDetailScreenAction
+    data class OnDeleteAttendee(val attendeeId: String): AgendaDetailScreenAction
+    data object OnChangeIsAddingAttendeeVisibility: AgendaDetailScreenAction
 }

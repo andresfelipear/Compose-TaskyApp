@@ -2,7 +2,6 @@ package com.aarevalo.tasky.agenda.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +13,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +27,7 @@ import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
-import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
+import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
