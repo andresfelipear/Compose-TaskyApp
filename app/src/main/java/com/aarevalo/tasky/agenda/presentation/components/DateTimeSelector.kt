@@ -12,10 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.aarevalo.tasky.R
+import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
@@ -29,7 +28,8 @@ fun DateTimeSelector(
     onSelectDateClicked: () -> Unit,
     onSelectTimeClicked: () -> Unit,
     date: LocalDate,
-    time: LocalTime
+    time: LocalTime,
+    title: String
 ){
     val colors = LocalExtendedColors.current
 
@@ -51,8 +51,8 @@ fun DateTimeSelector(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = Modifier.width(32.dp),
-            text = stringResource(id = R.string.date_time_at),
+            modifier = Modifier.width(40.dp),
+            text = title.toTitleCase(),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -72,7 +72,7 @@ fun DateTimeSelector(
             )
 
             PickerButton(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 textContent = date.format(
                     DateTimeFormatter.ofPattern("MMM dd, yyyy")
                 ).toString(),
@@ -94,7 +94,8 @@ fun DateTimeSelectorPreview(){
             onSelectDateClicked = {},
             onSelectTimeClicked = {},
             date = LocalDate.now(),
-            time = LocalTime.now()
+            time = LocalTime.now(),
+            title = "From"
         )
     }
 }

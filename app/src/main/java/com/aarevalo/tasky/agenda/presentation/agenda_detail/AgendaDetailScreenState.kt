@@ -1,6 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
-import androidx.compose.foundation.text.input.TextFieldState
 import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
@@ -12,7 +11,7 @@ import java.time.LocalTime
 private const val TO_TIME_ADDITION_MINUTES = 30L
 
 data class AgendaDetailScreenState(
-    val isEditable: Boolean = true,
+    val isEditable: Boolean = false,
     val reminderType: ReminderType = ReminderType.ONE_HOUR,
     val fromTime: LocalTime = LocalTime.now(),
     val fromDate: LocalDate = LocalDate.now(),
@@ -35,6 +34,7 @@ data class AgendaDetailScreenState(
 )
 
 sealed interface AgendaItemDetails{
+
     data class Event(
         val toTime: LocalTime = LocalTime.now().plusMinutes(TO_TIME_ADDITION_MINUTES),
         val toDate: LocalDate = LocalDate.now(),
@@ -44,9 +44,11 @@ sealed interface AgendaItemDetails{
         val eventCreator: Attendee? = null,
         val isCheckingForAttendeesExistence: Boolean = false,
         val canAddVisitor: Boolean = false,
+        val isAddAttendeeDialogVisible: Boolean = false,
         val isAddingAttendee: Boolean = false,
         val filterType: VisitorFilterType = VisitorFilterType.ALL,
-        val newAttendeeEmail: TextFieldState = TextFieldState(),
+        val newAttendeeEmail: String = "",
+        val isNewAttendeeEmailValid: Boolean = false,
         val localAttendee: Attendee? = null,
         val canEditPhotos: Boolean = false,
         val isAddingPhoto: Boolean = false,
@@ -59,3 +61,12 @@ sealed interface AgendaItemDetails{
 
     data object Reminder: AgendaItemDetails
 }
+
+val AgendaItemDetails.asEventDetails: AgendaItemDetails.Event?
+    get() = this as? AgendaItemDetails.Event
+
+val AgendaItemDetails.asTaskDetails: AgendaItemDetails.Task?
+    get() = this as? AgendaItemDetails.Task
+
+val AgendaItemDetails.asReminderDetails: AgendaItemDetails.Reminder?
+    get() = this as? AgendaItemDetails.Reminder

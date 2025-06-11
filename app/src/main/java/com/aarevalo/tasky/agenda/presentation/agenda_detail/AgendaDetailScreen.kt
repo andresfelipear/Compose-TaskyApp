@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
+import com.aarevalo.tasky.agenda.presentation.components.AddAttendeeDialog
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.CustomTimePicker
 import com.aarevalo.tasky.agenda.presentation.components.DateTimeSelector
@@ -52,6 +54,7 @@ import com.aarevalo.tasky.agenda.presentation.components.ReminderButton
 import com.aarevalo.tasky.agenda.presentation.components.VisitorsSection
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.AppBar
+import com.aarevalo.tasky.core.util.formattedDateToString
 import com.aarevalo.tasky.core.util.toHumanReadableString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
@@ -89,9 +92,10 @@ fun AgendaDetailScreenRoot(
     }
 
     if(state.details is AgendaItemDetails.Event){
+        val details = state.details as AgendaItemDetails.Event
         if(state.isToDateDialogVisible) {
             CustomDatePicker(
-                currentDate = (state.details as AgendaItemDetails.Event).toDate,
+                currentDate = details.toDate,
                 onDateSelected = {
                     viewModel.onAction(AgendaDetailScreenAction.OnToDateChanged(it))
                 },
@@ -103,7 +107,7 @@ fun AgendaDetailScreenRoot(
 
         if(state.isToTimeDialogVisible) {
             CustomTimePicker(
-                currentTime = (state.details as AgendaItemDetails.Event).toTime,
+                currentTime = details.toTime,
                 onTimeSelected = {
                     viewModel.onAction(AgendaDetailScreenAction.OnToTimeChanged(it))
                 },
@@ -112,8 +116,24 @@ fun AgendaDetailScreenRoot(
                 }
             )
         }
-    }
 
+        AddAttendeeDialog(
+            showConfirmationDialog = details.isAddAttendeeDialogVisible,
+            onDismissConfirmationDialog = {
+                viewModel.onAction(AgendaDetailScreenAction.OnChangeIsAddAttendeeDialogVisibility)
+            },
+            onAddAttendee = {
+                viewModel.onAction(AgendaDetailScreenAction.OnAddAttendee(it))
+            },
+            email = details.newAttendeeEmail,
+            onEmailChange = {
+                viewModel.onAction(AgendaDetailScreenAction.OnNewAttendeeEmailChanged(it))
+            },
+            isValidEmail = details.isNewAttendeeEmailValid,
+            isAddingAttendee = details.isAddingAttendee
+        )
+
+    }
 
     AgendaDetailScreen(
         state = state,
@@ -168,26 +188,40 @@ fun AgendaDetailScreen(
                 },
                 contentMiddle = {
                     Text(
-                        text = stringResource(
+                        text =  if(state.isEditable)stringResource(
                             id = R.string.detail_screen_title, type
-                        ).uppercase(),
+                        ).uppercase() else formattedDateToString(state.fromDate).uppercase(),
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = MaterialTheme.colorScheme.onPrimary,
                         ),
                     )
                 },
                 contentEnd = {
-                    Text(
-                        modifier = Modifier.clickable {
-                            /* TODO */
-                        },
-                        text = stringResource(id = R.string.save),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = colors.success,
-                            lineHeight = 12.sp,
-                            letterSpacing = 0.sp
+                    if(state.isEditable){
+                        Text(
+                            modifier = Modifier.clickable {
+                                /* TODO */
+                            },
+                            text = stringResource(id = R.string.save),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = colors.success,
+                                lineHeight = 12.sp,
+                                letterSpacing = 0.sp
+                            )
                         )
-                    )
+                    } else {
+                        Icon(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                onAction(AgendaDetailScreenAction.OnChangeIsEditable)
+                            },
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(id = R.string.edit),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
                 })
         }
     ) { innerPadding ->
@@ -330,7 +364,12 @@ fun AgendaDetailScreen(
                             onAction(AgendaDetailScreenAction.OnChangeFromTimeDialogVisibility)
                         },
                         date = state.fromDate,
-                        time = state.fromTime
+                        time = state.fromTime,
+                        title = if(state.details is AgendaItemDetails.Event){
+                            stringResource(id = R.string.date_time_from)
+                        } else {
+                            stringResource(id = R.string.date_time_at)
+                        }
                     )
 
                     if(state.details is AgendaItemDetails.Event){
@@ -343,7 +382,8 @@ fun AgendaDetailScreen(
                                 onAction(AgendaDetailScreenAction.OnChangeToTimeDialogVisibility)
                             },
                             date = state.details.toDate,
-                            time = state.details.toTime
+                            time = state.details.toTime,
+                            title = stringResource(id = R.string.date_time_to)
                         )
                     }
 
@@ -373,7 +413,7 @@ fun AgendaDetailScreen(
                             onAction(AgendaDetailScreenAction.OnDeleteAttendee(it))
                         },
                         onAddNewAttendee = {
-                            onAction(AgendaDetailScreenAction.OnChangeIsAddingAttendeeVisibility)
+                            onAction(AgendaDetailScreenAction.OnChangeIsAddAttendeeDialogVisibility)
                         }
                     )
                 }
@@ -420,7 +460,8 @@ fun AgendaDetailScreenPreview(){
             state = AgendaDetailScreenState(
                 title = "Event title",
                 description = "Event description",
-                details = AgendaItemDetails.Task()
+                details = AgendaItemDetails.Task(),
+                isEditable = false,
             ),
             onAction = {}
         )

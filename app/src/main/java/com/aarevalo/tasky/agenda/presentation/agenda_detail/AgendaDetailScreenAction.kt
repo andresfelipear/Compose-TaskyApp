@@ -19,5 +19,9 @@ sealed interface AgendaDetailScreenAction {
     data class OnToDateChanged(val date: LocalDate): AgendaDetailScreenAction
     data class OnFilterTypeChanged(val filterType: VisitorFilterType): AgendaDetailScreenAction
     data class OnDeleteAttendee(val attendeeId: String): AgendaDetailScreenAction
-    data object OnChangeIsAddingAttendeeVisibility: AgendaDetailScreenAction
+    data object OnChangeIsAddAttendeeDialogVisibility: AgendaDetailScreenAction
+    data class OnAddAttendee(val email: String): AgendaDetailScreenAction
+    data class OnNewAttendeeEmailChanged(val email: String): AgendaDetailScreenAction
+    data class OnUpdateIsGoingStatus(val isGoing: Boolean): AgendaDetailScreenAction
+    data object OnChangeIsEditable: AgendaDetailScreenAction
 }

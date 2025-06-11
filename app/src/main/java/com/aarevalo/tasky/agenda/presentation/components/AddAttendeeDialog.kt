@@ -37,7 +37,7 @@ fun AddAttendeeDialog(
     email: String,
     onEmailChange: (String) -> Unit,
     isValidEmail: Boolean,
-    isAddingAttendee: Boolean = false,
+    isAddingAttendee: Boolean,
 ){
     val colors = LocalExtendedColors.current
     val spacing = LocalSpacing.current
@@ -118,7 +118,8 @@ fun AddAttendeeDialogPreview(){
             onDismissConfirmationDialog = {},
             email = "",
             onEmailChange = {},
-            isValidEmail = false
+            isValidEmail = false,
+            isAddingAttendee = false,
         )
     }
 }

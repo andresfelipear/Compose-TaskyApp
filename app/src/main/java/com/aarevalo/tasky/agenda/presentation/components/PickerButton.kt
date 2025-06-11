@@ -1,6 +1,7 @@
 package com.aarevalo.tasky.agenda.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -71,13 +72,16 @@ fun PickerButton(
                     textAlign = TextAlign.Center
                 )
 
-                if(isEditable){
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(id = R.string.dropdown),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                Box(
+                    modifier = Modifier.size(20.dp),
+                ){
+                    if(isEditable){
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = stringResource(id = R.string.dropdown),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

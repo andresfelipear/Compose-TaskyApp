@@ -118,40 +118,14 @@ fun VisitorsSection(
         }
 
         if(eventDetails.attendees.isNotEmpty()){
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ){
-                Text(
-                    text = stringResource(id = R.string.going),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    eventDetails.attendees.filter { attendee ->
-                        attendee.isGoing
-                    }.forEach { attendee ->
-                        AttendeeItem(
-                            attendee = attendee,
-                            eventDetails = eventDetails,
-                            isEditing = isEditing,
-                            onDeleteAttendee = onDeleteAttendee
-                        )
-                    }
-                }
-            }
-
-            if(eventDetails.attendees.any { !it.isGoing }){
+            if(eventDetails.filterType == VisitorFilterType.ALL || eventDetails.filterType == VisitorFilterType.GOING){
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ){
                     Text(
-                        text = stringResource(id = R.string.not_going),
+                        text = stringResource(id = R.string.going),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -161,7 +135,7 @@ fun VisitorsSection(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         eventDetails.attendees.filter { attendee ->
-                            !attendee.isGoing
+                            attendee.isGoing
                         }.forEach { attendee ->
                             AttendeeItem(
                                 attendee = attendee,
@@ -169,6 +143,37 @@ fun VisitorsSection(
                                 isEditing = isEditing,
                                 onDeleteAttendee = onDeleteAttendee
                             )
+                        }
+                    }
+                }
+            }
+
+            if(eventDetails.filterType == VisitorFilterType.ALL || eventDetails.filterType == VisitorFilterType.NOT_GOING){
+                if(eventDetails.attendees.any { !it.isGoing }){
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ){
+                        Text(
+                            text = stringResource(id = R.string.not_going),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            eventDetails.attendees.filter { attendee ->
+                                !attendee.isGoing
+                            }.forEach { attendee ->
+                                AttendeeItem(
+                                    attendee = attendee,
+                                    eventDetails = eventDetails,
+                                    isEditing = isEditing,
+                                    onDeleteAttendee = onDeleteAttendee
+                                )
+                            }
                         }
                     }
                 }
@@ -188,19 +193,19 @@ fun VisitorsSectionPreview(){
             eventDetails = AgendaItemDetails.Event(
                 attendees = listOf(
                     Attendee(
-                        id = "1",
+                        userId = "1",
                         fullName = "John Doe",
                         email = "james.monroe@examplepetstore.com",
                         isGoing = true
                     ),
                     Attendee(
-                        id = "2",
+                        userId = "2",
                         fullName = "Jane Doe",
                         email = "john.mckinley@examplepetstore.com",
                         isGoing = false
                     ),
                     Attendee(
-                        id = "3",
+                        userId = "3",
                         fullName = "Andres Arevalo",
                         email = "john.mckinley@examplepetstore.com",
                         isGoing = false
@@ -208,7 +213,7 @@ fun VisitorsSectionPreview(){
                 ),
                 isUserEventCreator = true,
                 eventCreator = Attendee(
-                    id = "1",
+                    userId = "1",
                     fullName = "John Doe",
                     email = "john.mclean@examplepetstore.com",
                     isGoing = true

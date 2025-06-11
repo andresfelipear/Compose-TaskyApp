@@ -2,22 +2,40 @@ package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
+import com.aarevalo.tasky.auth.domain.util.InputValidator
+import com.aarevalo.tasky.core.domain.preferences.SessionStorage
+import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class AgendaDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val sessionStorage: SessionStorage,
+    private val inputValidator: InputValidator
 ): ViewModel() {
 
     private val _state = MutableStateFlow(
         AgendaDetailScreenState()
     )
+    private lateinit var localUserId: String
 
     val state = _state
+        .onStart {
+            loadInitialData()
+        }.stateInWhileSubscribed(
+            scope = viewModelScope,
+            initialValue = _state.value
+        )
 
     private var shouldUpdateItem = false
 
@@ -114,7 +132,7 @@ class AgendaDetailViewModel @Inject constructor(
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
                             attendees = it.details.attendees.filter { attendee ->
-                                attendee.id != action.attendeeId
+                                attendee.userId != action.attendeeId
                             }
                         )
                     )
@@ -130,6 +148,93 @@ class AgendaDetailViewModel @Inject constructor(
                         details = (it.details as AgendaItemDetails.Event).copy(
                             filterType = action.filterType
                         )
+                    )
+                }
+                println("Filter type changed to ${action.filterType}")
+            }
+
+            is AgendaDetailScreenAction.OnNewAttendeeEmailChanged -> {
+                if(state.value.isSavingItem){
+                    return
+                }
+                val validationResult = inputValidator.isValidEmailPattern(action.email)
+                _state.update {
+                    it.copy(
+                        details = (it.details as AgendaItemDetails.Event).copy(
+                            newAttendeeEmail = action.email,
+                            isNewAttendeeEmailValid = validationResult
+                        )
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnAddAttendee -> {
+                viewModelScope.launch {
+                    if(state.value.isSavingItem){
+                        return@launch
+                    }
+                    _state.update {
+                        it.copy(
+                            details = (it.details as AgendaItemDetails.Event).copy(
+                                isAddingAttendee = true,
+                                isCheckingForAttendeesExistence = true
+                            )
+                        )
+                    }
+                    /* TODO fetch attendee fullName from api - simulate behavior*/
+                    delay(timeMillis = 1000)
+                    val attendee = Attendee(
+                        userId = UUID.randomUUID().toString(),
+                        fullName = "Test Name",
+                        email = action.email,
+                        isGoing = true
+                    )
+
+                    shouldUpdateItem = true
+                    _state.update {
+                        it.copy(
+                            details = (it.details as AgendaItemDetails.Event).copy(
+                                attendees = it.details.attendees + attendee,
+                                newAttendeeEmail = "",
+                                isAddingAttendee = false,
+                                isCheckingForAttendeesExistence = false,
+                                isAddAttendeeDialogVisible = false
+                            )
+                        )
+                    }
+                }
+            }
+
+            is AgendaDetailScreenAction.OnUpdateIsGoingStatus -> {
+                if(action.isGoing == _state.value.details.asEventDetails?.localAttendee?.isGoing){
+                    return
+                }
+                shouldUpdateItem = true
+                _state.update {
+                    val newAttendees = (it.details as AgendaItemDetails.Event).attendees.map {  attendee ->
+                        if(attendee.userId == localUserId){
+                            attendee.copy(
+                                isGoing = action.isGoing
+                            )
+                        } else {
+                            attendee
+                        }
+                    }
+                    it.copy(
+                        details = it.details.copy(
+                            attendees = newAttendees,
+                            localAttendee = newAttendees.find { attendee ->
+                                attendee.userId == localUserId
+                            }
+                        )
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnChangeIsEditable -> {
+                _state.update {
+                    it.copy(
+                        isEditable = !it.isEditable
                     )
                 }
             }
@@ -174,15 +279,24 @@ class AgendaDetailViewModel @Inject constructor(
                 }
             }
 
-            is AgendaDetailScreenAction.OnChangeIsAddingAttendeeVisibility -> {
+            is AgendaDetailScreenAction.OnChangeIsAddAttendeeDialogVisibility -> {
                 _state.update {
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
-                            isAddingAttendee = !it.details.isAddingAttendee
+                            isAddAttendeeDialogVisible = !it.details.isAddAttendeeDialogVisible
                         )
                     )
                 }
             }
         }
     }
+
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            val session = sessionStorage.getSession()
+            localUserId = session?.userId!!
+        }
+    }
 }
+
+

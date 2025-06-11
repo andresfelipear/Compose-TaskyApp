@@ -82,7 +82,8 @@ fun DeleteAgendaItemDialog(
                         border = BorderStroke(
                             width = 1.dp,
                             color = colors.onSurfaceVariant70
-                        )
+                        ),
+                        verticalPadding = 8.dp
                     )
 
                     TaskyActionButton(
@@ -95,7 +96,8 @@ fun DeleteAgendaItemDialog(
                             contentColor = MaterialTheme.colorScheme.onError,
                             disabledContainerColor = colors.onSurfaceVariant70,
                             disabledContentColor = MaterialTheme.colorScheme.primary,
-                        )
+                        ),
+                        verticalPadding = 8.dp
                     )
                 }
             },

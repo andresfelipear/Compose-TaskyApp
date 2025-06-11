@@ -71,4 +71,6 @@
     <string name="add">add</string>
     <string name="add_attendee_title">ADD VISITOR</string>
     <string name="close">Close</string>
+    <string name="date_time_to">To</string>
+    <string name="date_time_from">From</string>
 </resources>

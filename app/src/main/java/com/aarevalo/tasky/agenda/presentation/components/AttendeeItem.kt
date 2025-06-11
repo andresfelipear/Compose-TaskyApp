@@ -75,11 +75,11 @@ fun AttendeeItem(
             modifier = Modifier.weight(1f),
             text = attendee.fullName.toTitleCase(),
             style = typography.headlineExtraSmall,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.primary
         )
 
         if(eventDetails.isUserEventCreator) {
-            if(attendee.id == eventDetails.eventCreator?.id){
+            if(attendee.userId == eventDetails.eventCreator?.userId){
                 Text(
                     text = stringResource(id = R.string.creator).uppercase(),
                     style = typography.labelExtraSmall,
@@ -90,7 +90,7 @@ fun AttendeeItem(
                     IconButton(
                         modifier = Modifier.size(20.dp),
                         onClick = {
-                            onDeleteAttendee(attendee.id)
+                            onDeleteAttendee(attendee.userId)
                         }
                     ) {
                         Icon(
@@ -111,7 +111,7 @@ fun AttendeeItemPreview(){
     TaskyTheme {
         AttendeeItem(
             attendee = Attendee(
-                id = "1",
+                userId = "1",
                 fullName = "Andres Arevalo",
                 email = "john.c.breckinridge@altostrat.com",
                 isGoing = true
@@ -119,7 +119,7 @@ fun AttendeeItemPreview(){
             eventDetails = AgendaItemDetails.Event(
                 isUserEventCreator = true,
                 eventCreator = Attendee(
-                    id = "3",
+                    userId = "3",
                     fullName = "John Doe",
                     email = "robert.cooper.grier@examplepetstore.com",
                     isGoing = true
