@@ -28,8 +28,10 @@ import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
+import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
+import java.time.LocalDateTime
 
 @Composable
 fun VisitorsSection(
@@ -110,7 +112,7 @@ fun VisitorsSection(
                         .weight(1f),
                     onClick = { onFilterTypeChanged(filter) },
                     colors = buttonColors,
-                    text = filter.toHumanReadableString(),
+                    text = filter.asUiText().toString(),
                     textStyle = MaterialTheme.typography.labelSmall,
                     verticalPadding = 5.dp,
                 )
@@ -196,19 +198,22 @@ fun VisitorsSectionPreview(){
                         userId = "1",
                         fullName = "John Doe",
                         email = "james.monroe@examplepetstore.com",
-                        isGoing = true
+                        isGoing = true,
+                        reminderAt = LocalDateTime.now()
                     ),
                     Attendee(
                         userId = "2",
                         fullName = "Jane Doe",
                         email = "john.mckinley@examplepetstore.com",
-                        isGoing = false
+                        isGoing = false,
+                        reminderAt = LocalDateTime.now()
                     ),
                     Attendee(
                         userId = "3",
                         fullName = "Andres Arevalo",
                         email = "john.mckinley@examplepetstore.com",
-                        isGoing = false
+                        isGoing = false,
+                        reminderAt = LocalDateTime.now()
                     ),
                 ),
                 isUserEventCreator = true,
@@ -216,7 +221,8 @@ fun VisitorsSectionPreview(){
                     userId = "1",
                     fullName = "John Doe",
                     email = "john.mclean@examplepetstore.com",
-                    isGoing = true
+                    isGoing = true,
+                    reminderAt = LocalDateTime.now()
                 ),
                 filterType = VisitorFilterType.ALL,
             ),

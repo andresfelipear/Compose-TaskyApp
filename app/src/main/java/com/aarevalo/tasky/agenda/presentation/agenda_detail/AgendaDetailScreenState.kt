@@ -39,6 +39,7 @@ sealed interface AgendaItemDetails{
         val toTime: LocalTime = LocalTime.now().plusMinutes(TO_TIME_ADDITION_MINUTES),
         val toDate: LocalDate = LocalDate.now(),
         val photos: List<EventPhoto> = emptyList(),
+        val attendeesState: AttendeesState = AttendeesState(),
         val attendees: List<Attendee> = emptyList(),
         val isUserEventCreator: Boolean = false,
         val eventCreator: Attendee? = null,

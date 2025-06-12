@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
 
@@ -37,14 +38,12 @@ class AgendaDetailViewModel @Inject constructor(
             initialValue = _state.value
         )
 
-    private var shouldUpdateItem = false
 
     private val deletedRemotePhotos = MutableStateFlow<List<EventPhoto.Remote>>(emptyList())
 
     fun onAction(action: AgendaDetailScreenAction){
         when(action){
             is AgendaDetailScreenAction.OnFromDateChanged -> {
-                shouldUpdateItem = true
                 _state.update {
                     it.copy(
                         fromDate = action.date,
@@ -58,7 +57,6 @@ class AgendaDetailViewModel @Inject constructor(
 
 
             is AgendaDetailScreenAction.OnFromTimeChanged -> {
-                shouldUpdateItem = true
                 _state.update {
                     it.copy(
                         fromTime = action.time,
@@ -72,7 +70,6 @@ class AgendaDetailViewModel @Inject constructor(
 
 
             is AgendaDetailScreenAction.OnToDateChanged -> {
-                shouldUpdateItem = true
                 _state.update {
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
@@ -85,7 +82,6 @@ class AgendaDetailViewModel @Inject constructor(
             }
 
             is AgendaDetailScreenAction.OnToTimeChanged -> {
-                shouldUpdateItem = true
                 _state.update {
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
@@ -98,7 +94,6 @@ class AgendaDetailViewModel @Inject constructor(
             }
 
             is AgendaDetailScreenAction.OnReminderTypeChanged -> {
-                shouldUpdateItem = true
                 _state.update {
                     it.copy(
                         reminderType = action.reminderType
@@ -127,7 +122,6 @@ class AgendaDetailViewModel @Inject constructor(
                 if(state.value.isSavingItem){
                     return
                 }
-                shouldUpdateItem = true
                 _state.update{
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
@@ -187,10 +181,9 @@ class AgendaDetailViewModel @Inject constructor(
                         userId = UUID.randomUUID().toString(),
                         fullName = "Test Name",
                         email = action.email,
-                        isGoing = true
+                        isGoing = true,
+                        reminderAt = LocalDateTime.now()
                     )
-
-                    shouldUpdateItem = true
                     _state.update {
                         it.copy(
                             details = (it.details as AgendaItemDetails.Event).copy(
@@ -209,7 +202,6 @@ class AgendaDetailViewModel @Inject constructor(
                 if(action.isGoing == _state.value.details.asEventDetails?.localAttendee?.isGoing){
                     return
                 }
-                shouldUpdateItem = true
                 _state.update {
                     val newAttendees = (it.details as AgendaItemDetails.Event).attendees.map {  attendee ->
                         if(attendee.userId == localUserId){

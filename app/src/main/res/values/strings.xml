@@ -73,4 +73,12 @@
     <string name="close">Close</string>
     <string name="date_time_to">To</string>
     <string name="date_time_from">From</string>
+    <string name="all">All</string>
+    <string name="one_day">one day</string>
+    <string name="days">%s days</string>
+    <string name="one_hour">1 hour</string>
+    <string name="hours">%s hours</string>
+    <string name="one_minute">1 minute</string>
+    <string name="minutes">%s minutes</string>
+    <string name="not_a_whole">%s</string>
 </resources>
