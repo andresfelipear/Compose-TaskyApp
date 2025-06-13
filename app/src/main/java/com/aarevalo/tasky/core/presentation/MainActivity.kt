@@ -15,6 +15,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenRoute
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaDetailScreenRoot
 import com.aarevalo.tasky.agenda.presentation.edit_text.EditTextScreenRoot
 import com.aarevalo.tasky.agenda.presentation.photo_preview.PhotoPreviewScreenRoot
 import com.aarevalo.tasky.auth.presentation.login.LoginScreenRoot
@@ -70,17 +71,21 @@ fun TaskyRoot(
                     }
                 }
 
-                navigation<Destination.Graph.AgendaGraph>(startDestination = Destination.Route.AgendaRoute) {
+                navigation<Destination.Graph.AgendaGraph>(startDestination = Destination.Route.AgendaDetailRoute) {
                     composable<Destination.Route.AgendaRoute> {
                         AgendaScreenRoute(
                             navController = navController
                         )
                     }
 
-                    composable<Destination.Route.EditTextRoute> { backStackEntry ->
-                        val editTextRoute = backStackEntry.toRoute<Destination.Route.EditTextRoute>()
+                    composable<Destination.Route.AgendaDetailRoute> {
+                        AgendaDetailScreenRoot(
+                            navController = navController
+                        )
+                    }
+
+                    composable<Destination.Route.EditTextRoute> {
                         EditTextScreenRoot(
-                            route = editTextRoute,
                             navController = navController
                         )
                     }

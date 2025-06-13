@@ -4,14 +4,17 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,24 +24,30 @@ fun CustomDatePicker(
         titleContentColor = MaterialTheme.colorScheme.primary,
         headlineContentColor = MaterialTheme.colorScheme.primary,
     ),
-    onDateSelectedCalendar: () -> Unit,
-    onShowDatePicker: (Boolean) -> Unit,
-    datePickerState: DatePickerState,
+    onDateSelected: (LocalDate) -> Unit,
+    onChangeDatePickerVisibility: () -> Unit,
+    currentDate: LocalDate
 ){
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = currentDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    )
+
     DatePickerDialog(
         onDismissRequest = {
-            onShowDatePicker(false)
+            onChangeDatePickerVisibility()
         },
         confirmButton = {
             TextButton(onClick = {
-                onDateSelectedCalendar()
+                val selectedDateMillis = datePickerState.selectedDateMillis
+                val selectedDate = Instant.ofEpochMilli(selectedDateMillis!!).atZone(ZoneOffset.UTC).toLocalDate()
+                onDateSelected(selectedDate)
             }) {
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = {
-                onShowDatePicker(false)
+                onChangeDatePickerVisibility()
             }) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }

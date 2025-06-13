@@ -4,7 +4,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.R
-import com.aarevalo.tasky.auth.domain.model.User
 import com.aarevalo.tasky.auth.domain.repository.AuthenticationRepository
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import com.aarevalo.tasky.core.domain.util.DataError

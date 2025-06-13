@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.auth.presentation.components
+package com.aarevalo.tasky.core.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

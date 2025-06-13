@@ -20,6 +20,13 @@ fun formattedDateTimeToString(
     return "${shortDate}, $shortTime"
 }
 
+fun formattedDateToString(
+    date: LocalDate
+): String {
+    val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+    return date.format(formatter)
+}
+
 fun formattedFromToDateTimeToString(
     dateFrom: LocalDate,
     timeFrom: LocalTime,

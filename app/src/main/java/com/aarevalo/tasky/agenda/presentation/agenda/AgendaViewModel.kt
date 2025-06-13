@@ -1,6 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.repository.AgendaRepository
@@ -18,12 +17,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import javax.inject.Inject
 
-@OptIn(ExperimentalMaterial3Api::class)
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
     private val sessionStorage: SessionStorage,
@@ -54,28 +50,24 @@ class AgendaViewModel @Inject constructor(
                     currentState.copy(
                         selectedDate = action.date,
                         relatedDates = getRelatedDates(action.date),
-                        datePickerState = currentState.datePickerState.apply {
-                            selectedDateMillis = action.date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-                        }
                     )
                 }
             }
 
-            is AgendaScreenAction.OnShowDatePicker -> {
+            is AgendaScreenAction.OnChangeDatePickerVisibility -> {
                 _state.update {
                     it.copy(
-                        showDatePicker = action.showDatePicker
+                        showDatePicker = !it.showDatePicker
                     )
                 }
             }
             is AgendaScreenAction.OnDateSelectedCalendar -> {
+                val selectedDate = action.date
                 _state.update {
-                    val selectedDateMillis = it.datePickerState.selectedDateMillis
-                    val selectedDate = Instant.ofEpochMilli(selectedDateMillis!!).atZone(ZoneOffset.UTC).toLocalDate()
                     it.copy(
-                        showDatePicker = false,
                         selectedDate = selectedDate,
-                        relatedDates = getRelatedDates(selectedDate)
+                        relatedDates = getRelatedDates(selectedDate),
+                        showDatePicker = false,
                     )
                 }
             }

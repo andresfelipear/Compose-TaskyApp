@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
-import com.aarevalo.tasky.auth.presentation.components.TaskyActionButton
-import com.aarevalo.tasky.auth.presentation.components.TaskyInputTextField
+import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
+import com.aarevalo.tasky.core.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.core.navigation.Destination
