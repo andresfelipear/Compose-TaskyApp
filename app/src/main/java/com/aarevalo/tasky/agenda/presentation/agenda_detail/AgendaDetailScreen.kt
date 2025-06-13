@@ -125,12 +125,12 @@ fun AgendaDetailScreenRoot(
             onAddAttendee = {
                 viewModel.onAction(AgendaDetailScreenAction.OnAddAttendee(it))
             },
-            email = details.attendeesState.email,
+            email = state.attendeesState.email,
             onEmailChange = {
                 viewModel.onAction(AgendaDetailScreenAction.OnNewAttendeeEmailChanged(it))
             },
-            isValidEmail = details.attendeesState.isEmailValid,
-            isAddingAttendee = details.attendeesState.isAdding,
+            isValidEmail = state.attendeesState.isEmailValid,
+            isAddingAttendee = state.attendeesState.isAdding,
         )
 
     }
@@ -414,7 +414,8 @@ fun AgendaDetailScreen(
                         },
                         onAddNewAttendee = {
                             onAction(AgendaDetailScreenAction.OnChangeIsAddAttendeeDialogVisibility)
-                        }
+                        },
+                        attendeesState = state.attendeesState
                     )
                 }
             }

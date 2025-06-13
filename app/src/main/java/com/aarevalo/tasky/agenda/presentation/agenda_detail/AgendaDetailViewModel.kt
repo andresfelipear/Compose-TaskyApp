@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -32,7 +34,6 @@ class AgendaDetailViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         AgendaDetailScreenState()
     )
-    private lateinit var localUserId: String
 
     val state = _state
         .onStart {
@@ -144,10 +145,8 @@ class AgendaDetailViewModel @Inject constructor(
                 }
                 _state.update {
                     it.copy(
-                        details = (it.details as AgendaItemDetails.Event).copy(
-                            attendeesState = it.details.attendeesState.copy(
-                                selectedFilter = action.filterType
-                            )
+                        attendeesState = it.attendeesState.copy(
+                            selectedFilter = action.filterType
                         )
                     )
                 }
@@ -160,11 +159,9 @@ class AgendaDetailViewModel @Inject constructor(
                 val validationResult = inputValidator.isValidEmailPattern(action.email)
                 _state.update {
                     it.copy(
-                        details = (it.details as AgendaItemDetails.Event).copy(
-                            attendeesState = it.details.attendeesState.copy(
-                                email = action.email,
-                                isEmailValid = validationResult
-                            )
+                        attendeesState = it.attendeesState.copy(
+                            email = action.email,
+                            isEmailValid = validationResult
                         )
                     )
                 }
@@ -177,10 +174,8 @@ class AgendaDetailViewModel @Inject constructor(
                     }
                     _state.update {
                         it.copy(
-                            details = (it.details as AgendaItemDetails.Event).copy(
-                                attendeesState = it.details.attendeesState.copy(
-                                    isAdding = true
-                                )
+                            attendeesState = it.attendeesState.copy(
+                                isAdding = true
                             )
                         )
                     }
@@ -198,10 +193,10 @@ class AgendaDetailViewModel @Inject constructor(
                             details = (it.details as AgendaItemDetails.Event).copy(
                                 attendees = it.details.attendees + attendee,
                                 isAddAttendeeDialogVisible = false,
-                                attendeesState = it.details.attendeesState.copy(
-                                    isAdding = false,
-                                    email = ""
-                                )
+                            ),
+                            attendeesState = it.attendeesState.copy(
+                                isAdding = false,
+                                email = ""
                             )
                         )
                     }
@@ -212,24 +207,8 @@ class AgendaDetailViewModel @Inject constructor(
                 if(action.isGoing == _state.value.details.asEventDetails?.localAttendee?.isGoing){
                     return
                 }
-                _state.update {
-                    val newAttendees = (it.details as AgendaItemDetails.Event).attendees.map {  attendee ->
-                        if(attendee.userId == localUserId){
-                            attendee.copy(
-                                isGoing = action.isGoing
-                            )
-                        } else {
-                            attendee
-                        }
-                    }
-                    it.copy(
-                        details = it.details.copy(
-                            attendees = newAttendees,
-                            localAttendee = newAttendees.find { attendee ->
-                                attendee.userId == localUserId
-                            }
-                        )
-                    )
+                viewModelScope.launch {
+                    toggleAttendeeGoingState(action.isGoing)
                 }
             }
 
@@ -294,39 +273,58 @@ class AgendaDetailViewModel @Inject constructor(
     }
 
     private fun loadInitialData() {
-        viewModelScope.launch {
-            val session = sessionStorage.getSession()
-            /* TODO handle null userId */
-            localUserId = session?.userId!!
-        }
     }
 
     private fun observeAttendeeChanges(){
         viewModelScope.launch {
+
             _state
                 .mapNotNull { it.details.asEventDetails?.attendees }
                 .distinctUntilChanged()
                 .onEach { attendees ->
-                    val goingAttendees = attendees.filter { it.isGoing }
-                    val notGoingAttendees = attendees.filter { !it.isGoing }
-                    _state.update { currentState ->
-                        val currentDetails = currentState.details.asEventDetails
-                        if(currentDetails != null){
-                            currentState.copy(
-                                details = currentDetails.copy(
-                                    attendeesState = currentDetails.attendeesState.copy(
-                                        going = goingAttendees,
-                                        notGoing = notGoingAttendees
-                                    )
-                                )
+                    val (going, notGoing) = attendees.partition { it.isGoing }
+                    val userId = sessionStorage.getSession()?.userId
+                    requireNotNull(userId) { "User Id cannot be null when viewing agenda item"}
+
+                    _state.update {
+                        it.copy(
+                            attendeesState = it.attendeesState.copy(
+                                going = going,
+                                notGoing = notGoing,
+                                isUserGoing = going.map { attendee -> attendee.userId }.contains(userId)
                             )
-                        } else {
-                            currentState
-                        }
+                        )
                     }
                 }
                 .launchIn(viewModelScope)
         }
+    }
+
+    private suspend fun toggleAttendeeGoingState(isGoing: Boolean){
+        val eventDetails = state.value.details.asEventDetails
+        requireNotNull(eventDetails) { "Joining an event only possible for Events"}
+
+        val userData = sessionStorage.getSession()
+        requireNotNull(userData) { "User data cannot be null when joining an event"}
+
+        val newAttendeesList = eventDetails.attendees.toMutableList().apply {
+            replaceAll{ attendee ->
+                if(attendee.userId == userData.userId) attendee.copy(isGoing = isGoing)
+                else attendee
+            }
+        }.toList()
+
+        _state.update {
+            it.copy(
+                details = eventDetails.copy(
+                    attendees = newAttendeesList
+                ),
+                attendeesState = it.attendeesState.copy(
+                    isUserGoing = newAttendeesList.filter { it.isGoing }.map { it.userId }.contains(userData.userId)
+                )
+            )
+        }
+
     }
 }
 
