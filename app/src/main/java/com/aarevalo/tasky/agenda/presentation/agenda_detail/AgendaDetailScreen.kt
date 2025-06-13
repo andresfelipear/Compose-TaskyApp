@@ -54,8 +54,8 @@ import com.aarevalo.tasky.agenda.presentation.components.ReminderButton
 import com.aarevalo.tasky.agenda.presentation.components.VisitorsSection
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.AppBar
+import com.aarevalo.tasky.core.util.UiText
 import com.aarevalo.tasky.core.util.formattedDateToString
-import com.aarevalo.tasky.core.util.toHumanReadableString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
@@ -125,12 +125,12 @@ fun AgendaDetailScreenRoot(
             onAddAttendee = {
                 viewModel.onAction(AgendaDetailScreenAction.OnAddAttendee(it))
             },
-            email = details.newAttendeeEmail,
+            email = details.attendeesState.email,
             onEmailChange = {
                 viewModel.onAction(AgendaDetailScreenAction.OnNewAttendeeEmailChanged(it))
             },
-            isValidEmail = details.isNewAttendeeEmailValid,
-            isAddingAttendee = details.isAddingAttendee
+            isValidEmail = details.attendeesState.isEmailValid,
+            isAddingAttendee = details.attendeesState.isAdding,
         )
 
     }
@@ -392,7 +392,7 @@ fun AgendaDetailScreen(
                         dropDownMenuItems =
                             ReminderType.entries.map{ reminderType ->
                                 TaskyDropDownMenuItem(
-                                    text = stringResource(R.string.reminder_type, reminderType.duration.toHumanReadableString()),
+                                    text = stringResource(R.string.reminder_type, reminderType.duration.UiText().asString()),
                                     onClick = {
                                         onAction(AgendaDetailScreenAction.OnReminderTypeChanged(reminderType))
                                     }

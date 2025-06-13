@@ -1,6 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
-import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
@@ -43,13 +42,8 @@ sealed interface AgendaItemDetails{
         val attendees: List<Attendee> = emptyList(),
         val isUserEventCreator: Boolean = false,
         val eventCreator: Attendee? = null,
-        val isCheckingForAttendeesExistence: Boolean = false,
         val canAddVisitor: Boolean = false,
         val isAddAttendeeDialogVisible: Boolean = false,
-        val isAddingAttendee: Boolean = false,
-        val filterType: VisitorFilterType = VisitorFilterType.ALL,
-        val newAttendeeEmail: String = "",
-        val isNewAttendeeEmailValid: Boolean = false,
         val localAttendee: Attendee? = null,
         val canEditPhotos: Boolean = false,
         val isAddingPhoto: Boolean = false,

@@ -101,7 +101,7 @@ fun VisitorsSection(
                     disabledContainerColor = colors.onSurfaceVariant70,
                     disabledContentColor = MaterialTheme.colorScheme.onSurface
                 )
-                if(filter == eventDetails.filterType){
+                if(filter == eventDetails.attendeesState.selectedFilter){
                     buttonColors = buttonColors.copy(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -112,7 +112,7 @@ fun VisitorsSection(
                         .weight(1f),
                     onClick = { onFilterTypeChanged(filter) },
                     colors = buttonColors,
-                    text = filter.asUiText().toString(),
+                    text = filter.asUiText().asString(),
                     textStyle = MaterialTheme.typography.labelSmall,
                     verticalPadding = 5.dp,
                 )
@@ -121,7 +121,7 @@ fun VisitorsSection(
 
         if(eventDetails.attendees.isNotEmpty()){
 
-            if(eventDetails.filterType == VisitorFilterType.ALL || eventDetails.filterType == VisitorFilterType.GOING){
+            if(eventDetails.attendeesState.selectedFilter == VisitorFilterType.ALL || eventDetails.attendeesState.selectedFilter == VisitorFilterType.GOING){
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -136,9 +136,7 @@ fun VisitorsSection(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        eventDetails.attendees.filter { attendee ->
-                            attendee.isGoing
-                        }.forEach { attendee ->
+                        eventDetails.attendeesState.going.forEach { attendee ->
                             AttendeeItem(
                                 attendee = attendee,
                                 eventDetails = eventDetails,
@@ -150,8 +148,8 @@ fun VisitorsSection(
                 }
             }
 
-            if(eventDetails.filterType == VisitorFilterType.ALL || eventDetails.filterType == VisitorFilterType.NOT_GOING){
-                if(eventDetails.attendees.any { !it.isGoing }){
+            if(eventDetails.attendeesState.selectedFilter == VisitorFilterType.ALL || eventDetails.attendeesState.selectedFilter == VisitorFilterType.NOT_GOING){
+                if(eventDetails.attendeesState.notGoing.isNotEmpty()){
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -166,9 +164,7 @@ fun VisitorsSection(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            eventDetails.attendees.filter { attendee ->
-                                !attendee.isGoing
-                            }.forEach { attendee ->
+                            eventDetails.attendeesState.notGoing.forEach{ attendee ->
                                 AttendeeItem(
                                     attendee = attendee,
                                     eventDetails = eventDetails,
@@ -224,7 +220,6 @@ fun VisitorsSectionPreview(){
                     isGoing = true,
                     reminderAt = LocalDateTime.now()
                 ),
-                filterType = VisitorFilterType.ALL,
             ),
             onAddNewAttendee = {}
         )

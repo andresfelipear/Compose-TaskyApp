@@ -114,7 +114,7 @@ fun AttendeeItemPreview(){
                 userId = "1",
                 fullName = "Andres Arevalo",
                 email = "john.c.breckinridge@altostrat.com",
-                isGoing = true
+                isGoing = true,
             ),
             eventDetails = AgendaItemDetails.Event(
                 isUserEventCreator = true,

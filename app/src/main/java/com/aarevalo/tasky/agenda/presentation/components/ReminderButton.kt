@@ -34,7 +34,7 @@ import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.presentation.components.TaskyDropDownMenu
-import com.aarevalo.tasky.core.util.toHumanReadableString
+import com.aarevalo.tasky.core.util.UiText
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
@@ -111,7 +111,7 @@ fun ReminderButton(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.reminder_type, reminderType.duration.toHumanReadableString()),
+                        text = stringResource(R.string.reminder_type, reminderType.duration.UiText().asString()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )

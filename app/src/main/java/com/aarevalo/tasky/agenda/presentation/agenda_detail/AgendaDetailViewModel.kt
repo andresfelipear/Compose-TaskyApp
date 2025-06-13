@@ -11,6 +11,10 @@ import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,6 +37,7 @@ class AgendaDetailViewModel @Inject constructor(
     val state = _state
         .onStart {
             loadInitialData()
+            observeAttendeeChanges()
         }.stateInWhileSubscribed(
             scope = viewModelScope,
             initialValue = _state.value
@@ -127,7 +132,7 @@ class AgendaDetailViewModel @Inject constructor(
                         details = (it.details as AgendaItemDetails.Event).copy(
                             attendees = it.details.attendees.filter { attendee ->
                                 attendee.userId != action.attendeeId
-                            }
+                            },
                         )
                     )
                 }
@@ -140,11 +145,12 @@ class AgendaDetailViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
-                            filterType = action.filterType
+                            attendeesState = it.details.attendeesState.copy(
+                                selectedFilter = action.filterType
+                            )
                         )
                     )
                 }
-                println("Filter type changed to ${action.filterType}")
             }
 
             is AgendaDetailScreenAction.OnNewAttendeeEmailChanged -> {
@@ -155,8 +161,10 @@ class AgendaDetailViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         details = (it.details as AgendaItemDetails.Event).copy(
-                            newAttendeeEmail = action.email,
-                            isNewAttendeeEmailValid = validationResult
+                            attendeesState = it.details.attendeesState.copy(
+                                email = action.email,
+                                isEmailValid = validationResult
+                            )
                         )
                     )
                 }
@@ -170,8 +178,9 @@ class AgendaDetailViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             details = (it.details as AgendaItemDetails.Event).copy(
-                                isAddingAttendee = true,
-                                isCheckingForAttendeesExistence = true
+                                attendeesState = it.details.attendeesState.copy(
+                                    isAdding = true
+                                )
                             )
                         )
                     }
@@ -188,10 +197,11 @@ class AgendaDetailViewModel @Inject constructor(
                         it.copy(
                             details = (it.details as AgendaItemDetails.Event).copy(
                                 attendees = it.details.attendees + attendee,
-                                newAttendeeEmail = "",
-                                isAddingAttendee = false,
-                                isCheckingForAttendeesExistence = false,
-                                isAddAttendeeDialogVisible = false
+                                isAddAttendeeDialogVisible = false,
+                                attendeesState = it.details.attendeesState.copy(
+                                    isAdding = false,
+                                    email = ""
+                                )
                             )
                         )
                     }
@@ -286,7 +296,36 @@ class AgendaDetailViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch {
             val session = sessionStorage.getSession()
+            /* TODO handle null userId */
             localUserId = session?.userId!!
+        }
+    }
+
+    private fun observeAttendeeChanges(){
+        viewModelScope.launch {
+            _state
+                .mapNotNull { it.details.asEventDetails?.attendees }
+                .distinctUntilChanged()
+                .onEach { attendees ->
+                    val goingAttendees = attendees.filter { it.isGoing }
+                    val notGoingAttendees = attendees.filter { !it.isGoing }
+                    _state.update { currentState ->
+                        val currentDetails = currentState.details.asEventDetails
+                        if(currentDetails != null){
+                            currentState.copy(
+                                details = currentDetails.copy(
+                                    attendeesState = currentDetails.attendeesState.copy(
+                                        going = goingAttendees,
+                                        notGoing = notGoingAttendees
+                                    )
+                                )
+                            )
+                        } else {
+                            currentState
+                        }
+                    }
+                }
+                .launchIn(viewModelScope)
         }
     }
 }

@@ -7,5 +7,5 @@ data class Attendee(
     val fullName: String,
     val email: String,
     val isGoing: Boolean,
-    val reminderAt: LocalDateTime
+    val reminderAt: LocalDateTime = LocalDateTime.now()
 )
