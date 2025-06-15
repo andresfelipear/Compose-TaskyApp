@@ -55,6 +55,25 @@ sealed interface AgendaItemDetails{
 
 
     data object Reminder: AgendaItemDetails
+
+    companion object {
+        fun fromString(it: String): AgendaItemDetails {
+            return when(it){
+                "Event" -> Event()
+                "Task" -> Task()
+                "Reminder" -> Reminder
+                else -> throw IllegalArgumentException("Invalid agenda item type")
+            }
+        }
+    }
+
+    fun toStringType(): String {
+        return when(this){
+            is Event -> "Event"
+            is Task -> "Task"
+            is Reminder -> "Reminder"
+        }
+    }
 }
 
 val AgendaItemDetails.asEventDetails: AgendaItemDetails.Event?

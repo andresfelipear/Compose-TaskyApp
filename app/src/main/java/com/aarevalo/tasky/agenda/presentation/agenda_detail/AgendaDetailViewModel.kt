@@ -1,14 +1,19 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
+import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
+import com.aarevalo.tasky.core.presentation.util.UiText
 import com.aarevalo.tasky.core.util.stateInWhileSubscribed
+import com.aarevalo.tasky.core.util.toTitleCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -16,8 +21,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
@@ -26,7 +33,8 @@ import javax.inject.Inject
 class AgendaDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val sessionStorage: SessionStorage,
-    private val inputValidator: InputValidator
+    private val inputValidator: InputValidator,
+    private val applicationContext: Application
 ): ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -41,6 +49,9 @@ class AgendaDetailViewModel @Inject constructor(
             scope = viewModelScope,
             initialValue = _state.value
         )
+
+    private val eventChannel = Channel<AgendaDetailScreenEvent>()
+    val event = eventChannel.receiveAsFlow()
 
 
     private val deletedRemotePhotos = MutableStateFlow<List<EventPhoto.Remote>>(emptyList())
@@ -226,6 +237,36 @@ class AgendaDetailViewModel @Inject constructor(
                 }
             }
 
+            is AgendaDetailScreenAction.OnChangeTaskStatus -> {
+                val taskDetails = state.value.details.asTaskDetails
+                requireNotNull(taskDetails) { "Changing task status only possible for Tasks"}
+
+                _state.update {
+                    it.copy(
+                        details = taskDetails.copy(
+                            isDone = !taskDetails.isDone
+                        )
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnSaveChanges -> {
+                _state.update {
+                    it.copy(
+                        isSavingItem = true
+                    )
+                }
+                /* TODO save changes in the api */
+                viewModelScope.launch {
+                    delay(timeMillis = 1000)
+                    _state.update {
+                        it.copy(
+                            isSavingItem = false
+                        )
+                    }
+                }
+            }
+
             is AgendaDetailScreenAction.OnChangeIsEditable -> {
                 _state.update {
                     it.copy(
@@ -289,6 +330,37 @@ class AgendaDetailViewModel @Inject constructor(
     }
 
     private fun loadInitialData() {
+
+        val existingAgendaItemId = savedStateHandle.get<String>("agendaItemId")
+        val agendaItemType = savedStateHandle.get<String>("type")
+            ?: throw IllegalArgumentException("Agenda item type must be provided")
+        val isEditable = savedStateHandle.get<Boolean>("isEditable")?:false
+        val startDate = savedStateHandle.get<String>("startDate")?.let {
+            LocalDate.parse(it)
+        } ?: LocalDate.now()
+
+        println("existingAgendaItemId: $existingAgendaItemId")
+        println("agendaItemType: $agendaItemType")
+        println("isEditable: $isEditable")
+        println("startDate: $startDate")
+
+        if(existingAgendaItemId != null){
+            /* TODO fetch agenda item from api */
+        } else{
+            _state.update {
+                it.copy(
+                    details = AgendaItemDetails.fromString(agendaItemType),
+                    isEditable = isEditable,
+                    fromDate = startDate,
+                    title = UiText.StringResource(id = R.string.new_agenda_item_title, args = arrayOf(agendaItemType)).asString(
+                        applicationContext
+                    ).toTitleCase(),
+                    description = UiText.StringResource(id = R.string.new_agenda_item_description, args = arrayOf(agendaItemType)).asString(
+                        applicationContext
+                    ).toTitleCase()
+                )
+            }
+        }
     }
 
     private fun observeAttendeeChanges(){

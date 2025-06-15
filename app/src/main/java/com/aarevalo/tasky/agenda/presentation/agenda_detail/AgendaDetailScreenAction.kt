@@ -28,4 +28,7 @@ sealed interface AgendaDetailScreenAction {
     data class OnNavigateToEditTextScreen(val type: EditTextFieldType, val text: String): AgendaDetailScreenAction
     data class OnEditTitle(val title: String): AgendaDetailScreenAction
     data class OnEditDescription(val description: String): AgendaDetailScreenAction
+    data object OnChangeTaskStatus: AgendaDetailScreenAction
+    data object OnGoBack: AgendaDetailScreenAction
+    data object OnSaveChanges: AgendaDetailScreenAction
 }

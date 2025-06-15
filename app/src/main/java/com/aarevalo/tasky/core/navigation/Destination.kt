@@ -22,7 +22,12 @@ sealed interface Destination {
         data object AgendaRoute : Route
 
         @Serializable
-        data object AgendaDetailRoute : Route
+        data class AgendaDetailRoute(
+            val agendaItemId: String?,
+            val isEditable: Boolean,
+            val startDate: String,
+            val type: String
+        ) : Route
 
         @Serializable
         data class EditTextRoute(

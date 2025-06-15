@@ -96,7 +96,21 @@ fun AgendaScreenRoute(
 
     AgendaScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = {
+            when(it) {
+                is AgendaScreenAction.OnNavigateToAgendaDetail -> {
+                    navController.navigate(
+                        Destination.Route.AgendaDetailRoute(
+                            it.agendaItemId,
+                            it.isEditable,
+                            it.startDate.toString(),
+                            it.type.toStringType()
+                        )
+                    )
+                }
+                else -> viewModel.onAction(it)
+            }
+        }
     )
 
 }
