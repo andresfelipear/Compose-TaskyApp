@@ -71,7 +71,7 @@ fun TaskyRoot(
                     }
                 }
 
-                navigation<Destination.Graph.AgendaGraph>(startDestination = Destination.Route.AgendaDetailRoute) {
+                navigation<Destination.Graph.AgendaGraph>(startDestination = Destination.Route.AgendaRoute) {
                     composable<Destination.Route.AgendaRoute> {
                         AgendaScreenRoute(
                             navController = navController

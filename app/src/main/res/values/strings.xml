@@ -81,4 +81,7 @@
     <string name="one_minute">1 minute</string>
     <string name="minutes">%s minutes</string>
     <string name="not_a_whole">%s</string>
+    <string name="event_edited_successfully">Event was edited successfully!</string>
+    <string name="new_agenda_item_title">New %s</string>
+    <string name="new_agenda_item_description">%s description</string>
 </resources>

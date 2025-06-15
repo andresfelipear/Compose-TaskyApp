@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.presentation.components
+package com.aarevalo.tasky.agenda.presentation.agenda_detail.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AttendeesState
 import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
@@ -37,6 +38,7 @@ import java.time.LocalDateTime
 fun VisitorsSection(
     modifier: Modifier = Modifier,
     isEditing: Boolean,
+    attendeesState: AttendeesState,
     eventDetails: AgendaItemDetails.Event,
     onFilterTypeChanged: (VisitorFilterType) -> Unit,
     onDeleteAttendee: (String) -> Unit,
@@ -101,7 +103,7 @@ fun VisitorsSection(
                     disabledContainerColor = colors.onSurfaceVariant70,
                     disabledContentColor = MaterialTheme.colorScheme.onSurface
                 )
-                if(filter == eventDetails.attendeesState.selectedFilter){
+                if(filter == attendeesState.selectedFilter){
                     buttonColors = buttonColors.copy(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -121,7 +123,7 @@ fun VisitorsSection(
 
         if(eventDetails.attendees.isNotEmpty()){
 
-            if(eventDetails.attendeesState.selectedFilter == VisitorFilterType.ALL || eventDetails.attendeesState.selectedFilter == VisitorFilterType.GOING){
+            if(attendeesState.selectedFilter == VisitorFilterType.ALL || attendeesState.selectedFilter == VisitorFilterType.GOING){
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -136,7 +138,7 @@ fun VisitorsSection(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        eventDetails.attendeesState.going.forEach { attendee ->
+                        attendeesState.going.forEach { attendee ->
                             AttendeeItem(
                                 attendee = attendee,
                                 eventDetails = eventDetails,
@@ -148,8 +150,8 @@ fun VisitorsSection(
                 }
             }
 
-            if(eventDetails.attendeesState.selectedFilter == VisitorFilterType.ALL || eventDetails.attendeesState.selectedFilter == VisitorFilterType.NOT_GOING){
-                if(eventDetails.attendeesState.notGoing.isNotEmpty()){
+            if(attendeesState.selectedFilter == VisitorFilterType.ALL || attendeesState.selectedFilter == VisitorFilterType.NOT_GOING){
+                if(attendeesState.notGoing.isNotEmpty()){
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -164,7 +166,7 @@ fun VisitorsSection(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            eventDetails.attendeesState.notGoing.forEach{ attendee ->
+                            attendeesState.notGoing.forEach{ attendee ->
                                 AttendeeItem(
                                     attendee = attendee,
                                     eventDetails = eventDetails,
@@ -221,7 +223,8 @@ fun VisitorsSectionPreview(){
                     reminderAt = LocalDateTime.now()
                 ),
             ),
-            onAddNewAttendee = {}
+            onAddNewAttendee = {},
+            attendeesState = AttendeesState()
         )
     }
 }
