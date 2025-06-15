@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
+import com.aarevalo.tasky.agenda.domain.model.EditTextFieldType
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.agenda.domain.model.VisitorFilterType
 import java.time.LocalDate
@@ -24,4 +25,7 @@ sealed interface AgendaDetailScreenAction {
     data class OnNewAttendeeEmailChanged(val email: String): AgendaDetailScreenAction
     data class OnUpdateIsGoingStatus(val isGoing: Boolean): AgendaDetailScreenAction
     data object OnChangeIsEditable: AgendaDetailScreenAction
+    data class OnNavigateToEditTextScreen(val type: EditTextFieldType, val text: String): AgendaDetailScreenAction
+    data class OnEditTitle(val title: String): AgendaDetailScreenAction
+    data class OnEditDescription(val description: String): AgendaDetailScreenAction
 }

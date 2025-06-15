@@ -26,7 +26,7 @@ sealed interface Destination {
 
         @Serializable
         data class EditTextRoute(
-            val title: String,
+            val type: String,
             val text: String
         ) : Route
 

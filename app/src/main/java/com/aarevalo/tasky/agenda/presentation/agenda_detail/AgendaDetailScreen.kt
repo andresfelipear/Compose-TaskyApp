@@ -26,6 +26,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,7 +43,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.domain.model.EditTextFieldType
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.agenda.presentation.components.AddAttendeeDialog
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
@@ -52,7 +55,9 @@ import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.agenda.presentation.components.EventType
 import com.aarevalo.tasky.agenda.presentation.components.ReminderButton
 import com.aarevalo.tasky.agenda.presentation.components.VisitorsSection
+import com.aarevalo.tasky.agenda.presentation.edit_text.EditTextScreenResult
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
+import com.aarevalo.tasky.core.navigation.Destination
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.core.util.UiText
 import com.aarevalo.tasky.core.util.formattedDateToString
@@ -67,6 +72,26 @@ fun AgendaDetailScreenRoot(
     viewModel: AgendaDetailViewModel = hiltViewModel(),
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+
+    val editTextResult: EditTextScreenResult? = backStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow<EditTextScreenResult?>("edit_text_result", null)
+        ?.collectAsStateWithLifecycle()
+        ?.value
+
+    LaunchedEffect(key1 = editTextResult){
+        if(editTextResult != null){
+            when(editTextResult.type){
+                EditTextFieldType.TITLE -> {
+                    viewModel.onAction(AgendaDetailScreenAction.OnEditTitle(editTextResult.value))
+                }
+                EditTextFieldType.DESCRIPTION -> {
+                    viewModel.onAction(AgendaDetailScreenAction.OnEditDescription(editTextResult.value))
+                }
+            }
+        }
+    }
 
     if(state.isFromDateDialogVisible) {
         CustomDatePicker(
@@ -137,7 +162,19 @@ fun AgendaDetailScreenRoot(
 
     AgendaDetailScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = {
+            when(it){
+                is AgendaDetailScreenAction.OnNavigateToEditTextScreen -> {
+                    navController.navigate(Destination.Route.EditTextRoute(
+                        type = it.type.toString(),
+                        text = it.text
+                    ))
+                }
+                else -> {
+                    viewModel.onAction(it)
+                }
+            }
+        }
     )
 }
 
@@ -297,7 +334,10 @@ fun AgendaDetailScreen(
                                 IconButton(
                                     modifier = Modifier.size(20.dp),
                                     onClick = {
-                                        /* TODO */
+                                        onAction(AgendaDetailScreenAction.OnNavigateToEditTextScreen(
+                                            EditTextFieldType.TITLE,
+                                            state.title
+                                        ))
                                     }
                                 ){
                                     Icon(
@@ -343,7 +383,11 @@ fun AgendaDetailScreen(
 
                         if(state.isEditable) {
                             IconButton(modifier = Modifier.size(20.dp),
-                                       onClick = {/* TODO */
+                                       onClick = {
+                                           onAction(AgendaDetailScreenAction.OnNavigateToEditTextScreen(
+                                               EditTextFieldType.DESCRIPTION,
+                                               state.description
+                                           ))
                                        }) {
                                 Icon(
                                     modifier = Modifier.size(20.dp),

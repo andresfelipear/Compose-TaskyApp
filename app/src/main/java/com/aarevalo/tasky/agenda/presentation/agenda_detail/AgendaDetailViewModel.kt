@@ -1,6 +1,5 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -212,6 +210,22 @@ class AgendaDetailViewModel @Inject constructor(
                 }
             }
 
+            is AgendaDetailScreenAction.OnEditTitle -> {
+                _state.update {
+                    it.copy(
+                        title = action.title
+                    )
+                }
+            }
+
+            is AgendaDetailScreenAction.OnEditDescription -> {
+                _state.update {
+                    it.copy(
+                        description = action.description
+                    )
+                }
+            }
+
             is AgendaDetailScreenAction.OnChangeIsEditable -> {
                 _state.update {
                     it.copy(
@@ -269,6 +283,8 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
             }
+
+            else -> Unit
         }
     }
 

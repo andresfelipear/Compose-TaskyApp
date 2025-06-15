@@ -41,10 +41,10 @@ fun EditTextScreenRoot(
                    onAction = { action ->
                        when(action) {
                            is EditTextScreenAction.GoBack -> {
-                               navController.previousBackStackEntry?.savedStateHandle?.set(
-                                   "edit_text_result",
-                                   action.result
-                               )
+                               navController
+                                   .previousBackStackEntry
+                                   ?.savedStateHandle
+                                   ?.set("edit_text_result", action.result)
                                navController.navigateUp()
                            }
                        }
@@ -157,7 +157,7 @@ fun EditTextScreenPreview() {
     TaskyTheme {
         EditTextScreen(
             state = EditTextScreenState(
-                type = EditTextFieldType.TITLE,
+                type = EditTextFieldType.DESCRIPTION,
                 textFieldContent = TextFieldState(
                     initialText = "Text"
                 )
