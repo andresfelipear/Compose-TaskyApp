@@ -264,6 +264,7 @@ class AgendaDetailViewModel @Inject constructor(
                             isSavingItem = false
                         )
                     }
+                    eventChannel.send(AgendaDetailScreenEvent.Success)
                 }
             }
 
