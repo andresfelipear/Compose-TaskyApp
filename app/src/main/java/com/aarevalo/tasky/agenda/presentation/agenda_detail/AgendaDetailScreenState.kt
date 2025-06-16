@@ -29,8 +29,9 @@ data class AgendaDetailScreenState(
     val isFromTimeDialogVisible: Boolean = false,
     val isToDateDialogVisible: Boolean = false,
     val isToTimeDialogVisible: Boolean = false,
-    val details: AgendaItemDetails = AgendaItemDetails.Event()
-)
+    val details: AgendaItemDetails = AgendaItemDetails.Event(),
+    val attendeesState: AttendeesState = AttendeesState(),
+    )
 
 sealed interface AgendaItemDetails{
 
@@ -38,7 +39,6 @@ sealed interface AgendaItemDetails{
         val toTime: LocalTime = LocalTime.now().plusMinutes(TO_TIME_ADDITION_MINUTES),
         val toDate: LocalDate = LocalDate.now(),
         val photos: List<EventPhoto> = emptyList(),
-        val attendeesState: AttendeesState = AttendeesState(),
         val attendees: List<Attendee> = emptyList(),
         val isUserEventCreator: Boolean = false,
         val eventCreator: Attendee? = null,
@@ -55,6 +55,25 @@ sealed interface AgendaItemDetails{
 
 
     data object Reminder: AgendaItemDetails
+
+    companion object {
+        fun fromString(it: String): AgendaItemDetails {
+            return when(it){
+                "Event" -> Event()
+                "Task" -> Task()
+                "Reminder" -> Reminder
+                else -> throw IllegalArgumentException("Invalid agenda item type")
+            }
+        }
+    }
+
+    fun toStringType(): String {
+        return when(this){
+            is Event -> "Event"
+            is Task -> "Task"
+            is Reminder -> "Reminder"
+        }
+    }
 }
 
 val AgendaItemDetails.asEventDetails: AgendaItemDetails.Event?
@@ -65,3 +84,4 @@ val AgendaItemDetails.asTaskDetails: AgendaItemDetails.Task?
 
 val AgendaItemDetails.asReminderDetails: AgendaItemDetails.Reminder?
     get() = this as? AgendaItemDetails.Reminder
+

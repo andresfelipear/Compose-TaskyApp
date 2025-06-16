@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.presentation.components
+package com.aarevalo.tasky.agenda.presentation.agenda_detail.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.aarevalo.tasky.agenda.presentation.components.PickerButton
 import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme

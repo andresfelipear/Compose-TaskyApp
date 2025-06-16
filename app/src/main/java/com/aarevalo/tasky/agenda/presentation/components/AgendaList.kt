@@ -56,9 +56,8 @@ fun AgendaList(
                             text = stringResource(R.string.open),
                             onClick = {
                                 onAction(
-                                    AgendaScreenAction.OnNavigateToAgendaDetail(
+                                    AgendaScreenAction.OnOpenAgendaItemClick(
                                         agendaItemId = agendaItem.id,
-                                        isEditable = false,
                                         type = agendaItem.details
                                     )
                                 )
@@ -68,9 +67,8 @@ fun AgendaList(
                             text = stringResource(R.string.edit),
                             onClick = {
                                 onAction(
-                                    AgendaScreenAction.OnNavigateToAgendaDetail(
+                                    AgendaScreenAction.OnEditAgendaItemClick(
                                         agendaItemId = agendaItem.id,
-                                        isEditable = true,
                                         type = agendaItem.details
                                     )
                                 )
@@ -80,9 +78,8 @@ fun AgendaList(
                             text = stringResource(R.string.delete),
                             onClick = {
                                 onAction(
-                                    AgendaScreenAction.OnNavigateToAgendaDetail(
+                                    AgendaScreenAction.OnDeleteAgendaItem(
                                         agendaItemId = agendaItem.id,
-                                        isEditable = false,
                                         type = agendaItem.details
                                     )
                                 )

@@ -96,7 +96,38 @@ fun AgendaScreenRoute(
 
     AgendaScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = {
+            when(it) {
+                is AgendaScreenAction.OnEditAgendaItemClick -> {
+                    navController.navigate(
+                        Destination.Route.AgendaDetailRoute(
+                            agendaItemId = it.agendaItemId,
+                            isEditable = true,
+                            type = it.type.toStringType()
+                        )
+                    )
+                }
+                is AgendaScreenAction.OnOpenAgendaItemClick -> {
+                    navController.navigate(
+                        Destination.Route.AgendaDetailRoute(
+                            agendaItemId = it.agendaItemId,
+                            isEditable = false,
+                            type = it.type.toStringType()
+                        )
+                    )
+                }
+                is AgendaScreenAction.OnCreateAgendaItemClick -> {
+                    navController.navigate(
+                        Destination.Route.AgendaDetailRoute(
+                            agendaItemId = null,
+                            isEditable = true,
+                            type = it.type.toStringType()
+                        )
+                    )
+                }
+                else -> viewModel.onAction(it)
+            }
+        }
     )
 
 }
@@ -141,10 +172,7 @@ fun AgendaScreen(
                         text = stringResource(id = R.string.add_event),
                         onClick = {
                             onAction(
-                                AgendaScreenAction.OnNavigateToAgendaDetail(
-                                    agendaItemId = null,
-                                    isEditable = true,
-                                    startDate = state.selectedDate,
+                                AgendaScreenAction.OnCreateAgendaItemClick(
                                     type = AgendaItemDetails.Event()
                                 )
                             )
@@ -153,10 +181,7 @@ fun AgendaScreen(
                         text = stringResource(id = R.string.add_task),
                         onClick = {
                             onAction(
-                                AgendaScreenAction.OnNavigateToAgendaDetail(
-                                    agendaItemId = null,
-                                    isEditable = true,
-                                    startDate = state.selectedDate,
+                                AgendaScreenAction.OnCreateAgendaItemClick(
                                     type = AgendaItemDetails.Task()
                                 )
                             )
@@ -165,10 +190,7 @@ fun AgendaScreen(
                         text = stringResource(id = R.string.add_reminder),
                         onClick = {
                             onAction(
-                                AgendaScreenAction.OnNavigateToAgendaDetail(
-                                    agendaItemId = null,
-                                    isEditable = true,
-                                    startDate = state.selectedDate,
+                                AgendaScreenAction.OnCreateAgendaItemClick(
                                     type = AgendaItemDetails.Reminder
                                 )
                             )

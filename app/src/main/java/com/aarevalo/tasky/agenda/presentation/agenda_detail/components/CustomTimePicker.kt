@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.presentation.components
+package com.aarevalo.tasky.agenda.presentation.agenda_detail.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api

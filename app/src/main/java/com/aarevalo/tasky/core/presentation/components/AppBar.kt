@@ -51,7 +51,7 @@ fun AppBar(
             contentStart()
         }
         Box(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(2f),
             contentAlignment = Alignment.Center
         ){
             contentMiddle()
