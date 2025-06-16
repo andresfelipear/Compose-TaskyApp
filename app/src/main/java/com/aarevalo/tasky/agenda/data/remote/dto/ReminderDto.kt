@@ -8,4 +8,5 @@ data class ReminderDto(
     val title: String,
     val description: String,
     val time: Long,
+    val reminderAt: Long,
 )
