@@ -6,11 +6,11 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "events")
 data class EventEntity(
     @PrimaryKey(autoGenerate = false)
-    val id: String,
+    val eventId: String,
     val title: String,
     val description: String,
-    val from: Long,
-    val to: Long,
+    val fromTimestamp: Long,
+    val toTimestamp: Long,
     val reminderAt: Long,
     val host: String,
     val isUserEventCreator: Boolean,
