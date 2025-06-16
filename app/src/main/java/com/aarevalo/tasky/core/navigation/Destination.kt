@@ -25,7 +25,6 @@ sealed interface Destination {
         data class AgendaDetailRoute(
             val agendaItemId: String?,
             val isEditable: Boolean,
-            val startDate: String,
             val type: String
         ) : Route
 

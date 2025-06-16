@@ -58,7 +58,6 @@ import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.EventType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.ReminderButton
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.VisitorsSection
-import com.aarevalo.tasky.agenda.presentation.edit_text.EditTextScreenResult
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.navigation.Destination
 import com.aarevalo.tasky.core.presentation.components.AppBar
@@ -80,16 +79,18 @@ fun AgendaDetailScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    val editTextResult: EditTextScreenResult? = backStackEntry
+    val editedTitle: String? = backStackEntry
         ?.savedStateHandle
-        ?.getStateFlow<EditTextScreenResult?>("edit_text_result", null)
-        ?.collectAsStateWithLifecycle()
-        ?.value
+        ?.get(EditTextFieldType.TITLE.key)
+
+    val editedDescription: String? = backStackEntry
+        ?.savedStateHandle
+        ?.get(EditTextFieldType.DESCRIPTION.key)
 
     ObserveAsEvents(viewModel.event){
         event ->
         when(event) {
-            is AgendaDetailScreenEvent.Success -> {
+            is AgendaDetailScreenEvent.ItemSaved -> {
                 keyboardController?.hide()
                 Toast.makeText(
                     context,
@@ -102,23 +103,22 @@ fun AgendaDetailScreenRoot(
                 keyboardController?.hide()
                 Toast.makeText(
                     context,
-                    event.errorMessage.asString(context),
+                    event.message.asString(context),
                     Toast.LENGTH_LONG
                 ).show()
             }
+            else -> Unit
         }
     }
 
-    LaunchedEffect(key1 = editTextResult){
-        if(editTextResult != null){
-            when(editTextResult.type){
-                EditTextFieldType.TITLE -> {
-                    viewModel.onAction(AgendaDetailScreenAction.OnEditTitle(editTextResult.value))
-                }
-                EditTextFieldType.DESCRIPTION -> {
-                    viewModel.onAction(AgendaDetailScreenAction.OnEditDescription(editTextResult.value))
-                }
-            }
+    LaunchedEffect(key1 = editedTitle, key2 = editedDescription){
+        if(editedTitle != null){
+            viewModel.onAction(AgendaDetailScreenAction.OnEditTitle(editedTitle))
+            backStackEntry?.savedStateHandle?.remove<String>(EditTextFieldType.TITLE.key)
+        }
+        if(editedDescription != null){
+            viewModel.onAction(AgendaDetailScreenAction.OnEditDescription(editedDescription))
+            backStackEntry?.savedStateHandle?.remove<String>(EditTextFieldType.DESCRIPTION.key)
         }
     }
 

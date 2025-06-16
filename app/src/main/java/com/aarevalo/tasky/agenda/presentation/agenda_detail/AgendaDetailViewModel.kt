@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
@@ -264,7 +263,7 @@ class AgendaDetailViewModel @Inject constructor(
                             isSavingItem = false
                         )
                     }
-                    eventChannel.send(AgendaDetailScreenEvent.Success)
+                    eventChannel.send(AgendaDetailScreenEvent.ItemSaved)
                 }
             }
 
@@ -336,14 +335,10 @@ class AgendaDetailViewModel @Inject constructor(
         val agendaItemType = savedStateHandle.get<String>("type")
             ?: throw IllegalArgumentException("Agenda item type must be provided")
         val isEditable = savedStateHandle.get<Boolean>("isEditable")?:false
-        val startDate = savedStateHandle.get<String>("startDate")?.let {
-            LocalDate.parse(it)
-        } ?: LocalDate.now()
 
         println("existingAgendaItemId: $existingAgendaItemId")
         println("agendaItemType: $agendaItemType")
         println("isEditable: $isEditable")
-        println("startDate: $startDate")
 
         if(existingAgendaItemId != null){
             /* TODO fetch agenda item from api */
@@ -352,7 +347,6 @@ class AgendaDetailViewModel @Inject constructor(
                 it.copy(
                     details = AgendaItemDetails.fromString(agendaItemType),
                     isEditable = isEditable,
-                    fromDate = startDate,
                     title = UiText.StringResource(id = R.string.new_agenda_item_title, args = arrayOf(agendaItemType)).asString(
                         applicationContext
                     ).toTitleCase(),

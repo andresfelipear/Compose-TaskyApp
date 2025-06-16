@@ -86,9 +86,17 @@ class AgendaViewModel @Inject constructor(
                     }
                 }
             }
-            is AgendaScreenAction.OnNavigateToAgendaDetail -> {
-                TODO()
+            is AgendaScreenAction.OnDeleteAgendaItem -> {
+                /* TODO delete agenda item remotely and in the database */
+                _state.update {
+                    it.copy(
+                        agendaItems = it.agendaItems.filter { item ->
+                            item.id != action.agendaItemId
+                        }
+                    )
+                }
             }
+            else -> Unit
 
         }
     }

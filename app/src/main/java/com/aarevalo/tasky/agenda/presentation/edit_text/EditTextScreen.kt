@@ -44,7 +44,7 @@ fun EditTextScreenRoot(
                                navController
                                    .previousBackStackEntry
                                    ?.savedStateHandle
-                                   ?.set("edit_text_result", action.result)
+                                   ?.set(state.type.key, action.content)
                                navController.navigateUp()
                            }
                        }
@@ -99,10 +99,7 @@ fun EditTextScreen(
                                 modifier = Modifier.clickable {
                                     onAction(
                                         EditTextScreenAction.GoBack(
-                                            EditTextScreenResult(
-                                                type = state.type,
-                                                value = state.textFieldContent.text.toString()
-                                            )
+                                            content = state.textFieldContent.text.toString()
                                         )
                                     )
                                 },
