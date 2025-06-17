@@ -27,7 +27,7 @@ interface EventDao {
     @Query("DELETE FROM events")
     suspend fun deleteAllEvents()
 
-    @Query("SELECT * FROM events WHERE fromTimestamp >= :startOfDay AND fromTimestamp < :endOfNextDay ORDER BY fromTimestamp ASC")
-    fun getEventsForDay(startOfDay: Long, endOfNextDay: Long): Flow<List<EventEntity>>
+    @Query("SELECT * FROM events WHERE fromTimestamp >= :startOfDay AND fromTimestamp < :endOfDay ORDER BY fromTimestamp ASC")
+    fun getEventsForDay(startOfDay: Long, endOfDay: Long): Flow<List<EventEntity>>
 
 }
