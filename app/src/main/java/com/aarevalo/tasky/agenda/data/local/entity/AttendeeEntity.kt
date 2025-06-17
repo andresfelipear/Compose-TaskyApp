@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = EventEntity::class,
-            parentColumns = ["id"],
+            parentColumns = ["eventId"],
             childColumns = ["eventId"],
             onDelete = ForeignKey.CASCADE
         )
