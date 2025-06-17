@@ -18,6 +18,7 @@ import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.ui.theme.TaskyTheme
+import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
@@ -105,7 +106,9 @@ fun AgendaListPreview(){
                         title = "Event 1",
                         description = "Event 1 description",
                         fromTime = LocalTime.now()
-                            .plusMinutes(31)
+                            .plusMinutes(31),
+                        fromDate = LocalDate.now(),
+                        details = AgendaItemDetails.Event()
                     ),
                     AgendaItem(
                         id = "2",
@@ -113,14 +116,17 @@ fun AgendaListPreview(){
                         description = "Event 2 description",
                         fromTime = LocalTime.now()
                             .plusMinutes(32),
-                        details = AgendaItemDetails.Task()
+                        details = AgendaItemDetails.Task(),
+                        fromDate = LocalDate.now(),
                     ),
                     AgendaItem(
                         id = "3",
                         title = "Event 1",
                         description = "Event 1 description",
                         fromTime = LocalTime.now()
-                            .plusMinutes(33)
+                            .plusMinutes(33),
+                        fromDate = LocalDate.now(),
+                        details = AgendaItemDetails.Event()
                     ),
                     AgendaItem(
                         id = "4",
@@ -128,7 +134,8 @@ fun AgendaListPreview(){
                         description = "Event 2 description",
                         fromTime = LocalTime.now()
                             .plusMinutes(0),
-                        details = AgendaItemDetails.Reminder
+                        details = AgendaItemDetails.Reminder,
+                        fromDate = LocalDate.now(),
                     )
                 )
             ),

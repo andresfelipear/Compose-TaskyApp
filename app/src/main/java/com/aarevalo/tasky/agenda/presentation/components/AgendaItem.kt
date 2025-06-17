@@ -39,6 +39,8 @@ import com.aarevalo.tasky.core.util.formattedDateTimeToString
 import com.aarevalo.tasky.core.util.formattedFromToDateTimeToString
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun AgendaItemComponent(
@@ -195,6 +197,8 @@ fun AgendaItemPreview() {
                 title = "Event title",
                 description = "Event description",
                 details = AgendaItemDetails.Task(),
+                fromTime = LocalTime.now(),
+                fromDate = LocalDate.now()
                 ),
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(

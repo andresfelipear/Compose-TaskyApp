@@ -4,18 +4,17 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.aarevalo.tasky.agenda.data.local.entity.PendingItemSyncEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PendingItemSyncDao {
     @Upsert
-    suspend fun upsertPendingItemSyn(pendingItemSyn: PendingItemSyncDao)
+    suspend fun upsertPendingItemSyn(pendingItemSync: PendingItemSyncEntity)
 
     @Query("SELECT * FROM pending_item_sync")
-    suspend fun getPendingItemSync(): List<PendingItemSyncDao>
+    suspend fun getPendingItemSync(): List<PendingItemSyncEntity>
 
     @Query("SELECT * FROM pending_item_sync WHERE itemId = :id")
-    suspend fun getPendingItemSyncById(id: String): PendingItemSyncDao?
+    suspend fun getPendingItemSyncById(id: String): PendingItemSyncEntity?
 
     @Query("DELETE FROM pending_item_sync WHERE itemId = :id")
     suspend fun deletePendingItemSyncById(id: String)

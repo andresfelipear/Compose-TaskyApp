@@ -6,9 +6,9 @@ import java.time.LocalTime
 
 data class AgendaItem(
     val id: String,
-    val fromTime: LocalTime = LocalTime.now(),
-    val fromDate: LocalDate = LocalDate.now(),
-    val description: String = "Event description",
-    val title: String = "New Event",
-    val details: AgendaItemDetails = AgendaItemDetails.Event(),
+    val fromTime: LocalTime,
+    val fromDate: LocalDate,
+    val description: String,
+    val title: String,
+    val details: AgendaItemDetails,
 )

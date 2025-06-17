@@ -1,6 +1,7 @@
 package com.aarevalo.tasky.agenda.data.local.database
 
 import androidx.room.Database
+import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.aarevalo.tasky.agenda.data.local.converter.PhotoListConverter
 import com.aarevalo.tasky.agenda.data.local.dao.AttendeeDao
@@ -31,7 +32,7 @@ import com.aarevalo.tasky.agenda.data.local.entity.TaskEntity
     version = 1
 )
 @TypeConverters(PhotoListConverter::class)
-abstract class AgendaDatabase {
+abstract class AgendaDatabase : RoomDatabase() {
 
     abstract val eventDao: EventDao
     abstract val taskDao: TaskDao
