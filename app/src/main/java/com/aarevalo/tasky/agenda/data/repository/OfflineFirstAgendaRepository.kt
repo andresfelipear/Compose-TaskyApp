@@ -1,21 +1,20 @@
 package com.aarevalo.tasky.agenda.data.repository
 
-import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
+import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
-import com.aarevalo.tasky.core.data.networking.responseToResult
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.domain.util.Result
-import com.aarevalo.tasky.core.domain.util.asEmptyDataResult
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class OfflineFirstAgendaRepository @Inject constructor(
     private val remoteAgendaSource: RemoteAgendaDataSource,
+    private val localAgendaSource: LocalAgendaDataSource,
     private val sessionStorage: SessionStorage
 ): AgendaRepository {
     override fun getAgendaItems(): Flow<List<AgendaItem>> {
