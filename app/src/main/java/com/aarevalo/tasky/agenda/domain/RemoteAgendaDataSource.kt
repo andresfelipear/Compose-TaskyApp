@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.domain.datasource
+package com.aarevalo.tasky.agenda.domain
 
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
@@ -16,4 +16,5 @@ interface RemoteAgendaDataSource {
     suspend fun deleteAttendee(eventId: String): EmptyResult<DataError.Network>
     suspend fun syncAgenda(deletedEventIds: List<String>, deletedTaskIds: List<String>, deletedReminderIds: List<String>): EmptyResult<DataError.Network>
     suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError.Network>
+    suspend fun logout(): EmptyResult<DataError.Network>
 }

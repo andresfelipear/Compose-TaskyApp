@@ -2,7 +2,7 @@ package com.aarevalo.tasky.agenda.presentation.agenda
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aarevalo.tasky.agenda.domain.repository.AgendaRepository
+import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.Result

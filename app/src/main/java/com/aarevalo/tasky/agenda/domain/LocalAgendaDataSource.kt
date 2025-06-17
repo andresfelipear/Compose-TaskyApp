@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.domain.datasource
+package com.aarevalo.tasky.agenda.domain
 
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.core.domain.util.DataError
@@ -12,4 +12,5 @@ interface LocalAgendaDataSource {
     suspend fun getAgendaItemById(agendaItemId: String): AgendaItem?
     suspend fun upsertAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError.Local>
     suspend fun deleteAgendaItem(agendaItemId: String)
+    suspend fun deleteAllAgendaItems()
 }

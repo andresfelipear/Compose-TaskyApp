@@ -11,4 +11,10 @@ data class PendingItemSyncEntity(
     val itemType: String,
     val syncOperation: String,
     val itemJson: String
-)
+){
+    companion object SyncOperation {
+        const val CREATE = "CREATE"
+        const val UPDATE = "UPDATE"
+    }
+}
+
