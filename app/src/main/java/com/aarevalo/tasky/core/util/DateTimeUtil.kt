@@ -1,7 +1,11 @@
 package com.aarevalo.tasky.core.util
 
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 fun formattedDateTimeToString(
@@ -37,4 +41,50 @@ fun formattedFromToDateTimeToString(
     val toDateTime = formattedDateTimeToString(dateTo, timeTo)
 
     return "$fromDateTime - $toDateTime"
+}
+
+fun parseTimestampToLocalTime(
+    timestampMillis: Long,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): LocalTime {
+    val instant = Instant.ofEpochMilli(timestampMillis)
+    val zonedDateTime = instant.atZone(zoneId)
+    return zonedDateTime.toLocalTime()
+}
+
+fun parseTimestampToLocalDate(
+    timestampMillis: Long,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): LocalDate {
+    val instant = Instant.ofEpochMilli(timestampMillis)
+    val zonedDateTime = instant.atZone(zoneId)
+    return zonedDateTime.toLocalDate()
+}
+
+fun parseTimestampToZonedDateTime(
+    timestampMillis: Long,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): ZonedDateTime {
+    val instant = Instant.ofEpochMilli(timestampMillis)
+    val zonedDateTime = instant.atZone(zoneId)
+    return zonedDateTime
+}
+
+fun parseLocalDateTimeToTimestamp(
+    localDate: LocalDate,
+    localTime: LocalTime,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): Long{
+    val localDateTime = LocalDateTime.of(localDate, localTime)
+    val zonedDateTime = localDateTime.atZone(zoneId)
+    return zonedDateTime.toInstant().toEpochMilli()
+}
+
+fun parseZonedDateTimeToTimestamp(
+    zonedDateTime: ZonedDateTime,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): Long {
+    return zonedDateTime.withZoneSameInstant(zoneId)
+        .toInstant()
+        .toEpochMilli()
 }

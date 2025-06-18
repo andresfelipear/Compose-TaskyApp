@@ -11,6 +11,6 @@ data class EventRequest(
     val to: Long,
     val reminderAt: Long,
     val attendeeIds: List<String>,
-    val deletedPhotoKeys: List<String>?,
-    val isGoing: Boolean?
+    val deletedPhotoKeys: List<String>? = null,
+    val isGoing: Boolean? = null
 )

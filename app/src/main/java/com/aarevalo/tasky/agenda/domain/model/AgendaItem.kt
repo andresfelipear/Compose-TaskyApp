@@ -3,6 +3,7 @@ package com.aarevalo.tasky.agenda.domain.model
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZonedDateTime
 
 data class AgendaItem(
     val id: String,
@@ -10,5 +11,6 @@ data class AgendaItem(
     val fromDate: LocalDate,
     val description: String,
     val title: String,
+    val reminderAt: ZonedDateTime,
     val details: AgendaItemDetails,
 )
