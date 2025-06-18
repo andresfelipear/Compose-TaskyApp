@@ -43,7 +43,7 @@ interface TaskyAgendaApi {
     @POST("event")
     suspend fun createEvent(
         @Part("create_event_request")eventRequest: EventRequest,
-        @Part photos: List<MultipartBody.Part>
+        @Part vararg photos: MultipartBody.Part
     ): Response<EventDto>
 
     @GET("event")

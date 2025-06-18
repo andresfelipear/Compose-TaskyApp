@@ -112,10 +112,17 @@ fun AttendeeDto.toAttendee(): Attendee {
     )
 }
 
-fun PhotoDto.toEventPhoto(): EventPhoto.Remote {
-    return EventPhoto.Remote(
+fun PhotoDto.toEventPhoto(): EventPhoto.Local {
+    return EventPhoto.Local(
         key = key,
-        photoUrl = url
+        uriString = url
+    )
+}
+
+fun EventPhoto.toPhotoDto(): PhotoDto {
+    return PhotoDto(
+        key = key,
+        url = uri
     )
 }
 

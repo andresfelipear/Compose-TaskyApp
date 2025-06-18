@@ -5,12 +5,13 @@ import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.domain.util.Result
+import java.time.LocalDate
 
 interface RemoteAgendaDataSource {
     suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network>
-    suspend fun fetchAgendaItems(from: Long, to: Long): Result<List<AgendaItem>, DataError.Network>
+    suspend fun fetchAgendaItems(date: LocalDate): Result<List<AgendaItem>, DataError.Network>
     suspend fun fetchAgendaItem(agendaItemId: String): Result<AgendaItem?, DataError.Network>
-    suspend fun insertAgendaItem(agendaItem: AgendaItem): Result<AgendaItem, DataError.Network>
+    suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError.Network>
     suspend fun updateAgendaItem(agendaItem: AgendaItem): Result<AgendaItem, DataError.Network>
     suspend fun fetchAttendee(email: String): Result<Attendee, DataError.Network>
     suspend fun deleteAttendee(eventId: String): EmptyResult<DataError.Network>

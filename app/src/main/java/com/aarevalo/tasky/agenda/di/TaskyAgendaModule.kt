@@ -15,9 +15,11 @@ import com.aarevalo.tasky.agenda.data.local.database.AgendaDatabase
 import com.aarevalo.tasky.agenda.data.remote.RetrofitRemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.agenda.data.repository.OfflineFirstAgendaRepository
+import com.aarevalo.tasky.agenda.data.util.AndroidPhotoByteLoader
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
+import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -53,9 +55,14 @@ object TaskyAgendaModule {
     @Provides
     @Singleton
     fun provideRemoteAgendaDataSource(
-        api: TaskyAgendaApi
+        api: TaskyAgendaApi,
+        photoByteLoader: PhotoByteLoader
     ): RemoteAgendaDataSource {
-        return RetrofitRemoteAgendaDataSource(api)
+        return RetrofitRemoteAgendaDataSource(
+            api,
+            Moshi.Builder().build(),
+            photoByteLoader
+        )
     }
 
     @Provides
@@ -142,5 +149,11 @@ object TaskyAgendaModule {
         )
     }
 
-
+    @Provides
+    @Singleton
+    fun providePhotoByteLoader(
+        @ApplicationContext context: Context
+    ) : PhotoByteLoader {
+        return AndroidPhotoByteLoader(context)
+    }
 }

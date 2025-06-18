@@ -88,3 +88,14 @@ fun parseZonedDateTimeToTimestamp(
         .toInstant()
         .toEpochMilli()
 }
+
+fun getUtcTimestampFromLocalDate(
+    localDate: LocalDate,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): Long {
+
+    val localDateTime = localDate.atStartOfDay()
+    val zonedDateTime = localDateTime.atZone(zoneId)
+    val instant = zonedDateTime.toInstant()
+    return instant.toEpochMilli()
+}
