@@ -60,7 +60,6 @@ object TaskyAgendaModule {
     ): RemoteAgendaDataSource {
         return RetrofitRemoteAgendaDataSource(
             api,
-            Moshi.Builder().build(),
             photoByteLoader
         )
     }

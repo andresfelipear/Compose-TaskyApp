@@ -10,12 +10,12 @@ import java.time.LocalDate
 interface RemoteAgendaDataSource {
     suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network>
     suspend fun fetchAgendaItems(date: LocalDate): Result<List<AgendaItem>, DataError.Network>
-    suspend fun fetchAgendaItem(agendaItemId: String): Result<AgendaItem?, DataError.Network>
-    suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError.Network>
-    suspend fun updateAgendaItem(agendaItem: AgendaItem): Result<AgendaItem, DataError.Network>
-    suspend fun fetchAttendee(email: String): Result<Attendee, DataError.Network>
+    suspend fun fetchAgendaItem(agendaItemId: String, type: String): Result<AgendaItem?, DataError.Network>
+    suspend fun createAgendaItem(agendaItem: AgendaItem): Result<AgendaItem?,DataError.Network>
+    suspend fun updateAgendaItem(agendaItem: AgendaItem, deletedPhotoKeys: List<String>, isGoing: Boolean): Result<AgendaItem, DataError.Network>
+    suspend fun fetchAttendee(email: String): Result<Attendee?, DataError.Network>
     suspend fun deleteAttendee(eventId: String): EmptyResult<DataError.Network>
     suspend fun syncAgenda(deletedEventIds: List<String>, deletedTaskIds: List<String>, deletedReminderIds: List<String>): EmptyResult<DataError.Network>
-    suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError.Network>
+    suspend fun deleteAgendaItem(agendaItemId: String, type: String): EmptyResult<DataError.Network>
     suspend fun logout(): EmptyResult<DataError.Network>
 }

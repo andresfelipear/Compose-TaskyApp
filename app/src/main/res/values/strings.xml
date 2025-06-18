@@ -84,4 +84,6 @@
     <string name="event_edited_successfully">Event was edited successfully!</string>
     <string name="new_agenda_item_title">New %s</string>
     <string name="new_agenda_item_description">%s description</string>
+    <string name="error_bad_request">Bad request! Some of the arguments passed are not valid</string>
+    <string name="error_unauthorized">Not authorized to make this request.</string>
 </resources>
