@@ -20,7 +20,7 @@ import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.domain.util.asEmptyDataResult
 import com.aarevalo.tasky.core.domain.util.map
 import com.aarevalo.tasky.core.util.getUtcTimestampFromLocalDate
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.LocalDate
@@ -81,14 +81,14 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
                     if(eventPhoto is EventPhoto.Local){
                         val photoBytes = photoByteLoader.getBytes(eventPhoto.uri)
                         if(photoBytes != null){
-                            val mediaType = "image/jpeg".toMediaType()
+                            val mediaType = "image/jpeg".toMediaTypeOrNull()
                             val filename = "${eventPhoto.key}.jpg"
 
                             photoParts.add(
                                 MultipartBody.Part.createFormData(
                                     name = "photo${index}",
                                     filename = filename,
-                                    body = eventPhoto.uriString.toRequestBody(mediaType)
+                                    body = photoBytes.toRequestBody(mediaType)
                                 )
                             )
                         } else {
@@ -133,14 +133,14 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
                     if(eventPhoto is EventPhoto.Local){
                         val photoBytes = photoByteLoader.getBytes(eventPhoto.uri)
                         if(photoBytes != null){
-                            val mediaType = "image/jpeg".toMediaType()
+                            val mediaType = "image/jpeg".toMediaTypeOrNull()
                             val filename = "${eventPhoto.key}.jpg"
 
                             photoParts.add(
                                 MultipartBody.Part.createFormData(
                                     name = "photo${index}",
                                     filename = filename,
-                                    body = eventPhoto.uriString.toRequestBody(mediaType)
+                                    body = photoBytes.toRequestBody(mediaType)
                                 )
                             )
                         } else {
