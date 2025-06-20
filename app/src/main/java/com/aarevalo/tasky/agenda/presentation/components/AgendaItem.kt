@@ -41,6 +41,7 @@ import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZonedDateTime
 
 @Composable
 fun AgendaItemComponent(
@@ -198,7 +199,8 @@ fun AgendaItemPreview() {
                 description = "Event description",
                 details = AgendaItemDetails.Task(),
                 fromTime = LocalTime.now(),
-                fromDate = LocalDate.now()
+                fromDate = LocalDate.now(),
+                reminderAt = ZonedDateTime.now()
                 ),
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(

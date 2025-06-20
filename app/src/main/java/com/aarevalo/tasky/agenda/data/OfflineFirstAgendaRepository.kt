@@ -1,4 +1,4 @@
-package com.aarevalo.tasky.agenda.data.repository
+package com.aarevalo.tasky.agenda.data
 
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource

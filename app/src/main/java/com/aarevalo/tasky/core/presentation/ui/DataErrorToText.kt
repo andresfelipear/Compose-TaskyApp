@@ -30,6 +30,12 @@ fun DataError.asUiText(): UiText {
         DataError.Network.NOT_FOUND -> UiText.StringResource(
             R.string.error_not_found
         )
+        DataError.Network.BAD_REQUEST -> UiText.StringResource(
+            R.string.error_bad_request
+        )
+        DataError.Network.UNAUTHORIZED -> UiText.StringResource(
+            R.string.error_unauthorized
+        )
         else -> UiText.StringResource(R.string.error_unknown)
     }
 }

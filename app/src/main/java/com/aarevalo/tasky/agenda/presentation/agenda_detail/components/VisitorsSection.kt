@@ -32,7 +32,7 @@ import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @Composable
 fun VisitorsSection(
@@ -197,21 +197,24 @@ fun VisitorsSectionPreview(){
                         fullName = "John Doe",
                         email = "james.monroe@examplepetstore.com",
                         isGoing = true,
-                        reminderAt = LocalDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        eventId = "123456"
                     ),
                     Attendee(
                         userId = "2",
                         fullName = "Jane Doe",
                         email = "john.mckinley@examplepetstore.com",
                         isGoing = false,
-                        reminderAt = LocalDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        eventId = "123456"
                     ),
                     Attendee(
                         userId = "3",
                         fullName = "Andres Arevalo",
                         email = "john.mckinley@examplepetstore.com",
                         isGoing = false,
-                        reminderAt = LocalDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        eventId = "123456"
                     ),
                 ),
                 isUserEventCreator = true,
@@ -220,7 +223,8 @@ fun VisitorsSectionPreview(){
                     fullName = "John Doe",
                     email = "john.mclean@examplepetstore.com",
                     isGoing = true,
-                    reminderAt = LocalDateTime.now()
+                    reminderAt = ZonedDateTime.now(),
+                    eventId = "123456"
                 ),
             ),
             onAddNewAttendee = {},

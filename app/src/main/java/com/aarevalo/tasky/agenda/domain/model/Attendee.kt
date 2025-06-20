@@ -1,11 +1,12 @@
 package com.aarevalo.tasky.agenda.domain.model
 
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Attendee(
-    var userId: String,
+    val userId: String,
+    val eventId: String,
     val fullName: String,
     val email: String,
     val isGoing: Boolean,
-    val reminderAt: LocalDateTime
+    val reminderAt: ZonedDateTime
 )

@@ -6,6 +6,7 @@ import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.presentation.util.UiText
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZonedDateTime
 
 private const val TO_TIME_ADDITION_MINUTES = 30L
 
@@ -31,6 +32,7 @@ data class AgendaDetailScreenState(
     val isToTimeDialogVisible: Boolean = false,
     val details: AgendaItemDetails = AgendaItemDetails.Event(),
     val attendeesState: AttendeesState = AttendeesState(),
+    val reminderAt: ZonedDateTime = ZonedDateTime.now(),
     )
 
 sealed interface AgendaItemDetails{
