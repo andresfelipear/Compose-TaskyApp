@@ -9,6 +9,7 @@ import com.aarevalo.tasky.agenda.data.remote.mappers.toReminderDto
 import com.aarevalo.tasky.agenda.data.remote.mappers.toTaskDto
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
@@ -50,17 +51,17 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         }
     }
 
-    override suspend fun fetchAgendaItem(agendaItemId: String, type: String): Result<AgendaItem?, DataError.Network> {
-        when(type.uppercase()){
-            "EVENT" -> {
+    override suspend fun fetchAgendaItem(agendaItemId: String, type: AgendaItemType): Result<AgendaItem?, DataError.Network> {
+        when(type){
+            AgendaItemType.EVENT -> {
                 val response = api.getEvent(agendaItemId)
                 return responseToResult(response).map { it.toAgendaItem() }
             }
-            "TASK" -> {
+            AgendaItemType.TASK -> {
                 val response = api.getTask(agendaItemId)
                 return responseToResult(response).map { it.toAgendaItem() }
             }
-            "REMINDER" -> {
+            AgendaItemType.REMINDER -> {
                 val response = api.getReminder(agendaItemId)
                 return responseToResult(response).map { it.toAgendaItem() }
             }
@@ -70,7 +71,7 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         }
     }
 
-    override suspend fun createAgendaItem(agendaItem: AgendaItem): Result<AgendaItem?, DataError.Network> {
+    override suspend fun createAgendaItem(agendaItem: AgendaItem): Result<Unit, DataError.Network> {
         when(agendaItem.details){
             is AgendaItemDetails.Event -> {
 
@@ -105,20 +106,16 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
             }
             is AgendaItemDetails.Task -> {
                 val response = api.createTask(agendaItem.toTaskDto())
-                return responseToResult(response).map {
-                    agendaItem
-                }
+                return responseToResult(response).asEmptyDataResult()
             }
             is AgendaItemDetails.Reminder -> {
                 val response = api.createReminder(agendaItem.toReminderDto())
-                return responseToResult(response).map {
-                    agendaItem
-                }
+                return responseToResult(response).asEmptyDataResult()
             }
         }
     }
 
-    override suspend fun updateAgendaItem(agendaItem: AgendaItem, deletedPhotoKeys: List<String>, isGoing: Boolean): Result<AgendaItem, DataError.Network> {
+    override suspend fun updateAgendaItem(agendaItem: AgendaItem, deletedPhotoKeys: List<String>, isGoing: Boolean): Result<Unit, DataError.Network> {
         when(agendaItem.details){
             is AgendaItemDetails.Event -> {
 
@@ -157,15 +154,11 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
             }
             is AgendaItemDetails.Task -> {
                 val response = api.updateTask(agendaItem.toTaskDto())
-                return responseToResult(response).map {
-                    agendaItem
-                }
+                return responseToResult(response).asEmptyDataResult()
             }
             is AgendaItemDetails.Reminder -> {
                 val response = api.updateReminder(agendaItem.toReminderDto())
-                return responseToResult(response).map {
-                    agendaItem
-                }
+                return responseToResult(response).asEmptyDataResult()
             }
         }
     }
@@ -197,22 +190,19 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         return responseToResult(response).asEmptyDataResult()
     }
 
-    override suspend fun deleteAgendaItem(agendaItemId: String, type: String): EmptyResult<DataError.Network> {
-        when(type.uppercase()){
-            "EVENT" -> {
+    override suspend fun deleteAgendaItem(agendaItemId: String, type: AgendaItemType): EmptyResult<DataError.Network> {
+        when(type){
+            AgendaItemType.EVENT -> {
                 val response = api.deleteEvent(agendaItemId)
                 return responseToResult(response).asEmptyDataResult()
             }
-            "TASK" -> {
+            AgendaItemType.TASK -> {
                 val response = api.deleteTask(agendaItemId)
                 return responseToResult(response).asEmptyDataResult()
             }
-            "REMINDER" -> {
+            AgendaItemType.REMINDER -> {
                 val response = api.deleteReminder(agendaItemId)
                 return responseToResult(response).asEmptyDataResult()
-            }
-            else -> {
-                return Result.Error(DataError.Network.BAD_REQUEST)
             }
         }
     }

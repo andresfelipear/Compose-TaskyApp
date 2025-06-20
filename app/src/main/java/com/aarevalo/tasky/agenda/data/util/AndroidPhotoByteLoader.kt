@@ -3,12 +3,15 @@ package com.aarevalo.tasky.agenda.data.util
 import android.content.Context
 import android.net.Uri
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
-import kotlinx.coroutines.Dispatchers
+import com.aarevalo.tasky.core.domain.util.DispatcherProvider
 import kotlinx.coroutines.withContext
 
-class AndroidPhotoByteLoader(private val context: Context) : PhotoByteLoader {
+class AndroidPhotoByteLoader(
+    private val context: Context,
+    private val dispatcher: DispatcherProvider
+) : PhotoByteLoader {
     override suspend fun getBytes(uri: String): ByteArray? {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcher.io) {
             try {
                 val contentUri = Uri.parse(uri)
                 context.contentResolver.openInputStream(contentUri)?.use { inputStream ->

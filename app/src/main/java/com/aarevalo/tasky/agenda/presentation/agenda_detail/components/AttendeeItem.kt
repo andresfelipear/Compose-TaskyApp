@@ -30,7 +30,7 @@ import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 import com.example.ui.theme.LocalExtendedTypography
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @Composable
 fun AttendeeItem(
@@ -116,7 +116,8 @@ fun AttendeeItemPreview(){
                 fullName = "Andres Arevalo",
                 email = "john.c.breckinridge@altostrat.com",
                 isGoing = true,
-                reminderAt = LocalDateTime.now()
+                reminderAt = ZonedDateTime.now(),
+                eventId = "123456"
             ),
             eventDetails = AgendaItemDetails.Event(
                 isUserEventCreator = true,
@@ -125,7 +126,8 @@ fun AttendeeItemPreview(){
                     fullName = "John Doe",
                     email = "robert.cooper.grier@examplepetstore.com",
                     isGoing = true,
-                    reminderAt = LocalDateTime.now()
+                    reminderAt = ZonedDateTime.now(),
+                    eventId = "123456"
                 )
             ),
             isEditing = true,

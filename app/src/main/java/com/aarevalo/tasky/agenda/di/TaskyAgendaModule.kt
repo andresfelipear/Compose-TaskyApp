@@ -14,13 +14,15 @@ import com.aarevalo.tasky.agenda.data.local.dao.TaskDao
 import com.aarevalo.tasky.agenda.data.local.database.AgendaDatabase
 import com.aarevalo.tasky.agenda.data.remote.RetrofitRemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
-import com.aarevalo.tasky.agenda.data.repository.OfflineFirstAgendaRepository
+import com.aarevalo.tasky.agenda.data.OfflineFirstAgendaRepository
 import com.aarevalo.tasky.agenda.data.util.AndroidPhotoByteLoader
+import com.aarevalo.tasky.agenda.data.util.StandardDispatcherProvider
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
+import com.aarevalo.tasky.core.domain.util.DispatcherProvider
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -151,8 +153,15 @@ object TaskyAgendaModule {
     @Provides
     @Singleton
     fun providePhotoByteLoader(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        dispatcherProvider: DispatcherProvider
     ) : PhotoByteLoader {
-        return AndroidPhotoByteLoader(context)
+        return AndroidPhotoByteLoader(context, dispatcherProvider)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDispatcherProvider(): DispatcherProvider {
+        return StandardDispatcherProvider
     }
 }

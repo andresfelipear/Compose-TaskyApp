@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 import javax.inject.Inject
 
@@ -194,7 +194,8 @@ class AgendaDetailViewModel @Inject constructor(
                         fullName = "Test Name",
                         email = action.email,
                         isGoing = true,
-                        reminderAt = LocalDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        eventId = "123456"
                     )
                     _state.update {
                         it.copy(

@@ -74,6 +74,8 @@ fun AgendaItem.toEventRequest(): EventRequest {
         to = parseLocalDateTimeToTimestamp(details.toDate, details.toTime),
         reminderAt = reminderAt.toInstant().toEpochMilli(),
         attendeeIds = details.attendees.map { it.userId },
+        deletedPhotoKeys = emptyList(),
+        isGoing = false
     )
 }
 
