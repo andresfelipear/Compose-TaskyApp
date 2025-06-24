@@ -9,9 +9,13 @@ import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
+import com.aarevalo.tasky.core.util.getReminderTypeFromLocalDateTime
+import com.aarevalo.tasky.core.util.parseLocalDateTimeToTimestamp
 import com.aarevalo.tasky.core.util.parseTimestampToLocalDate
 import com.aarevalo.tasky.core.util.parseTimestampToLocalTime
 import com.aarevalo.tasky.core.util.parseTimestampToZonedDateTime
+import com.aarevalo.tasky.core.util.parseZonedDateTimeToTimestamp
+import java.time.LocalDateTime
 import kotlin.time.toJavaDuration
 
 fun EventEntity.toAgendaItem(): AgendaItem {
@@ -75,5 +79,75 @@ fun ReminderEntity.toAgendaItem(): AgendaItem {
         title = title,
         reminderAt = parseTimestampToZonedDateTime(time).minus(remindAt.duration.toJavaDuration()),
         details = AgendaItemDetails.Reminder
+    )
+}
+
+fun AgendaItem.toEventEntity(): EventEntity{
+    return EventEntity(
+        eventId = id,
+        title = title,
+        description = description,
+        fromTimestamp = parseLocalDateTimeToTimestamp(
+            localDate = fromDate,
+            localTime = fromTime
+        ),
+        toTimestamp = parseLocalDateTimeToTimestamp(
+            localDate = (details as AgendaItemDetails.Event).toDate,
+            localTime = details.toTime
+        ),
+        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
+        hostId = "",
+        isUserEventCreator = details.isUserEventCreator,
+        photoKeys = details.photos.map { it.key }
+    )
+}
+
+fun AgendaItem.toTaskEntity(): TaskEntity{
+    return TaskEntity(
+        taskId = id,
+        title = title,
+        description = description,
+        time = parseLocalDateTimeToTimestamp(
+            localDate = fromDate,
+            localTime = fromTime
+        ),
+        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
+        isDone = (details as AgendaItemDetails.Task).isDone
+    )
+}
+
+fun AgendaItem.toReminderEntity(): ReminderEntity {
+    val reminderAtToLocalDateTime = reminderAt.toLocalDateTime()
+    val localDateTime = LocalDateTime.of(fromDate, fromTime)
+    return ReminderEntity(
+        reminderId = id,
+        title = title,
+        description = description,
+        time = parseLocalDateTimeToTimestamp(
+            localDate = fromDate,
+            localTime = fromTime
+        ),
+        remindAt = getReminderTypeFromLocalDateTime(
+            localDateTime = localDateTime,
+            reminderAt = reminderAtToLocalDateTime
+        )
+    )
+}
+
+fun Attendee.toAttendeeEntity(): AttendeeEntity{
+    return AttendeeEntity(
+        attendeeUserId = userId,
+        eventId = eventId,
+        fullName = fullName,
+        email = email,
+        isGoing = isGoing,
+        reminderAt = parseZonedDateTimeToTimestamp(reminderAt)
+    )
+}
+
+fun EventPhoto.toPhotoEntity(): PhotoEntity{
+    return PhotoEntity(
+        key = key,
+        uri = uri
     )
 }

@@ -1,5 +1,7 @@
 package com.aarevalo.tasky.agenda.data.local
 
+import android.database.sqlite.SQLiteFullException
+import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.agenda.data.local.dao.AttendeeDao
 import com.aarevalo.tasky.agenda.data.local.dao.EventDao
 import com.aarevalo.tasky.agenda.data.local.dao.PhotoDao
@@ -7,13 +9,17 @@ import com.aarevalo.tasky.agenda.data.local.dao.ReminderDao
 import com.aarevalo.tasky.agenda.data.local.dao.TaskDao
 import com.aarevalo.tasky.agenda.data.local.mappers.toAgendaItem
 import com.aarevalo.tasky.agenda.data.local.mappers.toAttendee
+import com.aarevalo.tasky.agenda.data.local.mappers.toAttendeeEntity
+import com.aarevalo.tasky.agenda.data.local.mappers.toEventEntity
 import com.aarevalo.tasky.agenda.data.local.mappers.toEventPhoto
+import com.aarevalo.tasky.agenda.data.local.mappers.toPhotoEntity
+import com.aarevalo.tasky.agenda.data.local.mappers.toReminderEntity
+import com.aarevalo.tasky.agenda.data.local.mappers.toTaskEntity
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.util.DataError
-import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.util.parseLocalDateToTimestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -142,19 +148,58 @@ class RoomLocalAgendaDataSource @Inject constructor(
         }
     }
 
-    override suspend fun upsertAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError.Local> {
-        TODO("Not yet implemented")
+    override suspend fun upsertAgendaItem(
+        agendaItem: AgendaItem,
+        hostId: String?
+    ): Result<String, DataError.Local> {
+        return try {
+            when(agendaItem.details) {
+                is AgendaItemDetails.Event -> {
+                    val eventEntity = agendaItem.toEventEntity().copy(
+                        hostId = hostId ?: "",
+                    )
+                    eventDao.upsertEvent(eventEntity)
+                    attendeeDao.upsertAttendees(agendaItem.details.attendees.map { it.toAttendeeEntity() })
+                    photoDao.upsertPhotos(agendaItem.details.photos.map { it.toPhotoEntity() })
+                    Result.Success(eventEntity.eventId)
+                }
+                is AgendaItemDetails.Task -> {
+                    val taskEntity = agendaItem.toTaskEntity()
+                    taskDao.upsertTask(taskEntity)
+                    Result.Success(taskEntity.taskId)
+                }
+                is AgendaItemDetails.Reminder -> {
+                    val reminderEntity = agendaItem.toReminderEntity()
+                    reminderDao.upsertReminder(reminderEntity)
+                    Result.Success(reminderEntity.reminderId)
+                }
+            }
+        } catch(e: SQLiteFullException){
+            Result.Error(DataError.Local.DISK_FULL)
+        }
     }
 
     override suspend fun deleteAgendaItem(
         agendaItemId: String,
         agendaItemType: AgendaItemType
     ) {
-        TODO("Not yet implemented")
+        when(agendaItemType){
+            AgendaItemType.EVENT -> {
+                eventDao.deleteEventById(agendaItemId)
+            }
+            AgendaItemType.TASK -> {
+                taskDao.deleteTaskById(agendaItemId)
+            }
+            AgendaItemType.REMINDER -> {
+                reminderDao.deleteReminderById(agendaItemId)
+            }
+        }
     }
 
     override suspend fun deleteAllAgendaItems() {
-        TODO("Not yet implemented")
+        eventDao.deleteAllEvents()
+        taskDao.deleteAllTasks()
+        reminderDao.deleteAllReminders()
     }
 
 }
