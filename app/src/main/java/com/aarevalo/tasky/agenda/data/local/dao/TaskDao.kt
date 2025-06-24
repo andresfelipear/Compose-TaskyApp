@@ -26,7 +26,7 @@ interface TaskDao {
     @Query("DELETE FROM tasks")
     suspend fun deleteAllTasks()
 
-    @Query("SELECT * FROM tasks WHERE time >= :startOfDay AND time < :endOfNextDay ORDER BY time ASC")
-    fun getTasksForDay(startOfDay: Long, endOfNextDay: Long): Flow<List<TaskEntity>>
+    @Query("SELECT * FROM tasks WHERE time >= :startOfDay AND time < :endOfDay ORDER BY time ASC")
+    fun getTasksForDay(startOfDay: Long, endOfDay: Long): Flow<List<TaskEntity>>
 
 }

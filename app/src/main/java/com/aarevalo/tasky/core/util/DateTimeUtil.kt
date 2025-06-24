@@ -70,6 +70,13 @@ fun parseTimestampToZonedDateTime(
     return zonedDateTime
 }
 
+fun parseLocalDateToTimestamp(
+    localDate: LocalDate,
+): Long {
+    val localDateTime = localDate.atStartOfDay()
+    return localDateTime.toInstant(java.time.ZoneOffset.UTC).toEpochMilli()
+}
+
 fun parseLocalDateTimeToTimestamp(
     localDate: LocalDate,
     localTime: LocalTime,

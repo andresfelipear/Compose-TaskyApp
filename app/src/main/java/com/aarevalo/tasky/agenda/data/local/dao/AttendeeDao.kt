@@ -27,6 +27,6 @@ interface AttendeeDao {
     suspend fun deleteAllAttendees()
 
     @Query("SELECT * FROM attendees WHERE eventId = :eventId")
-    fun getAttendeesByEventId(eventId: String): Flow<List<AttendeeEntity>>
+    suspend fun getAttendeesByEventId(eventId: String): List<AttendeeEntity>
 
 }
