@@ -1,12 +1,14 @@
 package com.aarevalo.tasky.agenda.data.local
 
 import android.database.sqlite.SQLiteFullException
+import androidx.room.withTransaction
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.agenda.data.local.dao.AttendeeDao
 import com.aarevalo.tasky.agenda.data.local.dao.EventDao
 import com.aarevalo.tasky.agenda.data.local.dao.PhotoDao
 import com.aarevalo.tasky.agenda.data.local.dao.ReminderDao
 import com.aarevalo.tasky.agenda.data.local.dao.TaskDao
+import com.aarevalo.tasky.agenda.data.local.database.AgendaDatabase
 import com.aarevalo.tasky.agenda.data.local.mappers.toAgendaItem
 import com.aarevalo.tasky.agenda.data.local.mappers.toAttendee
 import com.aarevalo.tasky.agenda.data.local.mappers.toAttendeeEntity
@@ -17,16 +19,17 @@ import com.aarevalo.tasky.agenda.data.local.mappers.toReminderEntity
 import com.aarevalo.tasky.agenda.data.local.mappers.toTaskEntity
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
-import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.util.parseLocalDateToTimestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
 
 class RoomLocalAgendaDataSource @Inject constructor(
+    private val db: AgendaDatabase,
     private val eventDao: EventDao,
     private val taskDao: TaskDao,
     private val reminderDao: ReminderDao,
@@ -34,117 +37,111 @@ class RoomLocalAgendaDataSource @Inject constructor(
     private val photoDao: PhotoDao
 ): LocalAgendaDataSource{
     override fun getAgendaItems(): Flow<List<AgendaItem>> {
-        val tasksFlow = taskDao.getTasks()
+
+        val eventsFlow = eventDao.getEvents().map { eventsEntities -> eventsEntities.map { eventEntity ->
+            val attendees = attendeeDao.getAttendeesByEventId(eventEntity.eventId).map { it.toAttendee() }
+            val photos = photoDao.getPhotosByKeys(eventEntity.photoKeys).map { it.toEventPhoto() }
+            eventEntity.toAgendaItem().copy(
+                details = (eventEntity.toAgendaItem().details as AgendaItemDetails.Event).copy(
+                    attendees = attendees,
+                    photos = photos
+                )
+            )
+        }
+        }
+
         val remindersFlow = reminderDao.getReminders()
-        val eventsFlow = eventDao.getEvents()
+            .map { remindersEntities -> remindersEntities
+                .map { reminderEntity ->
+            reminderEntity.toAgendaItem()
+            }
+        }
+
+        val tasksFlow = taskDao.getTasks()
+            .map { tasksEntities ->
+                tasksEntities.map { taskEntity ->
+                        taskEntity.toAgendaItem()
+                    }
+            }
 
         return combine(
             eventsFlow,
-            tasksFlow,
             remindersFlow,
-        ){
-            eventsEntities, taskEntities, reminderEntities ->
-            val agendaItems = mutableListOf<AgendaItem>()
-
-            eventsEntities.forEach{ eventEntity ->
-                val attendees = attendeeDao.getAttendeesByEventId(eventEntity.eventId).map { it.toAttendee() }
-                val photos = photoDao.getPhotosByKeys(eventEntity.photoKeys).map { it.toEventPhoto() }
-
-                val eventAgendaItem = eventEntity.toAgendaItem().copy(
-                    details = (eventEntity.toAgendaItem().details as AgendaItemDetails.Event).copy(
-                        attendees = attendees,
-                        photos = photos
-                    )
-                )
-                agendaItems.add(eventAgendaItem)
-            }
-
-            taskEntities.forEach{ taskEntity ->
-                val agendaItem = taskEntity.toAgendaItem()
-                agendaItems.add(agendaItem)
-            }
-
-            reminderEntities.forEach{ reminderEntity ->
-                val agendaItem = reminderEntity.toAgendaItem()
-                agendaItems.add(agendaItem)
-            }
-            agendaItems
+            tasksFlow,
+        ){ events, reminders, tasks ->
+            (events + reminders + tasks).sortedBy { it.fromTime}
         }
     }
 
     override fun getAgendaItemsByDate(date: LocalDate): Flow<List<AgendaItem>> {
-        val tasksFlow = taskDao.getTasksForDay(
+
+        val eventsFlow = eventDao.getEventsForDay(
             startOfDay = parseLocalDateToTimestamp(date),
             endOfDay = parseLocalDateToTimestamp(date.plusDays(1))
-        )
+        ).map { eventsEntities -> eventsEntities.map { eventEntity ->
+            val attendees = attendeeDao.getAttendeesByEventId(eventEntity.eventId).map { it.toAttendee() }
+            val photos = photoDao.getPhotosByKeys(eventEntity.photoKeys).map { it.toEventPhoto() }
+            eventEntity.toAgendaItem().copy(
+                details = (eventEntity.toAgendaItem().details as AgendaItemDetails.Event).copy(
+                    attendees = attendees,
+                    photos = photos
+                )
+            )
+        }
+        }
+
         val remindersFlow = reminderDao.getRemindersForDay(
             startOfDay = parseLocalDateToTimestamp(date),
             endOfDay = parseLocalDateToTimestamp(date.plusDays(1))
         )
-        val eventsFlow = eventDao.getEventsForDay(
+            .map { remindersEntities -> remindersEntities
+                .map { reminderEntity ->
+                    reminderEntity.toAgendaItem()
+                }
+            }
+
+        val tasksFlow = taskDao.getTasksForDay(
             startOfDay = parseLocalDateToTimestamp(date),
             endOfDay = parseLocalDateToTimestamp(date.plusDays(1))
         )
+            .map { tasksEntities ->
+                tasksEntities.map { taskEntity ->
+                    taskEntity.toAgendaItem()
+                }
+            }
 
         return combine(
             eventsFlow,
-            tasksFlow,
             remindersFlow,
-        ){
-            eventsEntities, taskEntities, reminderEntities ->
-            val agendaItems = mutableListOf<AgendaItem>()
-
-            eventsEntities.forEach{ eventEntity ->
-                val attendees = attendeeDao.getAttendeesByEventId(eventEntity.eventId).map { it.toAttendee() }
-                val photos = photoDao.getPhotosByKeys(eventEntity.photoKeys).map { it.toEventPhoto() }
-
-                val eventAgendaItem = eventEntity.toAgendaItem().copy(
-                    details = (eventEntity.toAgendaItem().details as AgendaItemDetails.Event).copy(
-                        attendees = attendees,
-                        photos = photos
-                    )
-                )
-                agendaItems.add(eventAgendaItem)
-            }
-
-            taskEntities.forEach{ taskEntity ->
-                val agendaItem = taskEntity.toAgendaItem()
-                agendaItems.add(agendaItem)
-            }
-
-            reminderEntities.forEach{ reminderEntity ->
-                val agendaItem = reminderEntity.toAgendaItem()
-                agendaItems.add(agendaItem)
-            }
-            agendaItems
+            tasksFlow,
+        ){ events, reminders, tasks ->
+            (events + reminders + tasks).sortedBy { it.fromTime}
         }
     }
 
     override suspend fun getAgendaItemById(
         agendaItemId: String,
-        agendaItemType: AgendaItemType
     ): AgendaItem? {
-        when(agendaItemType){
-            AgendaItemType.EVENT -> {
-                val eventDao = eventDao.getEventById(agendaItemId)
-                if(eventDao != null){
+        return when {
+            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> {
+                eventDao.getEventById(agendaItemId)?.let { eventDao ->
                     val attendees = attendeeDao.getAttendeesByEventId(eventDao.eventId).map { it.toAttendee() }
                     val photos = photoDao.getPhotosByKeys(eventDao.photoKeys).map { it.toEventPhoto() }
-                    return eventDao.toAgendaItem().copy(
+                    eventDao.toAgendaItem().copy(
                         details = (eventDao.toAgendaItem().details as AgendaItemDetails.Event).copy(
                             attendees = attendees,
                             photos = photos
                         )
                     )
                 }
-                return null
             }
-            AgendaItemType.TASK -> {
-                return taskDao.getTaskById(agendaItemId)?.toAgendaItem()
+            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> {
+                reminderDao.getReminderById(agendaItemId)?.toAgendaItem()
             }
-            AgendaItemType.REMINDER -> {
-                return reminderDao.getReminderById(agendaItemId)?.toAgendaItem()
+            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> {
+                taskDao.getTaskById(agendaItemId)?.toAgendaItem()
             }
+            else -> null
         }
     }
 
@@ -155,13 +152,15 @@ class RoomLocalAgendaDataSource @Inject constructor(
         return try {
             when(agendaItem.details) {
                 is AgendaItemDetails.Event -> {
-                    val eventEntity = agendaItem.toEventEntity().copy(
-                        hostId = hostId ?: "",
-                    )
-                    eventDao.upsertEvent(eventEntity)
-                    attendeeDao.upsertAttendees(agendaItem.details.attendees.map { it.toAttendeeEntity() })
-                    photoDao.upsertPhotos(agendaItem.details.photos.map { it.toPhotoEntity() })
-                    Result.Success(eventEntity.eventId)
+                    db.withTransaction {
+                        val eventEntity = agendaItem.toEventEntity().copy(
+                            hostId = hostId ?: "",
+                        )
+                        eventDao.upsertEvent(eventEntity)
+                        attendeeDao.upsertAttendees(agendaItem.details.attendees.map { it.toAttendeeEntity() })
+                        photoDao.upsertPhotos(agendaItem.details.photos.map { it.toPhotoEntity() })
+                        Result.Success(eventEntity.eventId)
+                    }
                 }
                 is AgendaItemDetails.Task -> {
                     val taskEntity = agendaItem.toTaskEntity()
@@ -181,25 +180,34 @@ class RoomLocalAgendaDataSource @Inject constructor(
 
     override suspend fun deleteAgendaItem(
         agendaItemId: String,
-        agendaItemType: AgendaItemType
     ) {
-        when(agendaItemType){
-            AgendaItemType.EVENT -> {
-                eventDao.deleteEventById(agendaItemId)
+        when{
+            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> {
+                db.withTransaction {
+                    val eventToDelete = eventDao.getEventById(agendaItemId)
+                    eventDao.deleteEventById(agendaItemId)
+                    eventToDelete?.photoKeys?.let {
+                        if(it.isNotEmpty()){
+                            photoDao.deletePhotosByKeys(eventToDelete.photoKeys)
+                        }
+                    }
+                }
             }
-            AgendaItemType.TASK -> {
-                taskDao.deleteTaskById(agendaItemId)
-            }
-            AgendaItemType.REMINDER -> {
+            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> {
                 reminderDao.deleteReminderById(agendaItemId)
+            }
+            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> {
+                taskDao.deleteTaskById(agendaItemId)
             }
         }
     }
 
     override suspend fun deleteAllAgendaItems() {
-        eventDao.deleteAllEvents()
-        taskDao.deleteAllTasks()
-        reminderDao.deleteAllReminders()
+        db.withTransaction {
+            eventDao.deleteAllEvents()
+            taskDao.deleteAllTasks()
+            reminderDao.deleteAllReminders()
+        }
     }
 
 }
