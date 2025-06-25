@@ -1,5 +1,7 @@
 package com.aarevalo.tasky.core.util
 
+import com.aarevalo.tasky.agenda.domain.model.ReminderType
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -7,6 +9,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.toKotlinDuration
 
 fun formattedDateTimeToString(
     date: LocalDate,
@@ -52,6 +55,15 @@ fun parseTimestampToLocalTime(
     return zonedDateTime.toLocalTime()
 }
 
+fun getReminderTypeFromLocalDateTime(
+    localDateTime: LocalDateTime,
+    reminderAt: LocalDateTime
+): ReminderType {
+    val durationBetween = Duration.between(reminderAt, localDateTime)
+    return ReminderType.entries.find { it.duration == durationBetween.toKotlinDuration()
+    }?: ReminderType.TEN_MINUTES
+}
+
 fun parseTimestampToLocalDate(
     timestampMillis: Long,
     zoneId: ZoneId = ZoneId.systemDefault()
@@ -68,6 +80,13 @@ fun parseTimestampToZonedDateTime(
     val instant = Instant.ofEpochMilli(timestampMillis)
     val zonedDateTime = instant.atZone(zoneId)
     return zonedDateTime
+}
+
+fun parseLocalDateToTimestamp(
+    localDate: LocalDate,
+): Long {
+    val localDateTime = localDate.atStartOfDay()
+    return localDateTime.toInstant(java.time.ZoneOffset.UTC).toEpochMilli()
 }
 
 fun parseLocalDateTimeToTimestamp(

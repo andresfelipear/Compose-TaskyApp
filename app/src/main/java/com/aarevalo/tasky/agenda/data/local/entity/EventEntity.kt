@@ -12,7 +12,7 @@ data class EventEntity(
     val fromTimestamp: Long,
     val toTimestamp: Long,
     val reminderAt: Long,
-    val host: String,
+    val hostId: String,
     val isUserEventCreator: Boolean,
     val photoKeys: List<String>
 )

@@ -123,12 +123,14 @@ object TaskyAgendaModule {
     @Provides
     @Singleton
     fun provideLocalAgendaDataSource(
+        database: AgendaDatabase,
         eventDao: EventDao,
         taskDao: TaskDao,
         reminderDao: ReminderDao,
         attendeeDao: AttendeeDao,
         photoDao: PhotoDao
     ): LocalAgendaDataSource = RoomLocalAgendaDataSource(
+        database,
         eventDao,
         taskDao,
         reminderDao,

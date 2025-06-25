@@ -21,7 +21,7 @@ interface PhotoDao {
     suspend fun getPhotoByKey(key: String): PhotoEntity?
 
     @Query("SELECT * FROM photos WHERE `key` IN (:keys)")
-    fun getPhotosByKeys(keys: List<String>): Flow<List<PhotoEntity>>
+    suspend fun getPhotosByKeys(keys: List<String>): List<PhotoEntity>
 
     @Query("DELETE FROM photos WHERE `key` = :key")
     suspend fun deletePhotoByKey(key: String)
