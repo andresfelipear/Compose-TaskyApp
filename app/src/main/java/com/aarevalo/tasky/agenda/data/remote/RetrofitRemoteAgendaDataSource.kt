@@ -71,7 +71,7 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         }
     }
 
-    override suspend fun createAgendaItem(agendaItem: AgendaItem): Result<Unit, DataError.Network> {
+    override suspend fun createAgendaItem(agendaItem: AgendaItem): Result<AgendaItem?, DataError.Network> {
         when(agendaItem.details){
             is AgendaItemDetails.Event -> {
 
@@ -106,16 +106,16 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
             }
             is AgendaItemDetails.Task -> {
                 val response = api.createTask(agendaItem.toTaskDto())
-                return responseToResult(response).asEmptyDataResult()
+                return responseToResult(response).map { null }
             }
             is AgendaItemDetails.Reminder -> {
                 val response = api.createReminder(agendaItem.toReminderDto())
-                return responseToResult(response).asEmptyDataResult()
+                return responseToResult(response).map { null }
             }
         }
     }
 
-    override suspend fun updateAgendaItem(agendaItem: AgendaItem, deletedPhotoKeys: List<String>, isGoing: Boolean): Result<Unit, DataError.Network> {
+    override suspend fun updateAgendaItem(agendaItem: AgendaItem, deletedPhotoKeys: List<String>, isGoing: Boolean): Result<AgendaItem?, DataError.Network> {
         when(agendaItem.details){
             is AgendaItemDetails.Event -> {
 
@@ -154,11 +154,11 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
             }
             is AgendaItemDetails.Task -> {
                 val response = api.updateTask(agendaItem.toTaskDto())
-                return responseToResult(response).asEmptyDataResult()
+                return responseToResult(response).map { null }
             }
             is AgendaItemDetails.Reminder -> {
                 val response = api.updateReminder(agendaItem.toReminderDto())
-                return responseToResult(response).asEmptyDataResult()
+                return responseToResult(response).map { null }
             }
         }
     }
@@ -190,19 +190,22 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         return responseToResult(response).asEmptyDataResult()
     }
 
-    override suspend fun deleteAgendaItem(agendaItemId: String, type: AgendaItemType): EmptyResult<DataError.Network> {
-        when(type){
-            AgendaItemType.EVENT -> {
+    override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError.Network> {
+        return when{
+            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> {
                 val response = api.deleteEvent(agendaItemId)
-                return responseToResult(response).asEmptyDataResult()
+               responseToResult(response).asEmptyDataResult()
             }
-            AgendaItemType.TASK -> {
+            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> {
                 val response = api.deleteTask(agendaItemId)
-                return responseToResult(response).asEmptyDataResult()
+                responseToResult(response).asEmptyDataResult()
             }
-            AgendaItemType.REMINDER -> {
+            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> {
                 val response = api.deleteReminder(agendaItemId)
-                return responseToResult(response).asEmptyDataResult()
+                responseToResult(response).asEmptyDataResult()
+            }
+            else -> {
+                Result.Error(DataError.Network.BAD_REQUEST)
             }
         }
     }
