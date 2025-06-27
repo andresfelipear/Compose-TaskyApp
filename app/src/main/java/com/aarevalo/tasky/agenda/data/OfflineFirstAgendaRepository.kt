@@ -5,7 +5,6 @@ import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
-import com.aarevalo.tasky.core.data.networking.responseToResult
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.domain.util.EmptyResult

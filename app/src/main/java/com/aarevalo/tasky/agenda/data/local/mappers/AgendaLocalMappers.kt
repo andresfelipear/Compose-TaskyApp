@@ -26,6 +26,7 @@ fun EventEntity.toAgendaItem(): AgendaItem {
         description = description,
         title = title,
         reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        hostId = hostId,
         details = AgendaItemDetails.Event(
             toTime = parseTimestampToLocalTime(toTimestamp),
             toDate = parseTimestampToLocalDate(toTimestamp),
@@ -63,6 +64,7 @@ fun TaskEntity.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(time),
         description = description,
         title = title,
+        hostId = "",
         reminderAt = parseTimestampToZonedDateTime(reminderAt),
         details = AgendaItemDetails.Task(
             isDone = isDone
@@ -77,8 +79,10 @@ fun ReminderEntity.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(time),
         description = description,
         title = title,
+        hostId = "",
         reminderAt = parseTimestampToZonedDateTime(time).minus(remindAt.duration.toJavaDuration()),
-        details = AgendaItemDetails.Reminder
+        details = AgendaItemDetails.Reminder,
+
     )
 }
 
@@ -96,7 +100,7 @@ fun AgendaItem.toEventEntity(): EventEntity{
             localTime = details.toTime
         ),
         reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
-        hostId = "",
+        hostId = hostId,
         isUserEventCreator = details.isUserEventCreator,
         photoKeys = details.photos.map { it.key }
     )

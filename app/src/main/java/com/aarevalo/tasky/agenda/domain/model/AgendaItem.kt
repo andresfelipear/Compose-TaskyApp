@@ -13,6 +13,7 @@ data class AgendaItem(
     val title: String,
     val reminderAt: ZonedDateTime,
     val details: AgendaItemDetails,
+    val hostId: String
 ){
     companion object {
         const val PREFIX_EVENT_ID = "event_"

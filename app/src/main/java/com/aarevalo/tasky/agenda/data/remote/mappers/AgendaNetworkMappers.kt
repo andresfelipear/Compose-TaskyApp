@@ -32,7 +32,8 @@ fun EventDto.toAgendaItem(): AgendaItem {
             attendees = attendees.map { it.toAttendee() },
             isUserEventCreator = isUserEventCreator,
 
-        )
+        ),
+        hostId = hostId
     )
 }
 
@@ -46,7 +47,8 @@ fun TaskDto.toAgendaItem(): AgendaItem {
         reminderAt = parseTimestampToZonedDateTime(reminderAt),
         details = AgendaItemDetails.Task(
             isDone = isDone
-        )
+        ),
+        hostId = ""
     )
 }
 
@@ -58,7 +60,8 @@ fun ReminderDto.toAgendaItem(): AgendaItem {
         description = description,
         title = title,
         reminderAt = parseTimestampToZonedDateTime(reminderAt),
-        details = AgendaItemDetails.Reminder
+        details = AgendaItemDetails.Reminder,
+        hostId = ""
     )
 }
 
