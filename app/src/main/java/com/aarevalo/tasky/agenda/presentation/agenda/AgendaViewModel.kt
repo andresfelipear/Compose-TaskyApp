@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
     private val sessionStorage: SessionStorage,
-    private val agendaRepository: AgendaRepository
+    private val agendaRepository: AgendaRepository,
 ): ViewModel(){
 
 
@@ -88,6 +88,9 @@ class AgendaViewModel @Inject constructor(
             }
             is AgendaScreenAction.OnDeleteAgendaItem -> {
                 /* TODO delete agenda item remotely and in the database */
+                viewModelScope.launch {
+                    agendaRepository.deleteAgendaItem(action.agendaItemId)
+                }
                 _state.update {
                     it.copy(
                         agendaItems = it.agendaItems.filter { item ->
@@ -108,6 +111,14 @@ class AgendaViewModel @Inject constructor(
                 it.copy(
                     initials = session?.fullName!!.toInitials(),
                 )
+            }
+            agendaRepository.fetchAgendaItems()
+            agendaRepository.getAgendaItemsByDate(state.value.selectedDate).collect {
+                _state.update { currentState ->
+                    currentState.copy(
+                        agendaItems = it
+                    )
+                }
             }
         }
     }

@@ -29,6 +29,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -143,12 +145,17 @@ object TaskyAgendaModule {
     fun provideAgendaRepository(
         remoteAgendaDataSource: RemoteAgendaDataSource,
         localAgendaSource: LocalAgendaDataSource,
-        sessionStorage: SessionStorage
+        sessionStorage: SessionStorage,
+        pendingItemSyncDao: PendingItemSyncDao,
+        coroutineScope: CoroutineScope
+
     ) : AgendaRepository {
         return OfflineFirstAgendaRepository(
             remoteAgendaDataSource,
             localAgendaSource,
-            sessionStorage
+            sessionStorage,
+            coroutineScope,
+            pendingItemSyncDao
         )
     }
 
@@ -165,5 +172,11 @@ object TaskyAgendaModule {
     @Singleton
     fun provideDispatcherProvider(): DispatcherProvider {
         return StandardDispatcherProvider
+    }
+
+    @Provides
+    @Singleton
+    fun provideCoroutineScope(): CoroutineScope {
+        return CoroutineScope(Dispatchers.IO)
     }
 }

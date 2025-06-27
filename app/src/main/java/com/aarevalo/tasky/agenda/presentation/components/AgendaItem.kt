@@ -200,7 +200,8 @@ fun AgendaItemPreview() {
                 details = AgendaItemDetails.Task(),
                 fromTime = LocalTime.now(),
                 fromDate = LocalDate.now(),
-                reminderAt = ZonedDateTime.now()
+                reminderAt = ZonedDateTime.now(),
+                hostId = ""
                 ),
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(

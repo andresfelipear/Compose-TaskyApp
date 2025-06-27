@@ -110,7 +110,8 @@ fun AgendaListPreview(){
                             .plusMinutes(31),
                         fromDate = LocalDate.now(),
                         details = AgendaItemDetails.Event(),
-                        reminderAt = ZonedDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        hostId = ""
                     ),
                     AgendaItem(
                         id = "2",
@@ -120,7 +121,8 @@ fun AgendaListPreview(){
                             .plusMinutes(32),
                         details = AgendaItemDetails.Task(),
                         fromDate = LocalDate.now(),
-                        reminderAt = ZonedDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        hostId = ""
                     ),
                     AgendaItem(
                         id = "3",
@@ -130,7 +132,8 @@ fun AgendaListPreview(){
                             .plusMinutes(33),
                         fromDate = LocalDate.now(),
                         details = AgendaItemDetails.Event(),
-                        reminderAt = ZonedDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        hostId = ""
                     ),
                     AgendaItem(
                         id = "4",
@@ -140,7 +143,8 @@ fun AgendaListPreview(){
                             .plusMinutes(0),
                         details = AgendaItemDetails.Reminder,
                         fromDate = LocalDate.now(),
-                        reminderAt = ZonedDateTime.now()
+                        reminderAt = ZonedDateTime.now(),
+                        hostId = ""
                     )
                 )
             ),
