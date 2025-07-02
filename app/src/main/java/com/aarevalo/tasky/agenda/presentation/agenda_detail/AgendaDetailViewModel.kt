@@ -471,8 +471,10 @@ class AgendaDetailViewModel @Inject constructor(
                     var details = agendaItem.details
                     if(agendaItem.details is AgendaItemDetails.Event){
                         val eventCreator : Attendee = agendaItem.details.attendees.first { it.userId == agendaItem.hostId }
+                        val localAttendee : Attendee = agendaItem.details.attendees.first { it.userId == sessionStorage.getSession()?.userId }
                         details = (details as AgendaItemDetails.Event).copy(
-                            eventCreator = eventCreator
+                            eventCreator = eventCreator,
+                            localAttendee = localAttendee
                         )
                     }
 

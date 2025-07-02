@@ -60,7 +60,7 @@ interface TaskyAgendaApi {
     @Multipart
     @PUT("event")
     suspend fun updateEvent(
-        @Part("create_event_request")eventRequest: EventUpdateRequest,
+        @Part("update_event_request")eventRequest: EventUpdateRequest,
         @Part vararg photos: MultipartBody.Part
     ): Response<EventDto>
 

@@ -90,7 +90,8 @@ class OfflineFirstAgendaRepository @Inject constructor(
         return when(val remoteResult = remoteAgendaSource.updateAgendaItem(agendaItem, deletedPhotoKeys, isGoing)){
             is Result.Error -> {
                 localAgendaSource.deleteAgendaItem(agendaItem.id)
-                println("Error: creating agenda item remotely!")
+                println("Error: updating agenda item remotely!")
+                println("Error: $remoteResult")
                 remoteResult.asEmptyDataResult()
             }
             is Result.Success -> {
