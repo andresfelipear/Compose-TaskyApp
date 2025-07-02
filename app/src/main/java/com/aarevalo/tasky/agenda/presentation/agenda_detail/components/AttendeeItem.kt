@@ -116,7 +116,7 @@ fun AttendeeItemPreview(){
                 fullName = "Andres Arevalo",
                 email = "john.c.breckinridge@altostrat.com",
                 isGoing = true,
-                reminderAt = ZonedDateTime.now(),
+                remindAt = ZonedDateTime.now(),
                 eventId = "123456"
             ),
             eventDetails = AgendaItemDetails.Event(
@@ -126,7 +126,7 @@ fun AttendeeItemPreview(){
                     fullName = "John Doe",
                     email = "robert.cooper.grier@examplepetstore.com",
                     isGoing = true,
-                    reminderAt = ZonedDateTime.now(),
+                    remindAt = ZonedDateTime.now(),
                     eventId = "123456"
                 )
             ),

@@ -5,10 +5,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.R
+import com.aarevalo.tasky.agenda.domain.AgendaRepository
+import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
+import com.aarevalo.tasky.core.domain.util.Result
+import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.core.presentation.util.UiText
 import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import com.aarevalo.tasky.core.util.toTitleCase
@@ -33,7 +38,8 @@ class AgendaDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val sessionStorage: SessionStorage,
     private val inputValidator: InputValidator,
-    private val applicationContext: Application
+    private val applicationContext: Application,
+    private val agendaRepository: AgendaRepository
 ): ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -52,6 +58,14 @@ class AgendaDetailViewModel @Inject constructor(
     private val eventChannel = Channel<AgendaDetailScreenEvent>()
     val event = eventChannel.receiveAsFlow()
 
+    private val existingAgendaItemId = savedStateHandle.get<String>("agendaItemId")
+
+    private val agendaItemType = savedStateHandle.get<String>("type")?.let {
+        AgendaItemType.valueOf(it)
+    }
+    ?: throw IllegalArgumentException("Agenda item type must be provided")
+
+    private val isEditable = savedStateHandle.get<Boolean>("isEditable")?:false
 
     private val deletedRemotePhotos = MutableStateFlow<List<EventPhoto.Remote>>(emptyList())
 
@@ -59,26 +73,41 @@ class AgendaDetailViewModel @Inject constructor(
         when(action){
             is AgendaDetailScreenAction.OnFromDateChanged -> {
                 _state.update {
-                    it.copy(
-                        fromDate = action.date,
-                        details = (it.details as AgendaItemDetails.Event).copy(
-                            toDate = if(action.date > it.details.toDate) action.date else it.details.toDate
-                        ),
-                        isFromDateDialogVisible = false
-                    )
+                    if(it.details is AgendaItemDetails.Event){
+                        it.copy(
+                            fromDate = action.date,
+                            details = it.details.copy(
+                                toDate = if(action.date > it.details.toDate) action.date else it.details.toDate
+                            ),
+                            isFromDateDialogVisible = false
+                        )
+                    } else {
+                        it.copy(
+                            fromDate = action.date,
+                            isFromDateDialogVisible = false
+                        )
+                    }
+
                 }
             }
 
 
             is AgendaDetailScreenAction.OnFromTimeChanged -> {
                 _state.update {
-                    it.copy(
-                        fromTime = action.time,
-                        details = (it.details as AgendaItemDetails.Event).copy(
-                            toTime = if(action.time > it.details.toTime) action.time else it.details.toTime
-                        ),
-                        isFromTimeDialogVisible = false
-                    )
+                    if(it.details is AgendaItemDetails.Event) {
+                        it.copy(
+                            fromTime = action.time,
+                            details = it.details.copy(
+                                toTime = if(action.time > it.details.toTime) action.time else it.details.toTime
+                            ),
+                            isFromTimeDialogVisible = false
+                        )
+                    } else {
+                        it.copy(
+                            fromTime = action.time,
+                            isFromTimeDialogVisible = false
+                        )
+                    }
                 }
             }
 
@@ -194,7 +223,7 @@ class AgendaDetailViewModel @Inject constructor(
                         fullName = "Test Name",
                         email = action.email,
                         isGoing = true,
-                        reminderAt = ZonedDateTime.now(),
+                        remindAt = ZonedDateTime.now(),
                         eventId = "123456"
                     )
                     _state.update {
@@ -256,15 +285,114 @@ class AgendaDetailViewModel @Inject constructor(
                         isSavingItem = true
                     )
                 }
-                /* TODO save changes in the api */
-                viewModelScope.launch {
-                    delay(timeMillis = 1000)
-                    _state.update {
-                        it.copy(
-                            isSavingItem = false
-                        )
+
+                viewModelScope.launch  {
+                    val userId = sessionStorage.getSession()?.userId
+                    if(userId != null){
+                        println("userId: $userId")
+                        if(existingAgendaItemId != null){
+
+                            val result = agendaRepository.updateAgendaItem(
+                                agendaItem = AgendaItem(
+                                    id = existingAgendaItemId,
+                                    title = state.value.title,
+                                    description = state.value.description,
+                                    fromDate = state.value.fromDate,
+                                    fromTime = state.value.fromTime,
+                                    remindAt = state.value.remindAt,
+                                    hostId = userId,
+                                    details = state.value.details,
+                                ),
+                                deletedPhotoKeys = if(state.value.details is AgendaItemDetails.Event) deletedRemotePhotos.value.map { it.key } else emptyList(),
+                                isGoing = if(state.value.details is AgendaItemDetails.Event) (state.value.details as AgendaItemDetails.Event).localAttendee?.isGoing ?: false else false
+                            )
+
+                            _state.update {
+                                it.copy(
+                                    isSavingItem = false
+                                )
+                            }
+                            when(result){
+                                is Result.Error -> {
+                                    eventChannel.send(
+                                        AgendaDetailScreenEvent.Error(
+                                            result.error.asUiText()
+                                        )
+                                    )
+                                }
+                                is Result.Success -> {
+                                    eventChannel.send(AgendaDetailScreenEvent.ItemSaved)
+                                }
+                            }
+                        } else {
+                            println("Creating new agenda item")
+
+                            val result = when(agendaItemType){
+                                AgendaItemType.EVENT -> {
+                                    agendaRepository.createAgendaItem(
+                                        agendaItem = AgendaItem(
+                                            id = AgendaItem.PREFIX_EVENT_ID + UUID.randomUUID().toString(),
+                                            title = _state.value.title,
+                                            description = state.value.description,
+                                            fromDate = state.value.fromDate,
+                                            fromTime = state.value.fromTime,
+                                            remindAt = state.value.remindAt,
+                                            hostId = userId,
+                                            details = state.value.details,
+                                        )
+                                    )
+                                }
+                                AgendaItemType.TASK -> {
+                                    agendaRepository.createAgendaItem(
+                                        agendaItem = AgendaItem(
+                                            id = AgendaItem.PREFIX_TASK_ID + UUID.randomUUID().toString(),
+                                            title = state.value.title,
+                                            description = state.value.description,
+                                            fromDate = state.value.fromDate,
+                                            fromTime = state.value.fromTime,
+                                            remindAt = state.value.remindAt,
+                                            hostId = userId,
+                                            details = state.value.details,
+                                        )
+                                    )
+                                }
+                                AgendaItemType.REMINDER -> {
+                                    agendaRepository.createAgendaItem(
+                                        agendaItem = AgendaItem(
+                                            id = AgendaItem.PREFIX_REMINDER_ID + UUID.randomUUID().toString(),
+                                            title = state.value.title,
+                                            description = state.value.description,
+                                            fromDate = state.value.fromDate,
+                                            fromTime = state.value.fromTime,
+                                            remindAt = state.value.remindAt,
+                                            hostId = userId,
+                                            details = state.value.details,
+                                        )
+                                    )
+                                }
+                            }
+                            _state.update {
+                                it.copy(
+                                    isSavingItem = false
+                                )
+                            }
+                            when(result){
+                                is Result.Error -> {
+                                    eventChannel.send(
+                                        AgendaDetailScreenEvent.Error(
+                                            result.error.asUiText()
+                                        )
+                                    )
+                                }
+                                is Result.Success -> {
+                                    eventChannel.send(AgendaDetailScreenEvent.ItemCreated)
+                                }
+                            }
+
+                        }
+                    } else {
+                        /** TODO NAVIGATE BACK TO LOGIN SCREEN */
                     }
-                    eventChannel.send(AgendaDetailScreenEvent.ItemSaved)
                 }
             }
 
@@ -332,28 +460,45 @@ class AgendaDetailViewModel @Inject constructor(
 
     private fun loadInitialData() {
 
-        val existingAgendaItemId = savedStateHandle.get<String>("agendaItemId")
-        val agendaItemType = savedStateHandle.get<String>("type")
-            ?: throw IllegalArgumentException("Agenda item type must be provided")
-        val isEditable = savedStateHandle.get<Boolean>("isEditable")?:false
-
         println("existingAgendaItemId: $existingAgendaItemId")
         println("agendaItemType: $agendaItemType")
         println("isEditable: $isEditable")
 
         if(existingAgendaItemId != null){
-            /* TODO fetch agenda item from api */
+            viewModelScope.launch {
+                val agendaItem = agendaRepository.getAgendaItemById(existingAgendaItemId)
+                agendaItem?.let {
+                    var details = agendaItem.details
+                    if(agendaItem.details is AgendaItemDetails.Event){
+                        val eventCreator : Attendee = agendaItem.details.attendees.first { it.userId == agendaItem.hostId }
+                        details = (details as AgendaItemDetails.Event).copy(
+                            eventCreator = eventCreator
+                        )
+                    }
+
+                    _state.update {
+                        it.copy(
+                            isEditable = isEditable,
+                            title = agendaItem.title,
+                            description = agendaItem.description,
+                            fromDate = agendaItem.fromDate,
+                            fromTime = agendaItem.fromTime,
+                            details = details,
+                        )
+                    }
+                }
+            }
         } else{
             _state.update {
                 it.copy(
-                    details = AgendaItemDetails.fromString(agendaItemType),
-                    isEditable = isEditable,
                     title = UiText.StringResource(id = R.string.new_agenda_item_title, args = arrayOf(agendaItemType)).asString(
                         applicationContext
                     ).toTitleCase(),
                     description = UiText.StringResource(id = R.string.new_agenda_item_description, args = arrayOf(agendaItemType)).asString(
                         applicationContext
-                    ).toTitleCase()
+                    ).toTitleCase(),
+                    isEditable = isEditable,
+                    details = AgendaItemDetails.fromAgendaItemType(agendaItemType),
                 )
             }
         }
@@ -361,7 +506,6 @@ class AgendaDetailViewModel @Inject constructor(
 
     private fun observeAttendeeChanges(){
         viewModelScope.launch {
-
             _state
                 .mapNotNull { it.details.asEventDetails?.attendees }
                 .distinctUntilChanged()

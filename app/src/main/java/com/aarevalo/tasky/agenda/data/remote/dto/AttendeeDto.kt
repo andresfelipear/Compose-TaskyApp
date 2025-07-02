@@ -9,5 +9,5 @@ data class AttendeeDto(
     val email: String,
     val eventId: String,
     val isGoing: Boolean,
-    val reminderAt: Long,
+    val remindAt: Long,
 )

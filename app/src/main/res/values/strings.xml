@@ -86,4 +86,6 @@
     <string name="new_agenda_item_description">%s description</string>
     <string name="error_bad_request">Bad request! Some of the arguments passed are not valid</string>
     <string name="error_unauthorized">Not authorized to make this request.</string>
+    <string name="event_saved_successfully">Agenda Item was created Successfully!</string>
+    <string name="back_to_login_screen">There was an error with your current session. Please login again</string>
 </resources>

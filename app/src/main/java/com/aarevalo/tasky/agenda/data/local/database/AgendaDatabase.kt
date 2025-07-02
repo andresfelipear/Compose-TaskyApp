@@ -29,7 +29,7 @@ import com.aarevalo.tasky.agenda.data.local.entity.TaskEntity
         DeletedItemSyncEntity::class,
         PendingItemSyncEntity::class
     ],
-    version = 1
+    version = 2
 )
 @TypeConverters(PhotoListConverter::class)
 abstract class AgendaDatabase : RoomDatabase() {

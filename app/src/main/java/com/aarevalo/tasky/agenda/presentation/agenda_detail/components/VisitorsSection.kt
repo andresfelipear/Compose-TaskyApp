@@ -90,38 +90,37 @@ fun VisitorsSection(
                 }
             }
         }
+        if(eventDetails.attendees.isNotEmpty()){
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ){
-            VisitorFilterType.entries.forEach { filter ->
-                var buttonColors = ButtonColors(
-                    containerColor = colors.surfaceHigher,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    disabledContainerColor = colors.onSurfaceVariant70,
-                    disabledContentColor = MaterialTheme.colorScheme.onSurface
-                )
-                if(filter == attendeesState.selectedFilter){
-                    buttonColors = buttonColors.copy(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ){
+                VisitorFilterType.entries.forEach { filter ->
+                    var buttonColors = ButtonColors(
+                        containerColor = colors.surfaceHigher,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContainerColor = colors.onSurfaceVariant70,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                    if(filter == attendeesState.selectedFilter){
+                        buttonColors = buttonColors.copy(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                    TaskyActionButton(
+                        modifier = Modifier
+                            .weight(1f),
+                        onClick = { onFilterTypeChanged(filter) },
+                        colors = buttonColors,
+                        text = filter.asUiText().asString(),
+                        textStyle = MaterialTheme.typography.labelSmall,
+                        verticalPadding = 5.dp,
                     )
                 }
-                TaskyActionButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = { onFilterTypeChanged(filter) },
-                    colors = buttonColors,
-                    text = filter.asUiText().asString(),
-                    textStyle = MaterialTheme.typography.labelSmall,
-                    verticalPadding = 5.dp,
-                )
             }
-        }
-
-        if(eventDetails.attendees.isNotEmpty()){
 
             if(attendeesState.selectedFilter == VisitorFilterType.ALL || attendeesState.selectedFilter == VisitorFilterType.GOING){
                 Column(
@@ -197,7 +196,7 @@ fun VisitorsSectionPreview(){
                         fullName = "John Doe",
                         email = "james.monroe@examplepetstore.com",
                         isGoing = true,
-                        reminderAt = ZonedDateTime.now(),
+                        remindAt = ZonedDateTime.now(),
                         eventId = "123456"
                     ),
                     Attendee(
@@ -205,7 +204,7 @@ fun VisitorsSectionPreview(){
                         fullName = "Jane Doe",
                         email = "john.mckinley@examplepetstore.com",
                         isGoing = false,
-                        reminderAt = ZonedDateTime.now(),
+                        remindAt = ZonedDateTime.now(),
                         eventId = "123456"
                     ),
                     Attendee(
@@ -213,7 +212,7 @@ fun VisitorsSectionPreview(){
                         fullName = "Andres Arevalo",
                         email = "john.mckinley@examplepetstore.com",
                         isGoing = false,
-                        reminderAt = ZonedDateTime.now(),
+                        remindAt = ZonedDateTime.now(),
                         eventId = "123456"
                     ),
                 ),
@@ -223,7 +222,7 @@ fun VisitorsSectionPreview(){
                     fullName = "John Doe",
                     email = "john.mclean@examplepetstore.com",
                     isGoing = true,
-                    reminderAt = ZonedDateTime.now(),
+                    remindAt = ZonedDateTime.now(),
                     eventId = "123456"
                 ),
             ),

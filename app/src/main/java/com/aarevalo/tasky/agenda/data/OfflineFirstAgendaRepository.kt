@@ -52,10 +52,12 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError> {
+        println("Creating agenda item locally!")
         val localResult = localAgendaSource.upsertAgendaItem(agendaItem)
         if(localResult is Result.Error){
             return localResult.asEmptyDataResult()
         }
+        println("Creating agenda item remotely!")
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
                 localAgendaSource.deleteAgendaItem(agendaItem.id)

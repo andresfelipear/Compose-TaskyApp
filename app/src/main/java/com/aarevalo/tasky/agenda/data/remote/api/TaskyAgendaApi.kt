@@ -1,8 +1,9 @@
 package com.aarevalo.tasky.agenda.data.remote.api
 
 import com.aarevalo.tasky.agenda.data.remote.dto.AgendaResponse
+import com.aarevalo.tasky.agenda.data.remote.dto.EventCreateRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.EventDto
-import com.aarevalo.tasky.agenda.data.remote.dto.EventRequest
+import com.aarevalo.tasky.agenda.data.remote.dto.EventUpdateRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.SyncAgendaRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.GetAttendeeResponse
 import com.aarevalo.tasky.agenda.data.remote.dto.ReminderDto
@@ -42,7 +43,7 @@ interface TaskyAgendaApi {
     @Multipart
     @POST("event")
     suspend fun createEvent(
-        @Part("create_event_request")eventRequest: EventRequest,
+        @Part("create_event_request")eventRequest: EventCreateRequest,
         @Part vararg photos: MultipartBody.Part
     ): Response<EventDto>
 
@@ -59,7 +60,7 @@ interface TaskyAgendaApi {
     @Multipart
     @PUT("event")
     suspend fun updateEvent(
-        @Part("create_event_request")eventRequest: EventRequest,
+        @Part("create_event_request")eventRequest: EventUpdateRequest,
         @Part vararg photos: MultipartBody.Part
     ): Response<EventDto>
 

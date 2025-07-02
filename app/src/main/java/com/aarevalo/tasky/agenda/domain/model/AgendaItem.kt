@@ -11,7 +11,7 @@ data class AgendaItem(
     val fromDate: LocalDate,
     val description: String,
     val title: String,
-    val reminderAt: ZonedDateTime,
+    val remindAt: ZonedDateTime,
     val details: AgendaItemDetails,
     val hostId: String
 ){

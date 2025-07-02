@@ -57,9 +57,9 @@ fun parseTimestampToLocalTime(
 
 fun getReminderTypeFromLocalDateTime(
     localDateTime: LocalDateTime,
-    reminderAt: LocalDateTime
+    remindAt: LocalDateTime
 ): ReminderType {
-    val durationBetween = Duration.between(reminderAt, localDateTime)
+    val durationBetween = Duration.between(remindAt, localDateTime)
     return ReminderType.entries.find { it.duration == durationBetween.toKotlinDuration()
     }?: ReminderType.TEN_MINUTES
 }

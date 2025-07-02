@@ -99,6 +99,15 @@ fun AgendaDetailScreenRoot(
                 ).show()
                 navController.navigate(Destination.Route.AgendaRoute)
             }
+            is AgendaDetailScreenEvent.ItemCreated -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.event_saved_successfully,
+                    Toast.LENGTH_LONG
+                ).show()
+                navController.navigate(Destination.Route.AgendaRoute)
+            }
             is AgendaDetailScreenEvent.Error -> {
                 keyboardController?.hide()
                 Toast.makeText(

@@ -25,7 +25,7 @@ fun EventEntity.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(fromTimestamp),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        remindAt = parseTimestampToZonedDateTime(remindAt),
         hostId = hostId,
         details = AgendaItemDetails.Event(
             toTime = parseTimestampToLocalTime(toTimestamp),
@@ -44,7 +44,7 @@ fun AttendeeEntity.toAttendee(): Attendee{
         fullName = fullName,
         email = email,
         isGoing = isGoing ?: true,
-        reminderAt = reminderAt?.let {
+        remindAt = remindAt?.let {
             parseTimestampToZonedDateTime(it)
         } ?: parseTimestampToZonedDateTime(System.currentTimeMillis())
     )
@@ -65,7 +65,7 @@ fun TaskEntity.toAgendaItem(): AgendaItem {
         description = description,
         title = title,
         hostId = "",
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Task(
             isDone = isDone
         )
@@ -80,10 +80,10 @@ fun ReminderEntity.toAgendaItem(): AgendaItem {
         description = description,
         title = title,
         hostId = "",
-        reminderAt = parseTimestampToZonedDateTime(time).minus(remindAt.duration.toJavaDuration()),
+        remindAt = parseTimestampToZonedDateTime(time).minus(remindAt.duration.toJavaDuration()),
         details = AgendaItemDetails.Reminder,
 
-    )
+        )
 }
 
 fun AgendaItem.toEventEntity(): EventEntity{
@@ -99,7 +99,7 @@ fun AgendaItem.toEventEntity(): EventEntity{
             localDate = (details as AgendaItemDetails.Event).toDate,
             localTime = details.toTime
         ),
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
+        remindAt = parseZonedDateTimeToTimestamp(remindAt),
         hostId = hostId,
         isUserEventCreator = details.isUserEventCreator,
         photoKeys = details.photos.map { it.key }
@@ -115,13 +115,13 @@ fun AgendaItem.toTaskEntity(): TaskEntity{
             localDate = fromDate,
             localTime = fromTime
         ),
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
+        remindAt = parseZonedDateTimeToTimestamp(remindAt),
         isDone = (details as AgendaItemDetails.Task).isDone
     )
 }
 
 fun AgendaItem.toReminderEntity(): ReminderEntity {
-    val reminderAtToLocalDateTime = reminderAt.toLocalDateTime()
+    val remindAtToLocalDateTime = remindAt.toLocalDateTime()
     val localDateTime = LocalDateTime.of(fromDate, fromTime)
     return ReminderEntity(
         reminderId = id,
@@ -133,7 +133,7 @@ fun AgendaItem.toReminderEntity(): ReminderEntity {
         ),
         remindAt = getReminderTypeFromLocalDateTime(
             localDateTime = localDateTime,
-            reminderAt = reminderAtToLocalDateTime
+            remindAt = remindAtToLocalDateTime
         )
     )
 }
@@ -145,7 +145,7 @@ fun Attendee.toAttendeeEntity(): AttendeeEntity{
         fullName = fullName,
         email = email,
         isGoing = isGoing,
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt)
+        remindAt = parseZonedDateTimeToTimestamp(remindAt)
     )
 }
 

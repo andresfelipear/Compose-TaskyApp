@@ -77,7 +77,9 @@ object TaskyAgendaModule {
             context.applicationContext,
             AgendaDatabase::class.java,
             "agenda_database"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(true)
+            .build()
     }
 
     @Provides

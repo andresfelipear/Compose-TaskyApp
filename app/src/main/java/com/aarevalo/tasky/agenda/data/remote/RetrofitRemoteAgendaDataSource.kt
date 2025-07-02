@@ -4,7 +4,8 @@ import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.agenda.data.remote.dto.SyncAgendaRequest
 import com.aarevalo.tasky.agenda.data.remote.mappers.toAgendaItem
 import com.aarevalo.tasky.agenda.data.remote.mappers.toAttendee
-import com.aarevalo.tasky.agenda.data.remote.mappers.toEventRequest
+import com.aarevalo.tasky.agenda.data.remote.mappers.toEventCreateRequest
+import com.aarevalo.tasky.agenda.data.remote.mappers.toEventUpdateRequest
 import com.aarevalo.tasky.agenda.data.remote.mappers.toReminderDto
 import com.aarevalo.tasky.agenda.data.remote.mappers.toTaskDto
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
@@ -75,7 +76,7 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         when(agendaItem.details){
             is AgendaItemDetails.Event -> {
 
-                val eventRequest = agendaItem.toEventRequest()
+                val eventRequest = agendaItem.toEventCreateRequest()
                 val photoParts = mutableListOf<MultipartBody.Part>()
 
                 agendaItem.details.photos.forEachIndexed{ index, eventPhoto ->
@@ -105,7 +106,9 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
                 return responseToResult(response).map { it.toAgendaItem() }
             }
             is AgendaItemDetails.Task -> {
+                println("Creating task remotely! API call")
                 val response = api.createTask(agendaItem.toTaskDto())
+                println("Response: $response")
                 return responseToResult(response).map { null }
             }
             is AgendaItemDetails.Reminder -> {
@@ -119,7 +122,7 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         when(agendaItem.details){
             is AgendaItemDetails.Event -> {
 
-                val eventRequest = agendaItem.toEventRequest().copy(
+                val eventRequest = agendaItem.toEventUpdateRequest().copy(
                     deletedPhotoKeys = deletedPhotoKeys,
                     isGoing = isGoing
                 )

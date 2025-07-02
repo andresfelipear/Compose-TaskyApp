@@ -26,7 +26,6 @@ class AgendaViewModel @Inject constructor(
     private val agendaRepository: AgendaRepository,
 ): ViewModel(){
 
-
     private val _state = MutableStateFlow(AgendaScreenState(
     ))
 
@@ -72,22 +71,9 @@ class AgendaViewModel @Inject constructor(
                 }
             }
             is AgendaScreenAction.OnLogout -> {
-                viewModelScope.launch {
-                    when(val result = agendaRepository.logout()) {
-                        is Result.Error -> {
-                            eventChannel.send(
-                                AgendaScreenEvent.Error(
-                                    result.error.asUiText()
-                                ))
-                        }
-                        is Result.Success -> {
-                            eventChannel.send(AgendaScreenEvent.SuccessLogout)
-                        }
-                    }
-                }
+               logout()
             }
             is AgendaScreenAction.OnDeleteAgendaItem -> {
-                /* TODO delete agenda item remotely and in the database */
                 viewModelScope.launch {
                     agendaRepository.deleteAgendaItem(action.agendaItemId)
                 }
@@ -107,17 +93,25 @@ class AgendaViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch {
             val session = sessionStorage.getSession()
-            _state.update {
-                it.copy(
-                    initials = session?.fullName!!.toInitials(),
-                )
-            }
-            agendaRepository.fetchAgendaItems()
-            agendaRepository.getAgendaItemsByDate(state.value.selectedDate).collect {
-                _state.update { currentState ->
-                    currentState.copy(
-                        agendaItems = it
+
+            println("session: $session")
+            println("session?.fullName: ${session?.fullName}")
+
+            if(session?.fullName.isNullOrBlank()){
+                eventChannel.send(AgendaScreenEvent.GoingBackToLoginScreen)
+            } else {
+                _state.update {
+                    it.copy(
+                        initials = session?.fullName!!.toInitials(),
                     )
+                }
+                agendaRepository.fetchAgendaItems()
+                agendaRepository.getAgendaItemsByDate(state.value.selectedDate).collect {
+                    _state.update { currentState ->
+                        currentState.copy(
+                            agendaItems = it
+                        )
+                    }
                 }
             }
         }
@@ -131,5 +125,21 @@ class AgendaViewModel @Inject constructor(
             it.plusDays(1)
         }.takeWhile{ !it.isAfter(end)}
             .toList()
+    }
+
+    private fun logout() {
+        viewModelScope.launch {
+            when(val result = agendaRepository.logout()) {
+                is Result.Error -> {
+                    eventChannel.send(
+                        AgendaScreenEvent.Error(
+                            result.error.asUiText()
+                        ))
+                }
+                is Result.Success -> {
+                    eventChannel.send(AgendaScreenEvent.SuccessLogout)
+                }
+            }
+        }
     }
 }

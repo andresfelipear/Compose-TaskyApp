@@ -22,5 +22,5 @@ data class AttendeeEntity(
     val email: String,
     val eventId: String?,
     val isGoing: Boolean?,
-    val reminderAt: Long?,
+    val remindAt: Long?,
 )
