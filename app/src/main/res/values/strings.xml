@@ -88,4 +88,6 @@
     <string name="error_unauthorized">Not authorized to make this request.</string>
     <string name="event_saved_successfully">Agenda Item was created Successfully!</string>
     <string name="back_to_login_screen">There was an error with your current session. Please login again</string>
+    <string name="attendee_not_found">The attendee with the given email doesn\'t exist</string>
+    <string name="attendee_already_added">The Attendee with the given email was already added!</string>
 </resources>

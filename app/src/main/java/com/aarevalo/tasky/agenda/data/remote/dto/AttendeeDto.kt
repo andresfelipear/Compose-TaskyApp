@@ -7,7 +7,7 @@ data class AttendeeDto(
     val userId: String,
     val fullName: String,
     val email: String,
-    val eventId: String,
-    val isGoing: Boolean,
-    val remindAt: Long,
+    val eventId: String?,
+    val isGoing: Boolean?,
+    val remindAt: Long?,
 )

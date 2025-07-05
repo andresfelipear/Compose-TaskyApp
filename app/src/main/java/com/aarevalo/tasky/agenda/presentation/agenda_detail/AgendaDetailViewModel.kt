@@ -19,7 +19,6 @@ import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import com.aarevalo.tasky.core.util.toTitleCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -29,7 +28,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 import java.util.UUID
 import javax.inject.Inject
 
@@ -206,37 +204,79 @@ class AgendaDetailViewModel @Inject constructor(
 
             is AgendaDetailScreenAction.OnAddAttendee -> {
                 viewModelScope.launch {
+                    val eventDetails = state.value.details.asEventDetails
+                    requireNotNull(eventDetails) { "Adding an attendee only possible for Events"}
+
                     if(state.value.isSavingItem){
                         return@launch
                     }
-                    _state.update {
-                        it.copy(
-                            attendeesState = it.attendeesState.copy(
-                                isAdding = true
+
+                    if(eventDetails.attendees.any { attendee -> attendee.email == action.email }){
+                        eventChannel.send(
+                            AgendaDetailScreenEvent.Error(
+                                UiText.StringResource(id = R.string.attendee_already_added)
                             )
                         )
                     }
-                    /* TODO fetch attendee fullName from api - simulate behavior*/
-                    delay(timeMillis = 1000)
-                    val attendee = Attendee(
-                        userId = UUID.randomUUID().toString(),
-                        fullName = "Test Name",
-                        email = action.email,
-                        isGoing = true,
-                        remindAt = ZonedDateTime.now(),
-                        eventId = "123456"
-                    )
+
                     _state.update {
                         it.copy(
-                            details = (it.details as AgendaItemDetails.Event).copy(
-                                attendees = it.details.attendees + attendee,
-                                isAddAttendeeDialogVisible = false,
-                            ),
                             attendeesState = it.attendeesState.copy(
-                                isAdding = false,
-                                email = ""
+                                isAdding = true,
                             )
                         )
+                    }
+
+
+                    when(val attendeeResult = agendaRepository.getAttendee(action.email)){
+
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(
+                                    attendeesState = it.attendeesState.copy(
+                                        isAdding = false,
+                                    )
+                                )
+                            }
+                            eventChannel.send(
+                                AgendaDetailScreenEvent.Error(attendeeResult.error.asUiText())
+                            )
+                        }
+                        is Result.Success -> {
+                            attendeeResult.data.let { attendee ->
+                                if(attendee != null){
+                                    _state.update {
+                                        it.copy(
+                                            details = (it.details as AgendaItemDetails.Event).copy(
+                                                attendees = it.details.attendees + attendee.copy(
+                                                    eventId = existingAgendaItemId?:attendee.eventId
+                                                ),
+                                                isAddAttendeeDialogVisible = false,
+                                            ),
+                                            attendeesState = it.attendeesState.copy(
+                                                isAdding = false,
+                                                email = ""
+                                            )
+                                        )
+                                    }
+                                }
+                                else{
+                                    _state.update {
+                                        it.copy(
+                                            attendeesState = it.attendeesState.copy(
+                                                isAdding = false,
+                                                email = ""
+                                            )
+                                        )
+                                    }
+                                    eventChannel.send(
+                                        AgendaDetailScreenEvent.Error(
+                                            UiText.StringResource(id = R.string.attendee_not_found)
+                                        )
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -329,16 +369,21 @@ class AgendaDetailViewModel @Inject constructor(
 
                             val result = when(agendaItemType){
                                 AgendaItemType.EVENT -> {
+                                    val eventId = AgendaItem.PREFIX_EVENT_ID + UUID.randomUUID().toString()
                                     agendaRepository.createAgendaItem(
                                         agendaItem = AgendaItem(
-                                            id = AgendaItem.PREFIX_EVENT_ID + UUID.randomUUID().toString(),
+                                            id = eventId,
                                             title = _state.value.title,
                                             description = state.value.description,
                                             fromDate = state.value.fromDate,
                                             fromTime = state.value.fromTime,
                                             remindAt = state.value.remindAt,
                                             hostId = userId,
-                                            details = state.value.details,
+                                            details = (state.value.details as AgendaItemDetails.Event).copy(
+                                                attendees = (state.value.details as AgendaItemDetails.Event).attendees.map { it.copy(
+                                                    eventId = eventId
+                                                ) }
+                                            ),
                                         )
                                     )
                                 }
@@ -391,7 +436,8 @@ class AgendaDetailViewModel @Inject constructor(
 
                         }
                     } else {
-                        /** TODO NAVIGATE BACK TO LOGIN SCREEN */
+                        agendaRepository.logout()
+                        eventChannel.send(AgendaDetailScreenEvent.GoingBackToLoginScreen)
                     }
                 }
             }
@@ -514,7 +560,10 @@ class AgendaDetailViewModel @Inject constructor(
                 .onEach { attendees ->
                     val (going, notGoing) = attendees.partition { it.isGoing }
                     val userId = sessionStorage.getSession()?.userId
-                    requireNotNull(userId) { "User Id cannot be null when viewing agenda item"}
+                    requireNotNull(userId) {
+                        println("User Id cannot be null when viewing agenda item")
+                        navigateToLoginScreen()
+                    }
 
                     _state.update {
                         it.copy(
@@ -535,7 +584,10 @@ class AgendaDetailViewModel @Inject constructor(
         requireNotNull(eventDetails) { "Joining an event only possible for Events"}
 
         val userData = sessionStorage.getSession()
-        requireNotNull(userData) { "User data cannot be null when joining an event"}
+        requireNotNull(userData) {
+            println("User data cannot be null when joining an event")
+            navigateToLoginScreen()
+        }
 
         val newAttendeesList = eventDetails.attendees.toMutableList().apply {
             replaceAll{ attendee ->
@@ -554,7 +606,11 @@ class AgendaDetailViewModel @Inject constructor(
                 )
             )
         }
+    }
 
+    private suspend fun navigateToLoginScreen(){
+        agendaRepository.logout()
+        eventChannel.send(AgendaDetailScreenEvent.GoingBackToLoginScreen)
     }
 }
 

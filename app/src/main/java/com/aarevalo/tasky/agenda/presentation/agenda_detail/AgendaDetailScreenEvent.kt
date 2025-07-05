@@ -7,5 +7,6 @@ sealed interface AgendaDetailScreenEvent {
     data object ItemSaved : AgendaDetailScreenEvent
     data object ItemCreated : AgendaDetailScreenEvent
     data class Error(val message: UiText) : AgendaDetailScreenEvent
+    data object GoingBackToLoginScreen : AgendaDetailScreenEvent
     data class SkippedUploadingImages(val count: Int): AgendaDetailScreenEvent
 }

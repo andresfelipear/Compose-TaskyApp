@@ -127,9 +127,9 @@ fun AttendeeDto.toAttendee(): Attendee {
         userId = userId,
         fullName = fullName,
         email = email,
-        isGoing = isGoing,
-        remindAt = parseTimestampToZonedDateTime(remindAt),
-        eventId = eventId
+        isGoing = isGoing?:true,
+        remindAt = parseTimestampToZonedDateTime(remindAt?:System.currentTimeMillis()),
+        eventId = eventId?:""
     )
 }
 

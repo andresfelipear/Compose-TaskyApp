@@ -50,6 +50,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.EditTextFieldType
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
+import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenEvent
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.AddAttendeeDialog
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.CustomTimePicker
@@ -107,6 +108,16 @@ fun AgendaDetailScreenRoot(
                     Toast.LENGTH_LONG
                 ).show()
                 navController.navigate(Destination.Route.AgendaRoute)
+            }
+            is AgendaDetailScreenEvent.GoingBackToLoginScreen -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.back_to_login_screen,
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                navController.navigate(Destination.Route.LoginRoute)
             }
             is AgendaDetailScreenEvent.Error -> {
                 keyboardController?.hide()
