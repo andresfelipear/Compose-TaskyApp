@@ -15,6 +15,8 @@ import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.core.presentation.util.UiText
+import com.aarevalo.tasky.core.util.getRemindAtFromReminderType
+import com.aarevalo.tasky.core.util.getReminderTypeFromLocalDateTime
 import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import com.aarevalo.tasky.core.util.toTitleCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -137,7 +139,12 @@ class AgendaDetailViewModel @Inject constructor(
             is AgendaDetailScreenAction.OnReminderTypeChanged -> {
                 _state.update {
                     it.copy(
-                        reminderType = action.reminderType
+                        reminderType = action.reminderType,
+                        remindAt = getRemindAtFromReminderType(
+                            reminderType = action.reminderType,
+                            fromDate = it.fromDate,
+                            fromTime = it.fromTime
+                        )
                     )
                 }
             }
@@ -537,6 +544,11 @@ class AgendaDetailViewModel @Inject constructor(
                             fromTime = agendaItem.fromTime,
                             remindAt = agendaItem.remindAt,
                             details = details,
+                            reminderType = getReminderTypeFromLocalDateTime(
+                                fromDate = agendaItem.fromDate,
+                                fromTime = agendaItem.fromTime,
+                                remindAt = agendaItem.remindAt.toLocalDateTime()
+                            ),
                             isItemCreated = true
                         )
                     }

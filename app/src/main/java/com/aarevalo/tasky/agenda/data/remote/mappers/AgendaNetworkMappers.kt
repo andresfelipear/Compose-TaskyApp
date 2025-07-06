@@ -33,7 +33,6 @@ fun EventDto.toAgendaItem(): AgendaItem {
             photos = photos.map { it.toEventPhoto() },
             attendees = attendees.map { it.toAttendee() },
             isUserEventCreator = isUserEventCreator,
-
         ),
         hostId = host
     )

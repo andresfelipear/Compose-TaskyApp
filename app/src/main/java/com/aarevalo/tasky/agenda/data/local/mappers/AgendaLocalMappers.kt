@@ -9,14 +9,11 @@ import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
-import com.aarevalo.tasky.core.util.getReminderTypeFromLocalDateTime
 import com.aarevalo.tasky.core.util.parseLocalDateTimeToTimestamp
 import com.aarevalo.tasky.core.util.parseTimestampToLocalDate
 import com.aarevalo.tasky.core.util.parseTimestampToLocalTime
 import com.aarevalo.tasky.core.util.parseTimestampToZonedDateTime
 import com.aarevalo.tasky.core.util.parseZonedDateTimeToTimestamp
-import java.time.LocalDateTime
-import kotlin.time.toJavaDuration
 
 fun EventEntity.toAgendaItem(): AgendaItem {
     return AgendaItem(
@@ -80,9 +77,8 @@ fun ReminderEntity.toAgendaItem(): AgendaItem {
         description = description,
         title = title,
         hostId = "",
-        remindAt = parseTimestampToZonedDateTime(time).minus(remindAt.duration.toJavaDuration()),
+        remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Reminder,
-
         )
 }
 
@@ -121,8 +117,6 @@ fun AgendaItem.toTaskEntity(): TaskEntity{
 }
 
 fun AgendaItem.toReminderEntity(): ReminderEntity {
-    val remindAtToLocalDateTime = remindAt.toLocalDateTime()
-    val localDateTime = LocalDateTime.of(fromDate, fromTime)
     return ReminderEntity(
         reminderId = id,
         title = title,
@@ -131,10 +125,7 @@ fun AgendaItem.toReminderEntity(): ReminderEntity {
             localDate = fromDate,
             localTime = fromTime
         ),
-        remindAt = getReminderTypeFromLocalDateTime(
-            localDateTime = localDateTime,
-            remindAt = remindAtToLocalDateTime
-        )
+        remindAt = parseZonedDateTimeToTimestamp(remindAt)
     )
 }
 
