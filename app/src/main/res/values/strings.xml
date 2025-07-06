@@ -90,4 +90,5 @@
     <string name="back_to_login_screen">There was an error with your current session. Please login again</string>
     <string name="attendee_not_found">The attendee with the given email doesn\'t exist</string>
     <string name="attendee_already_added">The Attendee with the given email was already added!</string>
+    <string name="agenda_item_deleted_successfully">Agenda Item deleted successfully!</string>
 </resources>

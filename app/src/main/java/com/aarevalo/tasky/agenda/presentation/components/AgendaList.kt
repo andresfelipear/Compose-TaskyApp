@@ -80,7 +80,7 @@ fun AgendaList(
                             text = stringResource(R.string.delete),
                             onClick = {
                                 onAction(
-                                    AgendaScreenAction.OnDeleteAgendaItem(
+                                    AgendaScreenAction.OnConfirmDeleteAgendaItem(
                                         agendaItemId = agendaItem.id,
                                         type = agendaItem.details
                                     )

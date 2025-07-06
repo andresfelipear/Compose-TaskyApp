@@ -81,20 +81,44 @@ class AgendaViewModel @Inject constructor(
             is AgendaScreenAction.OnLogout -> {
                logout()
             }
+            is AgendaScreenAction.OnConfirmDeleteAgendaItem -> {
+                _state.update {
+                    it.copy(
+                        showDeleteConfirmationDialog = true,
+                        agendaItemTypeToDelete = action.type.toStringType(),
+                        agendaItemIdToDelete = action.agendaItemId
+                    )
+                }
+            }
             is AgendaScreenAction.OnDeleteAgendaItem -> {
+                _state.update {
+                    it.copy(
+                        isDeletingItem = true
+                    )
+                }
                 viewModelScope.launch {
-                    agendaRepository.deleteAgendaItem(action.agendaItemId)
+                    agendaRepository.deleteAgendaItem(state.value.agendaItemIdToDelete)
                 }
                 _state.update {
                     it.copy(
                         agendaItems = it.agendaItems.filter { item ->
-                            item.id != action.agendaItemId
-                        }
+                            item.id != state.value.agendaItemIdToDelete
+                        },
+                        showDeleteConfirmationDialog = false,
+                        agendaItemTypeToDelete = "",
+                        agendaItemIdToDelete = "",
+                        isDeletingItem = false
+                    )
+                }
+            }
+            is AgendaScreenAction.OnChangeDeleteDialogVisibility -> {
+                _state.update {
+                    it.copy(
+                        showDeleteConfirmationDialog = !it.showDeleteConfirmationDialog
                     )
                 }
             }
             else -> Unit
-
         }
     }
 

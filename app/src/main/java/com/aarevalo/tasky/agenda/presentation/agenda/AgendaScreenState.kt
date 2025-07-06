@@ -11,7 +11,11 @@ data class AgendaScreenState (
     val showDatePicker: Boolean = false,
     val relatedDates: List<LocalDate> = getRelatedDates(LocalDate.now()),
     val agendaItems: List<AgendaItem> = emptyList(),
-    val timeNeedled: LocalTime = LocalTime.now()
+    val timeNeedled: LocalTime = LocalTime.now(),
+    val isDeletingItem: Boolean = false,
+    val showDeleteConfirmationDialog: Boolean = false,
+    val agendaItemTypeToDelete: String = "",
+    val agendaItemIdToDelete: String = ""
 ){
     companion object{
         const val RANGE_DAYS: Long = 15

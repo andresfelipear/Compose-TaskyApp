@@ -36,6 +36,7 @@ import com.aarevalo.tasky.agenda.presentation.components.AgendaList
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
 import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
+import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.navigation.Destination
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
@@ -151,6 +152,18 @@ fun AgendaScreen(
 
     val spacing = LocalSpacing.current
     val snackBarState = remember { SnackbarHostState() }
+
+    DeleteAgendaItemDialog(
+        showConfirmationDialog = state.showDeleteConfirmationDialog,
+        onDismissConfirmationDialog = {
+            onAction(AgendaScreenAction.OnChangeDeleteDialogVisibility)
+        },
+        onConfirmDeleteAgendaItem = {
+            onAction(AgendaScreenAction.OnDeleteAgendaItem)
+        },
+        elementName = state.agendaItemTypeToDelete,
+        isDeletingItem = state.isDeletingItem
+    )
 
     Scaffold(
         snackbarHost = {

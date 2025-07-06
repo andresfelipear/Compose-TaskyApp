@@ -151,14 +151,16 @@ class AgendaDetailViewModel @Inject constructor(
                 }
                 viewModelScope.launch {
                     agendaRepository.deleteAgendaItem(existingAgendaItemId!!)
+                    _state.update {
+                        it.copy(
+                            isConfirmingToDeleteItem = false,
+                            isDeletingItem = false,
+                            isItemDeleted = true
+                        )
+                    }
+                    eventChannel.send(AgendaDetailScreenEvent.ItemDeleted)
                 }
-                _state.update {
-                    it.copy(
-                        isConfirmingToDeleteItem = false,
-                        isDeletingItem = false,
-                        isItemDeleted = true
-                    )
-                }
+
             }
 
             is AgendaDetailScreenAction.OnDeleteAttendee -> {

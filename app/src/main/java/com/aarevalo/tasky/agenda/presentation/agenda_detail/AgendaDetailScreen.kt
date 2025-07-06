@@ -108,6 +108,15 @@ fun AgendaDetailScreenRoot(
                 ).show()
                 navController.navigate(Destination.Route.AgendaRoute)
             }
+            is AgendaDetailScreenEvent.ItemDeleted -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.agenda_item_deleted_successfully,
+                    Toast.LENGTH_LONG
+                    ).show()
+                navController.navigate(Destination.Route.AgendaRoute)
+            }
             is AgendaDetailScreenEvent.GoingBackToLoginScreen -> {
                 keyboardController?.hide()
                 Toast.makeText(
