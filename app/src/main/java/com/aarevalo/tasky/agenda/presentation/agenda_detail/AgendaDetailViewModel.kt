@@ -149,7 +149,9 @@ class AgendaDetailViewModel @Inject constructor(
                         isDeletingItem = true,
                     )
                 }
-                /** TODO delete item */
+                viewModelScope.launch {
+                    agendaRepository.deleteAgendaItem(existingAgendaItemId!!)
+                }
                 _state.update {
                     it.copy(
                         isConfirmingToDeleteItem = false,
@@ -331,6 +333,7 @@ class AgendaDetailViewModel @Inject constructor(
                     if(userId != null){
                         println("userId: $userId")
                         if(existingAgendaItemId != null){
+                            println("Agenda Item Details: ${state.value.details}")
 
                             val result = agendaRepository.updateAgendaItem(
                                 agendaItem = AgendaItem(
@@ -388,6 +391,7 @@ class AgendaDetailViewModel @Inject constructor(
                                     )
                                 }
                                 AgendaItemType.TASK -> {
+                                    println("Task details: ${state.value.details}")
                                     agendaRepository.createAgendaItem(
                                         agendaItem = AgendaItem(
                                             id = AgendaItem.PREFIX_TASK_ID + UUID.randomUUID().toString(),
@@ -523,6 +527,9 @@ class AgendaDetailViewModel @Inject constructor(
                             localAttendee = localAttendee
                         )
                     }
+                    if(agendaItem.details is AgendaItemDetails.Task){
+                        println("Task details: ${agendaItem.details}")
+                    }
 
                     _state.update {
                         it.copy(
@@ -532,6 +539,7 @@ class AgendaDetailViewModel @Inject constructor(
                             fromDate = agendaItem.fromDate,
                             fromTime = agendaItem.fromTime,
                             details = details,
+                            isItemCreated = true
                         )
                     }
                 }

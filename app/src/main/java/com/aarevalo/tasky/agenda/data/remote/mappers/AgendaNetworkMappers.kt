@@ -12,6 +12,7 @@ import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.asEventDetails
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.asTaskDetails
 import com.aarevalo.tasky.core.util.parseLocalDateTimeToTimestamp
 import com.aarevalo.tasky.core.util.parseTimestampToLocalDate
 import com.aarevalo.tasky.core.util.parseTimestampToLocalTime
@@ -105,7 +106,7 @@ fun AgendaItem.toTaskDto(): TaskDto {
         description = description,
         time = parseLocalDateTimeToTimestamp(fromDate, fromTime),
         remindAt = parseZonedDateTimeToTimestamp(remindAt),
-        isDone = false
+        isDone = details.asTaskDetails?.isDone?:false
     )
 }
 
