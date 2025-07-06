@@ -146,7 +146,8 @@ fun AgendaListPreview(){
                         remindAt = ZonedDateTime.now(),
                         hostId = ""
                     )
-                )
+                ),
+                selectedDate = LocalDate.now(),
             ),
             onAction = TODO(),
         )

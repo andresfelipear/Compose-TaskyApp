@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class AgendaScreenState (
-    val selectedDate: LocalDate = LocalDate.now(),
+    val selectedDate: LocalDate,
     val initials: String = "",
     val showDatePicker: Boolean = false,
     val relatedDates: List<LocalDate> = getRelatedDates(LocalDate.now()),

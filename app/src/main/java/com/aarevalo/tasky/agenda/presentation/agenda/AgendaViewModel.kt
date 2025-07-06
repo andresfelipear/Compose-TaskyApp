@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.presentation.agenda
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
@@ -7,6 +8,8 @@ import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.presentation.ui.asUiText
+import com.aarevalo.tasky.core.util.parseLocalDateToTimestamp
+import com.aarevalo.tasky.core.util.parseTimestampToLocalDate
 import com.aarevalo.tasky.core.util.toInitials
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,9 +33,12 @@ import javax.inject.Inject
 class AgendaViewModel @Inject constructor(
     private val sessionStorage: SessionStorage,
     private val agendaRepository: AgendaRepository,
+    private val savedStateHandle: SavedStateHandle
 ): ViewModel(){
 
+    private val selectedDateTimeStamp = savedStateHandle.get<Long>("selectedDate")
     private val _state = MutableStateFlow(AgendaScreenState(
+        selectedDate = selectedDateTimeStamp?.let { parseTimestampToLocalDate(it) } ?: LocalDate.now()
     ))
 
     val state = _state
@@ -150,7 +156,8 @@ class AgendaViewModel @Inject constructor(
             }
                 .distinctUntilChanged()
                 .onEach {
-                println("selectedDate: $it")
+                    savedStateHandle["selectedDate"] = parseLocalDateToTimestamp(it)
+                    println("selectedDate: $it")
                 }
                 .flatMapLatest { selectedDate ->
                     agendaRepository.getAgendaItemsByDate(selectedDate)

@@ -93,7 +93,6 @@ fun AgendaScreenRoute(
         }
     }
 
-
     if(state.showDatePicker) {
         CustomDatePicker(
             currentDate = state.selectedDate,
@@ -284,7 +283,9 @@ fun AgendaScreen(
 fun AgendaScreenPreview() {
     TaskyTheme {
         AgendaScreen(
-            state = AgendaScreenState(),
+            state = AgendaScreenState(
+                selectedDate = LocalDate.now(),
+            ),
             onAction = {})
     }
 }

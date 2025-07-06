@@ -97,7 +97,7 @@ fun AgendaDetailScreenRoot(
                     R.string.agenda_item_edited_successfully,
                     Toast.LENGTH_LONG
                 ).show()
-                navController.navigate(Destination.Route.AgendaRoute)
+                navController.popBackStack()
             }
             is AgendaDetailScreenEvent.ItemCreated -> {
                 keyboardController?.hide()
@@ -106,7 +106,7 @@ fun AgendaDetailScreenRoot(
                     R.string.agenda_item_created_successfully,
                     Toast.LENGTH_LONG
                 ).show()
-                navController.navigate(Destination.Route.AgendaRoute)
+                navController.popBackStack()
             }
             is AgendaDetailScreenEvent.ItemDeleted -> {
                 keyboardController?.hide()
@@ -115,7 +115,7 @@ fun AgendaDetailScreenRoot(
                     R.string.agenda_item_deleted_successfully,
                     Toast.LENGTH_LONG
                     ).show()
-                navController.navigate(Destination.Route.AgendaRoute)
+                navController.popBackStack()
             }
             is AgendaDetailScreenEvent.GoingBackToLoginScreen -> {
                 keyboardController?.hide()

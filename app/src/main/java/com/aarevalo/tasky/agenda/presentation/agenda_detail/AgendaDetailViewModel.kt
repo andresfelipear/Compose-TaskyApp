@@ -619,5 +619,3 @@ class AgendaDetailViewModel @Inject constructor(
         eventChannel.send(AgendaDetailScreenEvent.GoingBackToLoginScreen)
     }
 }
-
-
