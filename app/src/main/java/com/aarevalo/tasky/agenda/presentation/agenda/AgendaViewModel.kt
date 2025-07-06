@@ -9,9 +9,15 @@ import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.core.util.toInitials
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -32,6 +38,7 @@ class AgendaViewModel @Inject constructor(
     val state = _state
         .onStart {
             loadInitialData()
+            observeSelectedDateChanges()
         }
         .stateIn(
             scope = viewModelScope,
@@ -45,6 +52,7 @@ class AgendaViewModel @Inject constructor(
     fun onAction(action: AgendaScreenAction) {
         when(action) {
             is AgendaScreenAction.OnDateChanged -> {
+
                 _state.update { currentState ->
                     currentState.copy(
                         selectedDate = action.date,
@@ -106,14 +114,31 @@ class AgendaViewModel @Inject constructor(
                     )
                 }
                 agendaRepository.fetchAgendaItems()
-                agendaRepository.getAgendaItemsByDate(state.value.selectedDate).collect {
+            }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeSelectedDateChanges(){
+        viewModelScope.launch {
+            _state.mapNotNull {
+                it.selectedDate
+            }
+                .distinctUntilChanged()
+                .onEach {
+                println("selectedDate: $it")
+                }
+                .flatMapLatest { selectedDate ->
+                    agendaRepository.getAgendaItemsByDate(selectedDate)
+                }
+                .onEach {
                     _state.update { currentState ->
                         currentState.copy(
                             agendaItems = it
                         )
                     }
                 }
-            }
+                .launchIn(viewModelScope)
         }
     }
 

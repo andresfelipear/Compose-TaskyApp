@@ -229,9 +229,7 @@ class AgendaDetailViewModel @Inject constructor(
                         )
                     }
 
-
                     when(val attendeeResult = agendaRepository.getAttendee(action.email)){
-
                         is Result.Error -> {
                             _state.update {
                                 it.copy(
@@ -527,9 +525,6 @@ class AgendaDetailViewModel @Inject constructor(
                             localAttendee = localAttendee
                         )
                     }
-                    if(agendaItem.details is AgendaItemDetails.Task){
-                        println("Task details: ${agendaItem.details}")
-                    }
 
                     _state.update {
                         it.copy(
@@ -538,6 +533,7 @@ class AgendaDetailViewModel @Inject constructor(
                             description = agendaItem.description,
                             fromDate = agendaItem.fromDate,
                             fromTime = agendaItem.fromTime,
+                            remindAt = agendaItem.remindAt,
                             details = details,
                             isItemCreated = true
                         )
