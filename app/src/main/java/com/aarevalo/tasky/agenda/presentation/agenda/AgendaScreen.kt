@@ -69,6 +69,16 @@ fun AgendaScreenRoute(
                 navController.navigate(Destination.Route.LoginRoute)
             }
 
+            is AgendaScreenEvent.Success -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.task_updated_successfully,
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+            }
+
             is AgendaScreenEvent.GoingBackToLoginScreen -> {
                 keyboardController?.hide()
                 Toast.makeText(
@@ -89,7 +99,6 @@ fun AgendaScreenRoute(
                 )
                     .show()
             }
-            else -> Unit
         }
     }
 

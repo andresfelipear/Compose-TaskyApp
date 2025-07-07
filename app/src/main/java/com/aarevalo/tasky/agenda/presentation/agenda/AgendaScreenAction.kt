@@ -9,6 +9,9 @@ sealed interface AgendaScreenAction {
     data class OnDateSelectedCalendar(val date:LocalDate) : AgendaScreenAction
     data object OnLogout : AgendaScreenAction
     data object OnChangeDeleteDialogVisibility : AgendaScreenAction
+    data class OnChangeTaskStatus(
+        val agendaItemId: String
+    ) : AgendaScreenAction
     data class OnEditAgendaItemClick(
         val agendaItemId: String?,
         val type: AgendaItemDetails

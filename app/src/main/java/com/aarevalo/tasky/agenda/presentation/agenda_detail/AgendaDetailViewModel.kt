@@ -338,7 +338,6 @@ class AgendaDetailViewModel @Inject constructor(
                 viewModelScope.launch  {
                     val userId = sessionStorage.getSession()?.userId
                     if(userId != null){
-                        println("userId: $userId")
                         if(existingAgendaItemId != null){
                             println("Agenda Item Details: ${state.value.details}")
 

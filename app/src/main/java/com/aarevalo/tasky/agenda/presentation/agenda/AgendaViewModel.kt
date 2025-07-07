@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.presentation.ui.asUiText
@@ -122,6 +123,37 @@ class AgendaViewModel @Inject constructor(
                     it.copy(
                         showDeleteConfirmationDialog = !it.showDeleteConfirmationDialog
                     )
+                }
+            }
+            is AgendaScreenAction.OnChangeTaskStatus -> {
+                val taskToUpdate = state.value.agendaItems.find {
+                    it.id == action.agendaItemId
+                }
+                requireNotNull(taskToUpdate) { "Task to update not found" }
+
+                viewModelScope.launch {
+                    val result = agendaRepository.updateAgendaItem(
+                        agendaItem = taskToUpdate.copy(
+                            details = (taskToUpdate.details as AgendaItemDetails.Task).copy(
+                                isDone = !taskToUpdate.details.isDone
+                            )
+                        ),
+                        isGoing = false,
+                        deletedPhotoKeys = emptyList()
+                    )
+
+                    when(result){
+                        is Result.Error -> {
+                            eventChannel.send(
+                                AgendaScreenEvent.Error(
+                                    result.error.asUiText()
+                                )
+                            )
+                        }
+                        is Result.Success -> {
+                            eventChannel.send(AgendaScreenEvent.Success)
+                        }
+                    }
                 }
             }
             else -> Unit

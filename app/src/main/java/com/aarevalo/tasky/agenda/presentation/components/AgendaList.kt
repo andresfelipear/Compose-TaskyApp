@@ -87,7 +87,14 @@ fun AgendaList(
                                 )
                             }
                         )
-                    )
+                    ),
+                    onClick = {
+                        onAction(
+                            AgendaScreenAction.OnChangeTaskStatus(
+                                agendaItemId = agendaItem.id,
+                            )
+                        )
+                    }
                 )
             }
         }
