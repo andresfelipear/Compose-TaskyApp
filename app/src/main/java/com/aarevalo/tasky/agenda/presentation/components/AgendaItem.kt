@@ -211,7 +211,7 @@ fun AgendaItemPreview() {
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(
                     text = "Edit",
-                    onClick = { /*TODO*/ }
+                    onClick = {}
             ),
         ),
             onClick = {}

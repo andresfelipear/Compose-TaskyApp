@@ -124,6 +124,9 @@ dependencies {
     // Data Store Preferences
     implementation(libs.androidx.datastore.preferences)
 
+    // Work Manager
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Test coroutines
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.kotlinx.coroutines.test)

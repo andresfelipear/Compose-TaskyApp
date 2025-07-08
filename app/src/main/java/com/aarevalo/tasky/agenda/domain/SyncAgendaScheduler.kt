@@ -13,6 +13,5 @@ interface SyncAgendaScheduler {
         data class CreateAgendaItem(val itemId: String) : SyncType
         data class UpdateAgendaItem(val itemId: String) : SyncType
         data class DeleteAgendaItem(val itemId: String, val itemType: AgendaItemDetails) : SyncType
-        data object FullSync : SyncType
     }
 }

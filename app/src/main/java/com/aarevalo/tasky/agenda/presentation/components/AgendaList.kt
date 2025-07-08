@@ -156,7 +156,7 @@ fun AgendaListPreview(){
                 ),
                 selectedDate = LocalDate.now(),
             ),
-            onAction = TODO(),
+            onAction = {  },
         )
     }
 }

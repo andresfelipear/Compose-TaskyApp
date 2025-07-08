@@ -1,7 +1,5 @@
 package com.aarevalo.tasky.core.data.preferences
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.datastore.core.Serializer
 import com.aarevalo.tasky.core.data.auth.AuthenticatedUserSerializable
 import com.aarevalo.tasky.core.data.encrypt.Crypto
@@ -17,7 +15,6 @@ object EncryptAuthenticatedUser : Serializer<AuthenticatedUserSerializable> {
     override val defaultValue: AuthenticatedUserSerializable
         get() = AuthenticatedUserSerializable()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun readFrom(input: InputStream): AuthenticatedUserSerializable {
         val encryptedBytes = withContext(Dispatchers.IO) {
             input.use { it.readBytes() }
@@ -31,7 +28,6 @@ object EncryptAuthenticatedUser : Serializer<AuthenticatedUserSerializable> {
         return Json.decodeFromString(decodedJsonString)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun writeTo(
         t: AuthenticatedUserSerializable,
         output: OutputStream

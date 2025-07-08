@@ -74,7 +74,7 @@ fun AgendaScreenRoute(
                 Toast.makeText(
                     context,
                     R.string.task_updated_successfully,
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_SHORT
                 )
                     .show()
             }
