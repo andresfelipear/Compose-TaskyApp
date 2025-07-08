@@ -9,6 +9,8 @@ data class PendingItemSyncEntity(
     @PrimaryKey(autoGenerate = false)
     val itemId: String,
     val userId: String,
+    val isGoing: Boolean,
+    val deletedPhotoKeys: List<String>,
     val itemType: AgendaItemType,
     val syncOperation: SyncOperation,
     val itemJson: String
@@ -16,6 +18,7 @@ data class PendingItemSyncEntity(
 
 enum class SyncOperation {
     CREATE,
-    UPDATE
+    UPDATE,
+    DELETE
 }
 

@@ -19,5 +19,14 @@ data class AgendaItem(
         const val PREFIX_EVENT_ID = "event_"
         const val PREFIX_REMINDER_ID = "reminder_"
         const val PREFIX_TASK_ID = "task_"
+
+        fun getAgendaItemTypeFromItemId(itemId: String): AgendaItemType{
+            return when{
+                itemId.contains(this.PREFIX_EVENT_ID) -> AgendaItemType.EVENT
+                itemId.contains(this.PREFIX_REMINDER_ID) -> AgendaItemType.REMINDER
+                itemId.contains(this.PREFIX_TASK_ID) -> AgendaItemType.TASK
+                else -> throw IllegalArgumentException("Invalid itemId: $itemId")
+            }
+        }
     }
 }

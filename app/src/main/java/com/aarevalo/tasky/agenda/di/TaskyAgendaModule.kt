@@ -15,11 +15,15 @@ import com.aarevalo.tasky.agenda.data.local.database.AgendaDatabase
 import com.aarevalo.tasky.agenda.data.remote.RetrofitRemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.agenda.data.OfflineFirstAgendaRepository
+import com.aarevalo.tasky.agenda.data.SyncAgendaWorkerScheduler
+import com.aarevalo.tasky.agenda.data.local.converter.MoshiAgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.data.util.AndroidPhotoByteLoader
 import com.aarevalo.tasky.agenda.data.util.StandardDispatcherProvider
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
+import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
+import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.DispatcherProvider
@@ -159,6 +163,30 @@ object TaskyAgendaModule {
             coroutineScope,
             pendingItemSyncDao
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideSyncAgendaScheduler(
+        @ApplicationContext context: Context,
+        pendingItemSyncDao: PendingItemSyncDao,
+        sessionStorage: SessionStorage,
+        coroutineScope: CoroutineScope
+    ): SyncAgendaScheduler {
+        return SyncAgendaWorkerScheduler(
+            context.applicationContext,
+            pendingItemSyncDao,
+            sessionStorage,
+            coroutineScope
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideAgendaItemDeserializer(
+        moshi: Moshi
+    ): AgendaItemJsonConverter {
+        return MoshiAgendaItemJsonConverter(moshi)
     }
 
     @Provides

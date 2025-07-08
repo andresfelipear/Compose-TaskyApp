@@ -4,17 +4,17 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
-import com.aarevalo.tasky.agenda.data.remote.util.MoshiAgendaItemDeserializer
+import com.aarevalo.tasky.agenda.data.local.converter.MoshiAgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class CreateAgendaWorker @Inject constructor(
+class UpdateAgendaItemWorker @Inject constructor(
     @ApplicationContext private val context: Context,
     private val params: WorkerParameters,
     private val remoteAgendaDataSource: RemoteAgendaDataSource,
     private val pendingItemSyncDao: PendingItemSyncDao,
-    private val agendaItemDeserializer: MoshiAgendaItemDeserializer
+    private val agendaItemDeserializer: MoshiAgendaItemJsonConverter
 ): CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         if(runAttemptCount >= 5){
@@ -22,11 +22,15 @@ class CreateAgendaWorker @Inject constructor(
         }
 
         val pendingAgendaItemId = params.inputData.getString(AGENDA_ITEM_ID) ?: return Result.failure()
-        val pendingAgendaItemEntity = pendingItemSyncDao.getPendingItemSyncToCreateById(pendingAgendaItemId) ?: return Result.failure()
+        val pendingAgendaItemEntity = pendingItemSyncDao.getPendingItemSyncById(pendingAgendaItemId) ?: return Result.failure()
 
         val agendaItem = agendaItemDeserializer.getAgendaItemFromJson(pendingAgendaItemEntity.itemJson, pendingAgendaItemEntity.itemType) ?: return Result.failure()
 
-        return when(val result = remoteAgendaDataSource.createAgendaItem(agendaItem)){
+        return when(val result = remoteAgendaDataSource.updateAgendaItem(
+            agendaItem = agendaItem,
+            deletedPhotoKeys = pendingAgendaItemEntity.deletedPhotoKeys,
+            isGoing = pendingAgendaItemEntity.isGoing
+        )){
             is com.aarevalo.tasky.core.domain.util.Result.Success -> {
                 pendingItemSyncDao.deletePendingItemSyncById(pendingAgendaItemId)
                 Result.success()
@@ -36,7 +40,9 @@ class CreateAgendaWorker @Inject constructor(
             }
         }
     }
+
     companion object {
         const val AGENDA_ITEM_ID = "AGENDA_ITEM_ID"
     }
+
 }
