@@ -1,19 +1,27 @@
 package com.aarevalo.tasky.agenda.data
 
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
+import com.aarevalo.tasky.agenda.data.local.entity.PendingItemSyncEntity
+import com.aarevalo.tasky.agenda.data.local.entity.SyncOperation
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
+import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
+import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.DataError
+import com.aarevalo.tasky.core.domain.util.DispatcherProvider
 import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.domain.util.asEmptyDataResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -22,7 +30,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
     private val localAgendaSource: LocalAgendaDataSource,
     private val sessionStorage: SessionStorage,
     private val applicationScope: CoroutineScope,
-    private val pendingItemSyncDao: PendingItemSyncDao
+    private val pendingItemSyncDao: PendingItemSyncDao,
+    private val syncAgendaScheduler: SyncAgendaScheduler,
+    private val agendaItemJsonConverter: AgendaItemJsonConverter,
+    private val dispatcher: DispatcherProvider
 ): AgendaRepository {
 
     override fun getAgendaItems(): Flow<List<AgendaItem>> {
@@ -60,9 +71,13 @@ class OfflineFirstAgendaRepository @Inject constructor(
         println("Creating agenda item remotely!")
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
-                localAgendaSource.deleteAgendaItem(agendaItem.id)
                 println("Error: creating agenda item remotely!")
-                remoteResult.asEmptyDataResult()
+                applicationScope.launch {
+                    syncAgendaScheduler.scheduleSyncAgenda(
+                        syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
+                    )
+                }.join()
+                Result.Success(Unit)
             }
             is Result.Success -> {
                 println("Success: creating agenda item remotely!")
@@ -87,15 +102,49 @@ class OfflineFirstAgendaRepository @Inject constructor(
         if(localResult is Result.Error){
             return localResult.asEmptyDataResult()
         }
+
+        // edge case - when agenda item is created / or updated in offline-mode
+        // the data is updated but the operation keep the same. Keep using the same worker
+        val existingPendingItem = pendingItemSyncDao.getPendingItemSyncById(agendaItem.id)
+
+        existingPendingItem?.let { pendingItem ->
+            pendingItemSyncDao.upsertPendingItemSyn(
+                PendingItemSyncEntity(
+                    itemId = agendaItem.id,
+                    userId = agendaItem.hostId,
+                    isGoing = isGoing,
+                    deletedPhotoKeys = deletedPhotoKeys,
+                    itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+                    syncOperation = pendingItem.syncOperation,
+                    itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: return Result.Error(DataError.Local.BAD_DATA)
+                )
+            )
+        }
+
         return when(val remoteResult = remoteAgendaSource.updateAgendaItem(agendaItem, deletedPhotoKeys, isGoing)){
             is Result.Error -> {
-                localAgendaSource.deleteAgendaItem(agendaItem.id)
                 println("Error: updating agenda item remotely!")
                 println("Error: $remoteResult")
-                remoteResult.asEmptyDataResult()
+                if(existingPendingItem == null){
+                    applicationScope.launch {
+                        syncAgendaScheduler.scheduleSyncAgenda(
+                            syncType = SyncAgendaScheduler.SyncType.UpdateAgendaItem(
+                                agendaItem = agendaItem,
+                                isGoing = isGoing,
+                                deletedPhotoKeys = deletedPhotoKeys
+                            )
+                        )
+                    }.join()
+                }
+                Result.Success(Unit)
             }
             is Result.Success -> {
                 println("Success: creating agenda item remotely!")
+                // edge case when the worker is created before the remote update. but the remote update success.
+                // No need for the worker anymore.
+                if(existingPendingItem != null){
+                    pendingItemSyncDao.deletePendingItemSyncById(agendaItem.id)
+                }
                 if(remoteResult.data != null){
                     applicationScope.async {
                         localAgendaSource.upsertAgendaItem(remoteResult.data)
@@ -119,17 +168,60 @@ class OfflineFirstAgendaRepository @Inject constructor(
            return
         }
 
+
         val remoteResult = applicationScope.async {
             remoteAgendaSource.deleteAgendaItem(agendaItemId)
         }.await()
 
         if(remoteResult is Result.Error){
-            // TODO sync delete run
+            applicationScope.launch {
+                syncAgendaScheduler.scheduleSyncAgenda(
+                    syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId)
+                )
+            }
         }
     }
 
     override suspend fun syncPendingAgendaItems() {
-        TODO("Not yet implemented")
+        withContext(dispatcher.io){
+            val userId = sessionStorage.getSession()?.userId ?: return@withContext
+
+            val pendingItems = async{
+                pendingItemSyncDao.getPendingItemSyncByUserId(userId)
+            }
+
+            val createJobs = pendingItems
+                .await()
+                .map {
+                    launch {
+                        val result = when(it.syncOperation){
+                            SyncOperation.CREATE -> {
+                                val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(it.itemJson, it.itemType) ?: return@launch
+                                createAgendaItem(agendaItem)
+                            }
+                            SyncOperation.UPDATE -> {
+                                val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(it.itemJson, it.itemType) ?: return@launch
+                                updateAgendaItem(agendaItem, it.isGoing, it.deletedPhotoKeys)
+                            }
+                            SyncOperation.DELETE -> {
+                                deleteAgendaItem(it.itemId)
+                                Result.Success(Unit)
+                            }
+                        }
+                        when(result){
+                            is Result.Error -> Unit
+                            is Result.Success -> {
+                                applicationScope.launch {
+                                    pendingItemSyncDao.deletePendingItemSyncById(it.itemId)
+                                }.join()
+                            }
+                        }
+                    }
+                }
+
+            createJobs.joinAll()
+        }
+
     }
 
 
@@ -138,9 +230,9 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun logout(): EmptyResult<DataError.Network> {
-        val response = remoteAgendaSource.logout()
-        sessionStorage.setSession(null)
+        syncAgendaScheduler.cancelAllSyncs()
         localAgendaSource.deleteAllAgendaItems()
-        return response
+        sessionStorage.setSession(null)
+        return remoteAgendaSource.logout()
     }
 }

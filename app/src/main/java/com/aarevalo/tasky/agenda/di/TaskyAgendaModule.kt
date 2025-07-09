@@ -5,7 +5,6 @@ import androidx.room.Room
 import com.aarevalo.tasky.BuildConfig
 import com.aarevalo.tasky.agenda.data.local.RoomLocalAgendaDataSource
 import com.aarevalo.tasky.agenda.data.local.dao.AttendeeDao
-import com.aarevalo.tasky.agenda.data.local.dao.DeletedItemSyncDao
 import com.aarevalo.tasky.agenda.data.local.dao.EventDao
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
 import com.aarevalo.tasky.agenda.data.local.dao.PhotoDao
@@ -118,12 +117,6 @@ object TaskyAgendaModule {
 
     @Provides
     @Singleton
-    fun provideDeletedItemSyncDao(
-        database: AgendaDatabase
-    ): DeletedItemSyncDao = database.deletedItemSyncDao
-
-    @Provides
-    @Singleton
     fun providePendingItemSyncDao(
         database: AgendaDatabase
     ): PendingItemSyncDao = database.pendingItemSyncDao
@@ -153,15 +146,19 @@ object TaskyAgendaModule {
         localAgendaSource: LocalAgendaDataSource,
         sessionStorage: SessionStorage,
         pendingItemSyncDao: PendingItemSyncDao,
-        coroutineScope: CoroutineScope
-
+        coroutineScope: CoroutineScope,
+        syncAgendaScheduler: SyncAgendaScheduler,
+        agendaItemJsonConverter: AgendaItemJsonConverter
     ) : AgendaRepository {
         return OfflineFirstAgendaRepository(
             remoteAgendaDataSource,
             localAgendaSource,
             sessionStorage,
             coroutineScope,
-            pendingItemSyncDao
+            pendingItemSyncDao,
+            syncAgendaScheduler,
+            agendaItemJsonConverter,
+            StandardDispatcherProvider
         )
     }
 
@@ -171,19 +168,21 @@ object TaskyAgendaModule {
         @ApplicationContext context: Context,
         pendingItemSyncDao: PendingItemSyncDao,
         sessionStorage: SessionStorage,
-        coroutineScope: CoroutineScope
+        coroutineScope: CoroutineScope,
+        agendaItemJsonConverter: AgendaItemJsonConverter
     ): SyncAgendaScheduler {
         return SyncAgendaWorkerScheduler(
             context.applicationContext,
             pendingItemSyncDao,
             sessionStorage,
-            coroutineScope
+            coroutineScope,
+            agendaItemJsonConverter
         )
     }
 
     @Provides
     @Singleton
-    fun provideAgendaItemDeserializer(
+    fun provideAgendaItemJsonConverter(
         moshi: Moshi
     ): AgendaItemJsonConverter {
         return MoshiAgendaItemJsonConverter(moshi)

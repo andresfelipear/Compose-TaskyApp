@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
+import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
@@ -29,12 +30,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 
 @HiltViewModel
 class AgendaViewModel @Inject constructor(
     private val sessionStorage: SessionStorage,
     private val agendaRepository: AgendaRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val syncAgendaScheduler: SyncAgendaScheduler
 ): ViewModel(){
 
     private val selectedDateTimeStamp = savedStateHandle.get<Long>("selectedDate")
@@ -169,14 +172,18 @@ class AgendaViewModel @Inject constructor(
 
             if(session?.fullName.isNullOrBlank()){
                 eventChannel.send(AgendaScreenEvent.GoingBackToLoginScreen)
-            } else {
-                _state.update {
-                    it.copy(
-                        initials = session?.fullName!!.toInitials(),
-                    )
-                }
-                agendaRepository.fetchAgendaItems()
             }
+
+            _state.update {
+                it.copy(
+                    initials = session?.fullName!!.toInitials(),
+                )
+            }
+            syncAgendaScheduler.scheduleSyncAgenda(
+                syncType = SyncAgendaScheduler.SyncType.PeriodicFetch(30.minutes)
+            )
+            agendaRepository.syncPendingAgendaItems()
+            agendaRepository.fetchAgendaItems()
         }
     }
 

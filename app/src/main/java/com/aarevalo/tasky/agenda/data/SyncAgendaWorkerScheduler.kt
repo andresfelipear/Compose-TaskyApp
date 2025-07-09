@@ -65,7 +65,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
         pendingItemSyncDao.upsertPendingItemSyn(pendingAgendaItem)
 
         val workRequest = OneTimeWorkRequestBuilder<CreateAgendaItemWorker>()
-            .addTag("create_work")
+            .addTag("create_agenda_item_${agendaItem.id}")
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -94,14 +94,14 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             isGoing = isGoing,
             deletedPhotoKeys = deletedPhotoKeys,
             itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
-            syncOperation = SyncOperation.CREATE,
+            syncOperation = SyncOperation.UPDATE,
             itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: return
         )
 
         pendingItemSyncDao.upsertPendingItemSyn(pendingAgendaItem)
 
-        val workRequest = OneTimeWorkRequestBuilder<CreateAgendaItemWorker>()
-            .addTag("update_work")
+        val workRequest = OneTimeWorkRequestBuilder<UpdateAgendaItemWorker>()
+            .addTag("update_agenda_item_${agendaItem.id}")
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -136,8 +136,8 @@ class SyncAgendaWorkerScheduler @Inject constructor(
 
         pendingItemSyncDao.upsertPendingItemSyn(pendingAgendaItem)
 
-        val workRequest = OneTimeWorkRequestBuilder<CreateAgendaItemWorker>()
-            .addTag("delete_work")
+        val workRequest = OneTimeWorkRequestBuilder<DeleteAgendaItemWorker>()
+            .addTag("delete_agenda_item_${itemId}")
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
