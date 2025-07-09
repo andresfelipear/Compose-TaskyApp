@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -48,7 +49,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
     override suspend fun fetchAgendaItems(): EmptyResult<DataError> {
         return when(val result = remoteAgendaSource.fetchFullAgenda()) {
             is Result.Error -> {
-                println("Error: fetching agenda items remotely! $result")
+                Timber.e("Error fetching agenda items remotely! %s", result)
                 result.asEmptyDataResult()
             }
             is Result.Success -> {
@@ -65,15 +66,17 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError> {
-        println("Creating agenda item locally!")
+        Timber.d("Creating agenda item locally: %s", agendaItem.id)
         val localResult = localAgendaSource.upsertAgendaItem(agendaItem)
         if(localResult is Result.Error){
+            Timber.e("Failed to create agenda item locally for ID: %s, Error: %s", agendaItem.id, localResult.error)
             return localResult.asEmptyDataResult()
         }
-        println("Creating agenda item remotely!")
+
+        Timber.d("Attempting to create agenda item remotely: %s", agendaItem.id)
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
-                println("Error: creating agenda item remotely!")
+                Timber.e("Error creating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
                 applicationScope.launch {
                     syncAgendaScheduler.scheduleSyncAgenda(
                         syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
@@ -82,7 +85,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 Result.Success(Unit)
             }
             is Result.Success -> {
-                println("Success: creating agenda item remotely!")
+                Timber.d("Success creating agenda item remotely: %s", agendaItem.id)
                 if(remoteResult.data != null){
                     applicationScope.async {
                         localAgendaSource.upsertAgendaItem(remoteResult.data)
@@ -100,8 +103,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
         isGoing: Boolean,
         deletedPhotoKeys: List<String>
     ): EmptyResult<DataError> {
+        Timber.d("Updating agenda item locally: %s", agendaItem.id)
         val localResult = localAgendaSource.upsertAgendaItem(agendaItem)
         if(localResult is Result.Error){
+            Timber.e("Failed to update agenda item locally for ID: %s, Error: %s", agendaItem.id, localResult.error)
             return localResult.asEmptyDataResult()
         }
 
@@ -109,24 +114,37 @@ class OfflineFirstAgendaRepository @Inject constructor(
         // the data is updated but the operation keep the same. Keep using the same worker
         val existingPendingItem = pendingItemSyncDao.getPendingItemSyncById(agendaItem.id)
 
-        existingPendingItem?.let { pendingItem ->
-            pendingItemSyncDao.upsertPendingItemSyn(
-                PendingItemSyncEntity(
-                    itemId = agendaItem.id,
-                    userId = agendaItem.hostId,
-                    isGoing = isGoing,
-                    deletedPhotoKeys = deletedPhotoKeys,
-                    itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
-                    syncOperation = pendingItem.syncOperation,
-                    itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: return Result.Error(DataError.Local.BAD_DATA)
-                )
-            )
+        // The 'let' block below was problematic because it conditionally upserted.
+        // The original intention seems to be that if there's an existing pending item,
+        // we update its details while preserving its original sync operation.
+        // If there's no existing pending item, we mark it as an UPDATE.
+        // I've incorporated this logic into the PendingItemSyncEntity creation.
+
+        val syncOperationToStore = existingPendingItem?.syncOperation ?: SyncOperation.UPDATE
+        val itemJson = agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem)
+        if (itemJson == null) {
+            Timber.e("Failed to convert AgendaItem ID: %s to JSON. Bad data.", agendaItem.id)
+            return Result.Error(DataError.Local.BAD_DATA).asEmptyDataResult()
         }
 
+        // Unconditionally create/update the PendingItemSyncEntity HERE.
+        // This is the single source of truth for what needs to be synced.
+        val pendingSyncEntity = PendingItemSyncEntity(
+            itemId = agendaItem.id,
+            userId = agendaItem.hostId,
+            isGoing = isGoing,
+            deletedPhotoKeys = deletedPhotoKeys,
+            itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+            syncOperation = syncOperationToStore,
+            itemJson = itemJson
+        )
+        pendingItemSyncDao.upsertPendingItemSyn(pendingSyncEntity)
+
+
+        Timber.d("Attempting to update agenda item remotely: %s", agendaItem.id)
         return when(val remoteResult = remoteAgendaSource.updateAgendaItem(agendaItem, deletedPhotoKeys, isGoing)){
             is Result.Error -> {
-                println("Error: updating agenda item remotely!")
-                println("Error: $remoteResult")
+                Timber.e("Error updating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
                 if(existingPendingItem == null){
                     applicationScope.launch {
                         syncAgendaScheduler.scheduleSyncAgenda(
@@ -141,11 +159,12 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 Result.Success(Unit)
             }
             is Result.Success -> {
-                println("Success: creating agenda item remotely!")
+                Timber.d("Success updating agenda item remotely: %s", agendaItem.id)
                 // edge case when the worker is created before the remote update. but the remote update success.
                 // No need for the worker anymore.
                 if(existingPendingItem != null){
                     pendingItemSyncDao.deletePendingItemSyncById(agendaItem.id)
+                    Timber.d("Deleted pending sync item for ID: %s after successful remote update.", agendaItem.id)
                 }
                 if(remoteResult.data != null){
                     applicationScope.async {
@@ -160,10 +179,12 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError> {
+        Timber.d("Deleting agenda item locally: %s", agendaItemId)
         try{
             localAgendaSource.deleteAgendaItem(agendaItemId)
         }
         catch (e: SQLException){
+            Timber.e(e, "Failed to delete agenda item locally for ID: %s", agendaItemId)
             return Result.Error(DataError.Local.DB_ERROR)
         }
 
@@ -171,16 +192,19 @@ class OfflineFirstAgendaRepository @Inject constructor(
         // And deleted in offline-mode as well.
         val isPendingSync = pendingItemSyncDao.getPendingItemSyncById(agendaItemId) != null
         if(isPendingSync){
-           pendingItemSyncDao.deletePendingItemSyncById(agendaItemId)
-           return Result.Success(Unit)
+            Timber.d("Agenda item ID: %s was pending, deleting from pending sync table.", agendaItemId)
+            pendingItemSyncDao.deletePendingItemSyncById(agendaItemId)
+            return Result.Success(Unit)
         }
 
+        Timber.d("Attempting to delete agenda item remotely: %s", agendaItemId)
         val remoteResult = applicationScope.async {
             remoteAgendaSource.deleteAgendaItem(agendaItemId)
         }.await()
 
         return when(remoteResult){
             is Result.Error -> {
+                Timber.e("Error deleting agenda item remotely for ID: %s! Error: %s", agendaItemId, remoteResult)
                 applicationScope.launch {
                     syncAgendaScheduler.scheduleSyncAgenda(
                         syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId)
@@ -188,45 +212,70 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 }
                 Result.Success(Unit)
             }
-            is Result.Success -> remoteResult.asEmptyDataResult()
+            is Result.Success -> {
+                Timber.d("Success deleting agenda item remotely: %s", agendaItemId)
+                remoteResult.asEmptyDataResult()
+            }
         }
     }
 
     override suspend fun syncPendingAgendaItems() {
-        println("Syncing pending agenda items")
+        Timber.d("Syncing pending agenda items (centralized process).")
         withContext(dispatcher.io){
-            val userId = sessionStorage.getSession()?.userId ?: return@withContext
+            val userId = sessionStorage.getSession()?.userId ?: run {
+                Timber.e("Cannot sync pending items: User session not found.")
+                return@withContext
+            }
 
             val pendingItems = async{
                 pendingItemSyncDao.getPendingItemSyncByUserId(userId)
             }
 
-            println("Pending items: ${pendingItems.await()}")
+            Timber.d("Found pending items: %s", pendingItems.await())
 
             val createJobs = pendingItems
                 .await()
-                .map {
+                .map { pendingItem ->
                     launch {
-                        println("Syncing pending item: $it")
-                        val result = when(it.syncOperation){
+                        Timber.d("Processing pending item: %s, Operation: %s", pendingItem.itemId, pendingItem.syncOperation)
+                        val result = when(pendingItem.syncOperation){
                             SyncOperation.CREATE -> {
-                                val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(it.itemJson, it.itemType) ?: return@launch
-                                createAgendaItem(agendaItem)
+                                val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(pendingItem.itemJson, pendingItem.itemType)
+                                if (agendaItem == null) {
+                                    Timber.e("Failed to deserialize pending CREATE item: %s", pendingItem.itemId)
+                                    Result.Error(DataError.Local.BAD_DATA) // Mark as error so it's not deleted
+                                } else {
+                                    remoteAgendaSource.createAgendaItem(agendaItem)
+                                }
                             }
                             SyncOperation.UPDATE -> {
-                                val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(it.itemJson, it.itemType) ?: return@launch
-                                updateAgendaItem(agendaItem, it.isGoing, it.deletedPhotoKeys)
+                                val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(pendingItem.itemJson, pendingItem.itemType)
+                                if (agendaItem == null) {
+                                    Timber.e("Failed to deserialize pending UPDATE item: %s", pendingItem.itemId)
+                                    Result.Error(DataError.Local.BAD_DATA) // Mark as error so it's not deleted
+                                } else {
+                                    remoteAgendaSource.updateAgendaItem(
+                                        agendaItem = agendaItem,
+                                        isGoing = pendingItem.isGoing,
+                                        deletedPhotoKeys = pendingItem.deletedPhotoKeys
+                                    )
+                                }
                             }
                             SyncOperation.DELETE -> {
-                                deleteAgendaItem(it.itemId)
-                                Result.Success(Unit)
+                                remoteAgendaSource.deleteAgendaItem(pendingItem.itemId)
                             }
                         }
                         when(result){
-                            is Result.Error -> Unit
+                            is Result.Error -> {
+                                Timber.w("Failed to sync pending item %s (%s). Error: %s",
+                                         pendingItem.itemId, pendingItem.syncOperation, result.error)
+                                // Keep pending item in DB for next retry
+                            }
                             is Result.Success -> {
+                                Timber.d("Successfully synced pending item %s (%s). Deleting from pending sync.",
+                                         pendingItem.itemId, pendingItem.syncOperation)
                                 applicationScope.launch {
-                                    pendingItemSyncDao.deletePendingItemSyncById(it.itemId)
+                                    pendingItemSyncDao.deletePendingItemSyncById(pendingItem.itemId)
                                 }.join()
                             }
                         }
@@ -235,7 +284,6 @@ class OfflineFirstAgendaRepository @Inject constructor(
 
             createJobs.joinAll()
         }
-
     }
 
 
@@ -247,6 +295,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
         syncAgendaScheduler.cancelAllSyncs()
         localAgendaSource.deleteAllAgendaItems()
         sessionStorage.setSession(null)
+        Timber.d("User logged out. Local data cleared and syncs cancelled.")
         return remoteAgendaSource.logout()
     }
 }

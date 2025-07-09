@@ -15,19 +15,15 @@ import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
-import com.aarevalo.tasky.core.data.networking.responseToResult
+import com.aarevalo.tasky.core.data.networking.makeApiCall
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.domain.util.Result
-import com.aarevalo.tasky.core.domain.util.asEmptyDataResult
-import com.aarevalo.tasky.core.domain.util.map
 import com.aarevalo.tasky.core.util.getUtcTimestampFromLocalDate
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import timber.log.Timber
-import java.io.IOException
-import java.net.UnknownHostException
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -35,72 +31,57 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
     private val api: TaskyAgendaApi,
     private val photoByteLoader: PhotoByteLoader
 ): RemoteAgendaDataSource {
-    override suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network> {
-        return try {
-            val response = api.getFullAgenda() // This is your Retrofit call
 
-            responseToResult(response).map { fullAgendaResponse ->
-                fullAgendaResponse.events.map { eventDto -> eventDto.toAgendaItem() } +
-                    fullAgendaResponse.tasks.map { taskDto ->  taskDto.toAgendaItem() } +
-                    fullAgendaResponse.reminders.map { reminderDto ->  reminderDto.toAgendaItem() }
+    override suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network> {
+        return makeApiCall(
+            apiCall = { api.getFullAgenda() },
+            mapper = { fullAgendaResponse ->
+                fullAgendaResponse.events.map { it.toAgendaItem() } +
+                    fullAgendaResponse.tasks.map { it.toAgendaItem() } +
+                    fullAgendaResponse.reminders.map { it.toAgendaItem() }
             }
-        } catch (e: UnknownHostException) {
-            Timber.e(e, "Network Error: Unknown host when fetching full agenda (likely offline).")
-            Result.Error(DataError.Network.NO_INTERNET)
-        } catch (e: IOException) {
-            Timber.e(e, "Network Error: I/O exception when fetching full agenda (connection problem).")
-            Result.Error(DataError.Network.NO_INTERNET)
-        } catch (e: Exception) {
-            Timber.e(e, "Unexpected error fetching full agenda.")
-            Result.Error(DataError.Network.UNKNOWN)
-        }
+        )
     }
 
     override suspend fun fetchAgendaItems(
         date: LocalDate
     ): Result<List<AgendaItem>, DataError.Network> {
-        val response = api.getAgenda(getUtcTimestampFromLocalDate(date))
-        return responseToResult(response).map {
-            it.events.map { eventDto -> eventDto.toAgendaItem() } +
-            it.tasks.map { taskDto ->  taskDto.toAgendaItem() } +
-            it.reminders.map { reminderDto ->  reminderDto.toAgendaItem() }
-        }
+        return makeApiCall(
+            apiCall = { api.getAgenda(getUtcTimestampFromLocalDate(date)) },
+            mapper = { agendaResponse ->
+                agendaResponse.events.map { it.toAgendaItem() } +
+                    agendaResponse.tasks.map { it.toAgendaItem() } +
+                    agendaResponse.reminders.map { it.toAgendaItem() }
+            }
+        )
     }
 
     override suspend fun fetchAgendaItem(agendaItemId: String, type: AgendaItemType): Result<AgendaItem?, DataError.Network> {
-        when(type){
-            AgendaItemType.EVENT -> {
-                val response = api.getEvent(agendaItemId)
-                return responseToResult(response).map { it.toAgendaItem() }
-            }
-            AgendaItemType.TASK -> {
-                val response = api.getTask(agendaItemId)
-                return responseToResult(response).map { it.toAgendaItem() }
-            }
-            AgendaItemType.REMINDER -> {
-                val response = api.getReminder(agendaItemId)
-                return responseToResult(response).map { it.toAgendaItem() }
-            }
-            else -> {
-                return Result.Error(DataError.Network.BAD_REQUEST)
-            }
+        return when (type) {
+            AgendaItemType.EVENT -> makeApiCall(apiCall = {
+                api.getEvent(agendaItemId) }, mapper = { it.toAgendaItem() }
+            )
+            AgendaItemType.TASK -> makeApiCall(
+                apiCall = { api.getTask(agendaItemId) }, mapper = { it.toAgendaItem() }
+            )
+            AgendaItemType.REMINDER -> makeApiCall(
+                apiCall = { api.getReminder(agendaItemId) }, mapper = { it.toAgendaItem() }
+            )
         }
     }
 
     override suspend fun createAgendaItem(agendaItem: AgendaItem): Result<AgendaItem?, DataError.Network> {
-        when(agendaItem.details){
+        return when (agendaItem.details) {
             is AgendaItemDetails.Event -> {
-
                 val eventRequest = agendaItem.toEventCreateRequest()
                 val photoParts = mutableListOf<MultipartBody.Part>()
 
-                agendaItem.details.photos.forEachIndexed{ index, eventPhoto ->
-                    if(eventPhoto is EventPhoto.Local){
+                agendaItem.details.photos.forEachIndexed { index, eventPhoto ->
+                    if (eventPhoto is EventPhoto.Local) {
                         val photoBytes = photoByteLoader.getBytes(eventPhoto.uri)
-                        if(photoBytes != null){
+                        if (photoBytes != null) {
                             val mediaType = "image/jpeg".toMediaTypeOrNull()
                             val filename = "${eventPhoto.key}.jpg"
-
                             photoParts.add(
                                 MultipartBody.Part.createFormData(
                                     name = "photo${index}",
@@ -109,48 +90,40 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
                                 )
                             )
                         } else {
-                            println("Warning: Could not load bytes for local photo with key: ${eventPhoto.key}, URI: ${eventPhoto.uri}")
+                            Timber.w("Could not load bytes for local photo with key: %s, URI: %s", eventPhoto.key, eventPhoto.uri)
                         }
                     }
                 }
-
-                val response = api.createEvent(
-                    eventRequest,
-                    *photoParts.toTypedArray()
+                makeApiCall(
+                    apiCall = { api.createEvent(eventRequest, *photoParts.toTypedArray()) },
+                    mapper = { it.toAgendaItem() }
                 )
-                return responseToResult(response).map { it.toAgendaItem() }
             }
             is AgendaItemDetails.Task -> {
-                println("Creating task remotely! API call")
-                val response = api.createTask(agendaItem.toTaskDto())
-                println("Response: $response")
-                return responseToResult(response).map { null }
+                Timber.d("Creating task remotely! API call")
+                makeApiCall(apiCall = { api.createTask(agendaItem.toTaskDto()) }, mapper = { null })
             }
             is AgendaItemDetails.Reminder -> {
-                val response = api.createReminder(agendaItem.toReminderDto())
-                return responseToResult(response).map { null }
+                makeApiCall(apiCall = { api.createReminder(agendaItem.toReminderDto()) }, mapper = { null })
             }
         }
     }
 
     override suspend fun updateAgendaItem(agendaItem: AgendaItem, deletedPhotoKeys: List<String>, isGoing: Boolean): Result<AgendaItem?, DataError.Network> {
-        when(agendaItem.details){
+        return when (agendaItem.details) {
             is AgendaItemDetails.Event -> {
-
                 val eventRequest = agendaItem.toEventUpdateRequest().copy(
                     deletedPhotoKeys = deletedPhotoKeys,
                     isGoing = isGoing
                 )
-
                 val photoParts = mutableListOf<MultipartBody.Part>()
 
-                agendaItem.details.photos.forEachIndexed{ index, eventPhoto ->
-                    if(eventPhoto is EventPhoto.Local){
+                agendaItem.details.photos.forEachIndexed { index, eventPhoto ->
+                    if (eventPhoto is EventPhoto.Local) {
                         val photoBytes = photoByteLoader.getBytes(eventPhoto.uri)
-                        if(photoBytes != null){
+                        if (photoBytes != null) {
                             val mediaType = "image/jpeg".toMediaTypeOrNull()
                             val filename = "${eventPhoto.key}.jpg"
-
                             photoParts.add(
                                 MultipartBody.Part.createFormData(
                                     name = "photo${index}",
@@ -159,38 +132,35 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
                                 )
                             )
                         } else {
-                            println("Warning: Could not load bytes for local photo with key: ${eventPhoto.key}, URI: ${eventPhoto.uri}")
+                            Timber.w("Could not load bytes for local photo with key: %s, URI: %s", eventPhoto.key, eventPhoto.uri)
                         }
                     }
                 }
-
-                val response = api.updateEvent(
-                    eventRequest,
-                    *photoParts.toTypedArray()
+                makeApiCall(
+                    apiCall = { api.updateEvent(eventRequest, *photoParts.toTypedArray()) },
+                    mapper = { it.toAgendaItem() }
                 )
-                return responseToResult(response).map { it.toAgendaItem() }
             }
             is AgendaItemDetails.Task -> {
-                val response = api.updateTask(agendaItem.toTaskDto())
-                return responseToResult(response).map { null }
+                makeApiCall(apiCall = { api.updateTask(agendaItem.toTaskDto()) }, mapper = { null })
             }
             is AgendaItemDetails.Reminder -> {
-                val response = api.updateReminder(agendaItem.toReminderDto())
-                return responseToResult(response).map { null }
+                makeApiCall(apiCall = { api.updateReminder(agendaItem.toReminderDto()) }, mapper = { null })
             }
         }
     }
 
     override suspend fun fetchAttendee(email: String): Result<Attendee?, DataError.Network> {
-        val response = api.getAttendee(email)
-        return responseToResult(response).map { attendeeResponse ->
-            attendeeResponse.attendee?.takeIf { attendeeResponse.doesUserExist }?.toAttendee()
-        }
+        return makeApiCall(
+            apiCall = { api.getAttendee(email) },
+            mapper = { attendeeResponse ->
+                attendeeResponse.attendee?.takeIf { attendeeResponse.doesUserExist }?.toAttendee()
+            }
+        )
     }
 
     override suspend fun deleteAttendee(eventId: String): EmptyResult<DataError.Network> {
-        val response = api.deleteAttendee(eventId)
-        return responseToResult(response).asEmptyDataResult()
+        return makeApiCall(apiCall = { api.deleteAttendee(eventId) })
     }
 
     override suspend fun syncAgenda(
@@ -198,38 +168,35 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         deletedTaskIds: List<String>,
         deletedReminderIds: List<String>
     ): EmptyResult<DataError.Network> {
-        val response = api.syncAgenda(
-            SyncAgendaRequest(
-                deletedEventIds = deletedEventIds,
-                deletedTaskIds = deletedTaskIds,
-                deletedReminderIds = deletedReminderIds
-            )
+        return makeApiCall(
+            apiCall = {
+                api.syncAgenda(
+                    SyncAgendaRequest(
+                        deletedEventIds = deletedEventIds,
+                        deletedTaskIds = deletedTaskIds,
+                        deletedReminderIds = deletedReminderIds
+                    )
+                )
+            }
         )
-        return responseToResult(response).asEmptyDataResult()
     }
 
     override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError.Network> {
-        return when{
-            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> {
-                val response = api.deleteEvent(agendaItemId)
-               responseToResult(response).asEmptyDataResult()
-            }
-            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> {
-                val response = api.deleteTask(agendaItemId)
-                responseToResult(response).asEmptyDataResult()
-            }
-            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> {
-                val response = api.deleteReminder(agendaItemId)
-                responseToResult(response).asEmptyDataResult()
-            }
-            else -> {
-                Result.Error(DataError.Network.BAD_REQUEST)
-            }
+        return when {
+            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> makeApiCall(
+                apiCall = { api.deleteEvent(agendaItemId) }
+            )
+            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> makeApiCall(
+                apiCall = { api.deleteTask(agendaItemId) }
+            )
+            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> makeApiCall(
+                apiCall = { api.deleteReminder(agendaItemId) }
+            )
+            else -> Result.Error(DataError.Network.BAD_REQUEST)
         }
     }
 
     override suspend fun logout(): EmptyResult<DataError.Network> {
-        val response = responseToResult(api.logout())
-        return response.asEmptyDataResult()
+        return makeApiCall(apiCall = { api.logout() })
     }
 }

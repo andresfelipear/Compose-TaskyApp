@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -48,6 +49,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
     }
 
     override suspend fun cancelAllSyncs() {
+        Timber.d("Cancelling all WorkManager tasks.")
         WorkManager.getInstance(context).cancelAllWork().await()
     }
 
@@ -59,10 +61,14 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             deletedPhotoKeys = emptyList(),
             itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
             syncOperation = SyncOperation.CREATE,
-            itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: return
+            itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: run {
+                Timber.e("Failed to get JSON from agenda item for creation: %s", agendaItem.id)
+                return
+            }
         )
 
         pendingItemSyncDao.upsertPendingItemSyn(pendingAgendaItem)
+        Timber.d("Pending create agenda item saved locally: %s", agendaItem.id)
 
         val workRequest = OneTimeWorkRequestBuilder<CreateAgendaItemWorker>()
             .addTag("create_agenda_item_${agendaItem.id}")
@@ -81,13 +87,18 @@ class SyncAgendaWorkerScheduler @Inject constructor(
                     .putString(CreateAgendaItemWorker.AGENDA_ITEM_ID, agendaItem.id)
                     .build()
             )
+            .build() // Build the request here
 
         applicationScope.launch {
-            workManager.enqueue(workRequest.build()).await()
+            workManager.enqueue(workRequest).await() // Enqueue the built request
+            Timber.d("WorkRequest enqueued for creating agenda item: %s", agendaItem.id)
         }
     }
 
     private suspend fun scheduleUpdateAgendaItem(agendaItem: AgendaItem, isGoing: Boolean, deletedPhotoKeys: List<String>) {
+        Timber.d("Scheduling update agenda item: %s", agendaItem)
+        Timber.d("AgendaItem ID: %s", agendaItem.id)
+
         val pendingAgendaItem = PendingItemSyncEntity(
             itemId = agendaItem.id,
             userId = agendaItem.hostId,
@@ -95,10 +106,14 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             deletedPhotoKeys = deletedPhotoKeys,
             itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
             syncOperation = SyncOperation.UPDATE,
-            itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: return
+            itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: run {
+                Timber.e("Failed to get json from agenda item for update: %s", agendaItem.id)
+                return
+            }
         )
 
         pendingItemSyncDao.upsertPendingItemSyn(pendingAgendaItem)
+        Timber.d("Pending update agenda item saved locally: %s", agendaItem.id)
 
         val workRequest = OneTimeWorkRequestBuilder<UpdateAgendaItemWorker>()
             .addTag("update_agenda_item_${agendaItem.id}")
@@ -114,27 +129,36 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             )
             .setInputData(
                 Data.Builder()
-                        .putString(UpdateAgendaItemWorker.AGENDA_ITEM_ID, agendaItem.id)
+                    .putString(UpdateAgendaItemWorker.AGENDA_ITEM_ID, agendaItem.id)
                     .build()
             )
+            .build() // Build the request here
 
         applicationScope.launch {
-            workManager.enqueue(workRequest.build()).await()
+            workManager.enqueue(workRequest).await() // Enqueue the built request
+            Timber.d("WorkRequest enqueued for updating agenda item: %s", agendaItem.id)
         }
     }
 
     private suspend fun scheduleDeleteAgendaItem(itemId: String) {
+        val userId = sessionStorage.getSession()?.userId
+        if (userId == null) {
+            Timber.e("Cannot schedule delete agenda item: User session not found for item ID: %s", itemId)
+            return
+        }
+
         val pendingAgendaItem = PendingItemSyncEntity(
             itemId = itemId,
-            userId = sessionStorage.getSession()?.userId ?: return,
+            userId = userId,
             isGoing = false,
             deletedPhotoKeys = emptyList(),
             itemType = AgendaItem.getAgendaItemTypeFromItemId(itemId),
             syncOperation = SyncOperation.DELETE,
-            itemJson = ""
+            itemJson = "" // No JSON needed for delete
         )
 
         pendingItemSyncDao.upsertPendingItemSyn(pendingAgendaItem)
+        Timber.d("Pending delete agenda item saved locally: %s", itemId)
 
         val workRequest = OneTimeWorkRequestBuilder<DeleteAgendaItemWorker>()
             .addTag("delete_agenda_item_${itemId}")
@@ -153,28 +177,33 @@ class SyncAgendaWorkerScheduler @Inject constructor(
                     .putString(DeleteAgendaItemWorker.AGENDA_ITEM_ID, itemId)
                     .build()
             )
+            .build() // Build the request here
 
         applicationScope.launch {
-            workManager.enqueue(workRequest.build()).await()
+            workManager.enqueue(workRequest).await() // Enqueue the built request
+            Timber.d("WorkRequest enqueued for deleting agenda item: %s", itemId)
         }
     }
 
     private suspend fun schedulePeriodicFetch(interval: Duration) {
+        val periodicFetchTag = "sync_work" // Consistent tag for periodic fetch
         val isSyncScheduled = withContext(Dispatchers.IO){
             workManager
-                .getWorkInfosByTag("sync_work")
+                .getWorkInfosByTag(periodicFetchTag)
                 .get()
-                .isNotEmpty()
+                .any { it.state == androidx.work.WorkInfo.State.ENQUEUED || it.state == androidx.work.WorkInfo.State.RUNNING }
         }
 
         if(isSyncScheduled){
+            Timber.d("Periodic fetch work already scheduled. Skipping new request.")
             return
         }
+
+        Timber.d("Scheduling periodic fetch agenda work with interval: %s", interval)
 
         val workRequest = PeriodicWorkRequestBuilder<PeriodicFetchAgendaWorker>(
             repeatInterval = interval.toJavaDuration()
         )
-
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -185,9 +214,10 @@ class SyncAgendaWorkerScheduler @Inject constructor(
                 backoffDelay = 2000L,
                 timeUnit = TimeUnit.MILLISECONDS
             )
-            .addTag("sync_work")
+            .addTag(periodicFetchTag)
             .build()
 
         workManager.enqueue(workRequest).await()
+        Timber.d("Periodic fetch work enqueued.")
     }
 }

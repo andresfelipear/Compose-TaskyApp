@@ -207,16 +207,6 @@ class AgendaViewModel @Inject constructor(
             }
         }
 
-        val selectedDate = _state.value.selectedDate
-
-        agendaRepository.getAgendaItemsByDate(selectedDate).onEach { agendaItems ->
-            _state.update { currentState ->
-                currentState.copy(
-                    agendaItems = agendaItems
-                )
-            }
-        }
-
         viewModelScope.launch {
             agendaRepository.syncPendingAgendaItems()
             agendaRepository.fetchAgendaItems()

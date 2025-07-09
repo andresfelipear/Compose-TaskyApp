@@ -1,16 +1,17 @@
 package com.aarevalo.tasky.agenda.data.workers
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-
-class PeriodicFetchAgendaWorker @Inject constructor(
-    @ApplicationContext private val context: Context,
-    params: WorkerParameters,
+@HiltWorker
+class PeriodicFetchAgendaWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted params: WorkerParameters,
     private val agendaRepository: AgendaRepository,
 ): CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {

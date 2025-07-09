@@ -1,30 +1,43 @@
 package com.aarevalo.tasky.agenda.data.workers
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
-import com.aarevalo.tasky.agenda.data.local.converter.MoshiAgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
+import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import timber.log.Timber
 
-class UpdateAgendaItemWorker @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val params: WorkerParameters,
+@HiltWorker
+class UpdateAgendaItemWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted private val params: WorkerParameters,
     private val remoteAgendaDataSource: RemoteAgendaDataSource,
     private val pendingItemSyncDao: PendingItemSyncDao,
-    private val agendaItemDeserializer: MoshiAgendaItemJsonConverter
+    private val agendaItemJsonConverter: AgendaItemJsonConverter
 ): CoroutineWorker(context, params) {
+
+    init {
+        Timber.d("UpdateAgendaItemWorker created via Hilt injection")
+    }
+
     override suspend fun doWork(): Result {
         if(runAttemptCount >= 5){
             return Result.failure()
         }
 
         val pendingAgendaItemId = params.inputData.getString(AGENDA_ITEM_ID) ?: return Result.failure()
-        val pendingAgendaItemEntity = pendingItemSyncDao.getPendingItemSyncById(pendingAgendaItemId) ?: return Result.failure()
+        Timber.d("UpdateAgendaItemWorker: pendingAgendaItemId: $pendingAgendaItemId")
 
-        val agendaItem = agendaItemDeserializer.getAgendaItemFromJson(pendingAgendaItemEntity.itemJson, pendingAgendaItemEntity.itemType) ?: return Result.failure()
+        val pendingAgendaItemEntity = pendingItemSyncDao.getPendingItemSyncById(pendingAgendaItemId)?: run {
+            Timber.e("UpdateAgendaItemWorker: Missing agendaItemId in inputData.")
+            return Result.failure()
+        }
+
+        val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(pendingAgendaItemEntity.itemJson, pendingAgendaItemEntity.itemType) ?: return Result.failure()
 
         return when(val result = remoteAgendaDataSource.updateAgendaItem(
             agendaItem = agendaItem,

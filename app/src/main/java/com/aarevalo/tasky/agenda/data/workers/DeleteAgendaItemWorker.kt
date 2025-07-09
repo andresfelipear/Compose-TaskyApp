@@ -1,15 +1,18 @@
 package com.aarevalo.tasky.agenda.data.workers
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
-import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-class DeleteAgendaItemWorker(
-    @ApplicationContext private val context: Context,
-    private val params: WorkerParameters,
+@HiltWorker
+class DeleteAgendaItemWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted private val params: WorkerParameters,
     private val remoteAgendaDataSource: RemoteAgendaDataSource,
     private val pendingItemSyncDao: PendingItemSyncDao,
 ): CoroutineWorker(context, params) {
