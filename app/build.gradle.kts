@@ -127,6 +127,9 @@ dependencies {
     // Work Manager
     implementation(libs.androidx.work.runtime.ktx)
 
+    // Timber
+    implementation(libs.timber.android)
+
     // Test coroutines
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.kotlinx.coroutines.test)

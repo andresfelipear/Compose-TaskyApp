@@ -79,6 +79,16 @@ fun AgendaScreenRoute(
                     .show()
             }
 
+            is AgendaScreenEvent.SuccessDeleteAgendaItem -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.agenda_item_deleted_successfully,
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+
             is AgendaScreenEvent.GoingBackToLoginScreen -> {
                 keyboardController?.hide()
                 Toast.makeText(

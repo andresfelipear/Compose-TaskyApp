@@ -7,6 +7,7 @@ import com.aarevalo.tasky.core.domain.util.DataError
 fun DataError.toWorkerResult(): ListenableWorker.Result {
     return when(this) {
         DataError.Local.DISK_FULL -> ListenableWorker.Result.failure()
+        DataError.Local.DB_ERROR -> ListenableWorker.Result.failure()
         DataError.Local.BAD_DATA -> ListenableWorker.Result.failure()
         DataError.Local.UNKNOWN -> ListenableWorker.Result.failure()
         DataError.Network.REQUEST_TIMEOUT -> ListenableWorker.Result.retry()

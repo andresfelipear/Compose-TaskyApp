@@ -15,7 +15,7 @@ interface AgendaRepository {
     suspend fun getAgendaItemById(agendaItemId: String): AgendaItem?
     suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError>
     suspend fun updateAgendaItem(agendaItem: AgendaItem, isGoing: Boolean, deletedPhotoKeys: List<String>): EmptyResult<DataError>
-    suspend fun deleteAgendaItem(agendaItemId: String)
+    suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError>
     suspend fun syncPendingAgendaItems()
     suspend fun getAttendee(email: String): Result<Attendee?, DataError.Network>
     suspend fun logout(): EmptyResult<DataError.Network>

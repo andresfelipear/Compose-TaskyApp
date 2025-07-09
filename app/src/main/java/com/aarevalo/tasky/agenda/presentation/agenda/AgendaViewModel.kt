@@ -101,24 +101,46 @@ class AgendaViewModel @Inject constructor(
                 }
             }
             is AgendaScreenAction.OnDeleteAgendaItem -> {
+                if(_state.value.agendaItemIdToDelete.isBlank() ){
+                    return
+                }
                 _state.update {
                     it.copy(
                         isDeletingItem = true
                     )
                 }
                 viewModelScope.launch {
-                    agendaRepository.deleteAgendaItem(state.value.agendaItemIdToDelete)
-                }
-                _state.update {
-                    it.copy(
-                        agendaItems = it.agendaItems.filter { item ->
-                            item.id != state.value.agendaItemIdToDelete
-                        },
-                        showDeleteConfirmationDialog = false,
-                        agendaItemTypeToDelete = "",
-                        agendaItemIdToDelete = "",
-                        isDeletingItem = false
-                    )
+                    val agendaItemIdToDelete = _state.value.agendaItemIdToDelete
+                    val result = agendaRepository.deleteAgendaItem(agendaItemIdToDelete)
+
+                    _state.update {
+                        it.copy(
+                            showDeleteConfirmationDialog = false,
+                            agendaItemTypeToDelete = "",
+                            agendaItemIdToDelete = "",
+                            isDeletingItem = false
+                        )
+                    }
+
+                    when(result){
+                        is Result.Error -> {
+                            eventChannel.send(
+                                AgendaScreenEvent.Error(
+                                    result.error.asUiText()
+                                )
+                            )
+                        }
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    agendaItems = it.agendaItems.filter { item ->
+                                        item.id != agendaItemIdToDelete
+                                    },
+                                )
+                            }
+                            eventChannel.send(AgendaScreenEvent.SuccessDeleteAgendaItem)
+                        }
+                    }
                 }
             }
             is AgendaScreenAction.OnChangeDeleteDialogVisibility -> {
@@ -166,22 +188,36 @@ class AgendaViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch {
             val session = sessionStorage.getSession()
+            val fullName = session?.fullName
 
-            println("session: $session")
-            println("session?.fullName: ${session?.fullName}")
-
-            if(session?.fullName.isNullOrBlank()){
+            if(fullName.isNullOrBlank()){
                 eventChannel.send(AgendaScreenEvent.GoingBackToLoginScreen)
-            }
+            } else {
+                println("session: $session")
+                println("session?.fullName: ${session.fullName}")
 
-            _state.update {
-                it.copy(
-                    initials = session?.fullName!!.toInitials(),
+                _state.update {
+                    it.copy(
+                        initials = fullName.toInitials(),
+                    )
+                }
+                syncAgendaScheduler.scheduleSyncAgenda(
+                    syncType = SyncAgendaScheduler.SyncType.PeriodicFetch(30.minutes)
                 )
             }
-            syncAgendaScheduler.scheduleSyncAgenda(
-                syncType = SyncAgendaScheduler.SyncType.PeriodicFetch(30.minutes)
-            )
+        }
+
+        val selectedDate = _state.value.selectedDate
+
+        agendaRepository.getAgendaItemsByDate(selectedDate).onEach { agendaItems ->
+            _state.update { currentState ->
+                currentState.copy(
+                    agendaItems = agendaItems
+                )
+            }
+        }
+
+        viewModelScope.launch {
             agendaRepository.syncPendingAgendaItems()
             agendaRepository.fetchAgendaItems()
         }

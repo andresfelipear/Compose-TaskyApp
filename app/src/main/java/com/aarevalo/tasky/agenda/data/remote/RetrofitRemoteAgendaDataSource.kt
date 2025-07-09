@@ -25,6 +25,9 @@ import com.aarevalo.tasky.core.util.getUtcTimestampFromLocalDate
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
+import java.io.IOException
+import java.net.UnknownHostException
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -33,11 +36,23 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
     private val photoByteLoader: PhotoByteLoader
 ): RemoteAgendaDataSource {
     override suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network> {
-        val response = api.getFullAgenda()
-        return responseToResult(response).map {
-            it.events.map { eventDto -> eventDto.toAgendaItem() } +
-            it.tasks.map { taskDto ->  taskDto.toAgendaItem() } +
-            it.reminders.map { reminderDto ->  reminderDto.toAgendaItem() }
+        return try {
+            val response = api.getFullAgenda() // This is your Retrofit call
+
+            responseToResult(response).map { fullAgendaResponse ->
+                fullAgendaResponse.events.map { eventDto -> eventDto.toAgendaItem() } +
+                    fullAgendaResponse.tasks.map { taskDto ->  taskDto.toAgendaItem() } +
+                    fullAgendaResponse.reminders.map { reminderDto ->  reminderDto.toAgendaItem() }
+            }
+        } catch (e: UnknownHostException) {
+            Timber.e(e, "Network Error: Unknown host when fetching full agenda (likely offline).")
+            Result.Error(DataError.Network.NO_INTERNET)
+        } catch (e: IOException) {
+            Timber.e(e, "Network Error: I/O exception when fetching full agenda (connection problem).")
+            Result.Error(DataError.Network.NO_INTERNET)
+        } catch (e: Exception) {
+            Timber.e(e, "Unexpected error fetching full agenda.")
+            Result.Error(DataError.Network.UNKNOWN)
         }
     }
 

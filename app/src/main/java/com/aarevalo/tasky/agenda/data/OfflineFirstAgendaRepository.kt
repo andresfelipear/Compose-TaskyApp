@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.data
 
+import android.database.SQLException
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
 import com.aarevalo.tasky.agenda.data.local.entity.PendingItemSyncEntity
 import com.aarevalo.tasky.agenda.data.local.entity.SyncOperation
@@ -47,6 +48,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
     override suspend fun fetchAgendaItems(): EmptyResult<DataError> {
         return when(val result = remoteAgendaSource.fetchFullAgenda()) {
             is Result.Error -> {
+                println("Error: fetching agenda items remotely! $result")
                 result.asEmptyDataResult()
             }
             is Result.Success -> {
@@ -157,32 +159,41 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
     }
 
-    override suspend fun deleteAgendaItem(agendaItemId: String) {
-        localAgendaSource.deleteAgendaItem(agendaItemId)
+    override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError> {
+        try{
+            localAgendaSource.deleteAgendaItem(agendaItemId)
+        }
+        catch (e: SQLException){
+            return Result.Error(DataError.Local.DB_ERROR)
+        }
 
         // Edge case where the agenda item is created in offline-mode.
         // And deleted in offline-mode as well.
         val isPendingSync = pendingItemSyncDao.getPendingItemSyncById(agendaItemId) != null
         if(isPendingSync){
            pendingItemSyncDao.deletePendingItemSyncById(agendaItemId)
-           return
+           return Result.Success(Unit)
         }
-
 
         val remoteResult = applicationScope.async {
             remoteAgendaSource.deleteAgendaItem(agendaItemId)
         }.await()
 
-        if(remoteResult is Result.Error){
-            applicationScope.launch {
-                syncAgendaScheduler.scheduleSyncAgenda(
-                    syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId)
-                )
+        return when(remoteResult){
+            is Result.Error -> {
+                applicationScope.launch {
+                    syncAgendaScheduler.scheduleSyncAgenda(
+                        syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId)
+                    )
+                }
+                Result.Success(Unit)
             }
+            is Result.Success -> remoteResult.asEmptyDataResult()
         }
     }
 
     override suspend fun syncPendingAgendaItems() {
+        println("Syncing pending agenda items")
         withContext(dispatcher.io){
             val userId = sessionStorage.getSession()?.userId ?: return@withContext
 
@@ -190,10 +201,13 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 pendingItemSyncDao.getPendingItemSyncByUserId(userId)
             }
 
+            println("Pending items: ${pendingItems.await()}")
+
             val createJobs = pendingItems
                 .await()
                 .map {
                     launch {
+                        println("Syncing pending item: $it")
                         val result = when(it.syncOperation){
                             SyncOperation.CREATE -> {
                                 val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(it.itemJson, it.itemType) ?: return@launch
