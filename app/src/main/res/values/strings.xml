@@ -93,4 +93,9 @@
     <string name="agenda_item_deleted_successfully">Agenda Item deleted successfully!</string>
     <string name="task_updated_successfully">The status of the given task was updated successfully!</string>
     <string name="db_error">There was an error when perfoming the db operation</string>
+    <string name="reminder_notification_title">Reminder</string>
+    <string name="default_reminder_title">Reminder</string>
+    <string name="default_reminder_description">You have an upcoming agenda item!</string>
+    <string name="reminder_notification_channel_name">Tasky Reminders</string>
+    <string name="reminder_notification_channel_description">Notifications for your scheduled agenda items.</string>
 </resources>
