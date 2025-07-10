@@ -48,6 +48,7 @@ fun AgendaItemComponent(
     modifier: Modifier = Modifier,
     agendaItem: AgendaItem,
     dropDownMenuItems: List<TaskyDropDownMenuItem>,
+    onClick : (agendaItemId: String) -> Unit
 ) {
     val colors = LocalExtendedColors.current
 
@@ -107,7 +108,11 @@ fun AgendaItemComponent(
             modifier = modifier
         ) {
             IconButton(modifier = Modifier.width(40.dp),
-                       onClick = { /*TODO*/ }) {
+                       onClick = {
+                           if(agendaItem.details is AgendaItemDetails.Task){
+                               onClick(agendaItem.id)
+                           }
+                       }) {
                 Icon(
                     modifier = Modifier.size(16.dp),
                     imageVector = if(agendaItem.details is AgendaItemDetails.Task && agendaItem.details.isDone) Icons.Default.CheckCircleOutline else Icons.Default.RadioButtonUnchecked,
@@ -200,13 +205,16 @@ fun AgendaItemPreview() {
                 details = AgendaItemDetails.Task(),
                 fromTime = LocalTime.now(),
                 fromDate = LocalDate.now(),
-                reminderAt = ZonedDateTime.now()
+                remindAt = ZonedDateTime.now(),
+                hostId = ""
                 ),
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(
                     text = "Edit",
-                    onClick = { /*TODO*/ }
+                    onClick = {}
             ),
-        ))
+        ),
+            onClick = {}
+        )
     }
 }

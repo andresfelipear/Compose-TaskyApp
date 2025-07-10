@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.presentation.agenda_detail
 
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
@@ -32,7 +33,7 @@ data class AgendaDetailScreenState(
     val isToTimeDialogVisible: Boolean = false,
     val details: AgendaItemDetails = AgendaItemDetails.Event(),
     val attendeesState: AttendeesState = AttendeesState(),
-    val reminderAt: ZonedDateTime = ZonedDateTime.now(),
+    val remindAt: ZonedDateTime = ZonedDateTime.now(),
     )
 
 sealed interface AgendaItemDetails{
@@ -59,21 +60,20 @@ sealed interface AgendaItemDetails{
     data object Reminder: AgendaItemDetails
 
     companion object {
-        fun fromString(it: String): AgendaItemDetails {
+        fun fromAgendaItemType(it: AgendaItemType): AgendaItemDetails {
             return when(it){
-                "Event" -> Event()
-                "Task" -> Task()
-                "Reminder" -> Reminder
-                else -> throw IllegalArgumentException("Invalid agenda item type")
+                AgendaItemType.EVENT -> Event()
+                AgendaItemType.TASK -> Task()
+                AgendaItemType.REMINDER -> Reminder
             }
         }
     }
 
     fun toStringType(): String {
         return when(this){
-            is Event -> "Event"
-            is Task -> "Task"
-            is Reminder -> "Reminder"
+            is Event -> AgendaItemType.EVENT.toString()
+            is Task -> AgendaItemType.TASK.toString()
+            is Reminder -> AgendaItemType.REMINDER.toString()
         }
     }
 }

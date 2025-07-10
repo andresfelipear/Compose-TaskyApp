@@ -147,15 +147,12 @@ class RoomLocalAgendaDataSource @Inject constructor(
 
     override suspend fun upsertAgendaItem(
         agendaItem: AgendaItem,
-        hostId: String?
     ): Result<String, DataError.Local> {
         return try {
             when(agendaItem.details) {
                 is AgendaItemDetails.Event -> {
                     db.withTransaction {
-                        val eventEntity = agendaItem.toEventEntity().copy(
-                            hostId = hostId ?: "",
-                        )
+                        val eventEntity = agendaItem.toEventEntity()
                         eventDao.upsertEvent(eventEntity)
                         attendeeDao.upsertAttendees(agendaItem.details.attendees.map { it.toAttendeeEntity() })
                         photoDao.upsertPhotos(agendaItem.details.photos.map { it.toPhotoEntity() })
@@ -175,6 +172,55 @@ class RoomLocalAgendaDataSource @Inject constructor(
             }
         } catch(e: SQLiteFullException){
             Result.Error(DataError.Local.DISK_FULL)
+        }
+    }
+
+    override suspend fun upsertAgendaItems(
+        agendaItems: List<AgendaItem>,
+    ): Result<List<String>, DataError.Local> {
+        try {
+            val events = agendaItems.filter {
+                it.details is AgendaItemDetails.Event
+            }
+
+            val eventEntities = events.map {
+                it.toEventEntity()
+            }
+
+            val tasks = agendaItems.filter {
+                it.details is AgendaItemDetails.Task
+            }.map {
+                it.toTaskEntity()
+            }
+
+            val reminders = agendaItems.filter {
+                it.details is AgendaItemDetails.Reminder
+            }.map {
+                it.toReminderEntity()
+            }
+
+            taskDao.upsertTasks(tasks)
+            reminderDao.upsertReminders(reminders)
+            db.withTransaction {
+                eventDao.upsertEvents(eventEntities)
+                attendeeDao.upsertAttendees(
+                    events.map{
+                        (it.details as AgendaItemDetails.Event).attendees.map { attendee ->
+                            attendee.toAttendeeEntity()
+                        }
+                    }.flatten()
+                )
+                photoDao.upsertPhotos(
+                    events.map{
+                        (it.details as AgendaItemDetails.Event).photos.map { photo ->
+                            photo.toPhotoEntity()
+                        }
+                    }.flatten()
+                )
+            }
+            return Result.Success(agendaItems.map { it.id })
+        } catch(e: SQLiteFullException){
+            return Result.Error(DataError.Local.DISK_FULL)
         }
     }
 

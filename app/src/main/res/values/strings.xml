@@ -81,9 +81,16 @@
     <string name="one_minute">1 minute</string>
     <string name="minutes">%s minutes</string>
     <string name="not_a_whole">%s</string>
-    <string name="event_edited_successfully">Event was edited successfully!</string>
+    <string name="agenda_item_edited_successfully">Agenda item was edited successfully!</string>
     <string name="new_agenda_item_title">New %s</string>
     <string name="new_agenda_item_description">%s description</string>
     <string name="error_bad_request">Bad request! Some of the arguments passed are not valid</string>
     <string name="error_unauthorized">Not authorized to make this request.</string>
+    <string name="agenda_item_created_successfully">Agenda Item was created Successfully!</string>
+    <string name="back_to_login_screen">There was an error with your current session. Please login again</string>
+    <string name="attendee_not_found">The attendee with the given email doesn\'t exist</string>
+    <string name="attendee_already_added">The Attendee with the given email was already added!</string>
+    <string name="agenda_item_deleted_successfully">Agenda Item deleted successfully!</string>
+    <string name="task_updated_successfully">The status of the given task was updated successfully!</string>
+    <string name="db_error">There was an error when perfoming the db operation</string>
 </resources>

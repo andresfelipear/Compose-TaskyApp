@@ -45,14 +45,4 @@ class MainViewModel @Inject constructor(
             }
         }
     }
-
-    // TODO: Remove this. This is only for testing purposes
-    private fun logout() {
-        viewModelScope.launch {
-            sessionStorage.setSession(null)
-            _isAuthenticated.update {
-                false
-            }
-        }
-    }
 }

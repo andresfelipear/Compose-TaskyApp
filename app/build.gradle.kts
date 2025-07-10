@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 room {
@@ -69,6 +70,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.hilt.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -81,6 +83,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     ksp(libs.dagger.compiler)
+
+    // Hilt Work
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler.work)
 
     // Hilt Navigation
     implementation(libs.hilt.navigation.compose)
@@ -123,6 +129,12 @@ dependencies {
 
     // Data Store Preferences
     implementation(libs.androidx.datastore.preferences)
+
+    // Work Manager
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // Timber
+    implementation(libs.timber.android)
 
     // Test coroutines
     testImplementation(libs.kotlinx.coroutines.test)

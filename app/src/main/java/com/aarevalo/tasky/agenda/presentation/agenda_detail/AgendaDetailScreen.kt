@@ -38,7 +38,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +53,7 @@ import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.AddAttend
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.CustomTimePicker
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.DateTimeSelector
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.DeleteAgendaItemButton
 import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.EventType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.ReminderButton
@@ -94,10 +94,38 @@ fun AgendaDetailScreenRoot(
                 keyboardController?.hide()
                 Toast.makeText(
                     context,
-                    R.string.event_edited_successfully,
+                    R.string.agenda_item_edited_successfully,
                     Toast.LENGTH_LONG
                 ).show()
-                navController.navigate(Destination.Route.AgendaRoute)
+                navController.popBackStack()
+            }
+            is AgendaDetailScreenEvent.ItemCreated -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.agenda_item_created_successfully,
+                    Toast.LENGTH_LONG
+                ).show()
+                navController.popBackStack()
+            }
+            is AgendaDetailScreenEvent.ItemDeleted -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.agenda_item_deleted_successfully,
+                    Toast.LENGTH_LONG
+                    ).show()
+                navController.popBackStack()
+            }
+            is AgendaDetailScreenEvent.GoingBackToLoginScreen -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.back_to_login_screen,
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                navController.navigate(Destination.Route.LoginRoute)
             }
             is AgendaDetailScreenEvent.Error -> {
                 keyboardController?.hide()
@@ -339,7 +367,7 @@ fun AgendaDetailScreen(
                         IconButton(
                             modifier = Modifier.size(20.dp),
                             onClick = {
-                                if(state.details is AgendaItemDetails.Task){
+                                if(state.details is AgendaItemDetails.Task && state.isEditable){
                                     onAction(AgendaDetailScreenAction.OnChangeTaskStatus)                                }
                             }) {
                             Icon(
@@ -497,33 +525,12 @@ fun AgendaDetailScreen(
                 }
             }
 
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .drawBehind {
-                        drawLine(
-                            color = colors.surfaceHigher,
-                            start = Offset(
-                                0f,
-                                0f,
-                            ),
-                            end = Offset(
-                                size.width,
-                                0f,
-                            ),
-                            strokeWidth = 1.dp.toPx()
-                        )
-                    }
-                    .padding(
-                        top = 16.dp,
-                    )
-                    .clickable {
-                        onAction(AgendaDetailScreenAction.OnChangeDeleteDialogVisibility)
-                    },
-                text = stringResource(id = R.string.delete_item, type).uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center
+            DeleteAgendaItemButton(
+                isEditable = state.isItemCreated,
+                onClick = {
+                    onAction(AgendaDetailScreenAction.OnChangeDeleteDialogVisibility)
+                },
+                type = type
             )
         }
     }

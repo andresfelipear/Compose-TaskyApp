@@ -10,7 +10,8 @@ interface LocalAgendaDataSource {
     fun getAgendaItems(): Flow<List<AgendaItem>>
     fun getAgendaItemsByDate(date: LocalDate): Flow<List<AgendaItem>>
     suspend fun getAgendaItemById(agendaItemId: String): AgendaItem?
-    suspend fun upsertAgendaItem(agendaItem: AgendaItem, hostId: String?): Result<String, DataError.Local>
+    suspend fun upsertAgendaItem(agendaItem: AgendaItem): Result<String, DataError.Local>
+    suspend fun upsertAgendaItems(agendaItems: List<AgendaItem>): Result<List<String>, DataError.Local>
     suspend fun deleteAgendaItem(agendaItemId: String)
     suspend fun deleteAllAgendaItems()
 }

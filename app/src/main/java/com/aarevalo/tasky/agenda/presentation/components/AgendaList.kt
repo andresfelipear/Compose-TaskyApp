@@ -80,14 +80,21 @@ fun AgendaList(
                             text = stringResource(R.string.delete),
                             onClick = {
                                 onAction(
-                                    AgendaScreenAction.OnDeleteAgendaItem(
+                                    AgendaScreenAction.OnConfirmDeleteAgendaItem(
                                         agendaItemId = agendaItem.id,
                                         type = agendaItem.details
                                     )
                                 )
                             }
                         )
-                    )
+                    ),
+                    onClick = {
+                        onAction(
+                            AgendaScreenAction.OnChangeTaskStatus(
+                                agendaItemId = agendaItem.id,
+                            )
+                        )
+                    }
                 )
             }
         }
@@ -110,7 +117,8 @@ fun AgendaListPreview(){
                             .plusMinutes(31),
                         fromDate = LocalDate.now(),
                         details = AgendaItemDetails.Event(),
-                        reminderAt = ZonedDateTime.now()
+                        remindAt = ZonedDateTime.now(),
+                        hostId = ""
                     ),
                     AgendaItem(
                         id = "2",
@@ -120,7 +128,8 @@ fun AgendaListPreview(){
                             .plusMinutes(32),
                         details = AgendaItemDetails.Task(),
                         fromDate = LocalDate.now(),
-                        reminderAt = ZonedDateTime.now()
+                        remindAt = ZonedDateTime.now(),
+                        hostId = ""
                     ),
                     AgendaItem(
                         id = "3",
@@ -130,7 +139,8 @@ fun AgendaListPreview(){
                             .plusMinutes(33),
                         fromDate = LocalDate.now(),
                         details = AgendaItemDetails.Event(),
-                        reminderAt = ZonedDateTime.now()
+                        remindAt = ZonedDateTime.now(),
+                        hostId = ""
                     ),
                     AgendaItem(
                         id = "4",
@@ -140,11 +150,13 @@ fun AgendaListPreview(){
                             .plusMinutes(0),
                         details = AgendaItemDetails.Reminder,
                         fromDate = LocalDate.now(),
-                        reminderAt = ZonedDateTime.now()
+                        remindAt = ZonedDateTime.now(),
+                        hostId = ""
                     )
-                )
+                ),
+                selectedDate = LocalDate.now(),
             ),
-            onAction = TODO(),
+            onAction = {  },
         )
     }
 }

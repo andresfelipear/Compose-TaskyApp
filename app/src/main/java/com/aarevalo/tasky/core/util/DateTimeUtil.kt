@@ -9,6 +9,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.toJavaDuration
 import kotlin.time.toKotlinDuration
 
 fun formattedDateTimeToString(
@@ -56,12 +57,44 @@ fun parseTimestampToLocalTime(
 }
 
 fun getReminderTypeFromLocalDateTime(
-    localDateTime: LocalDateTime,
-    reminderAt: LocalDateTime
+    fromDate: LocalDate,
+    fromTime: LocalTime,
+    remindAt: LocalDateTime
 ): ReminderType {
-    val durationBetween = Duration.between(reminderAt, localDateTime)
+    val localDateTime = LocalDateTime.of(fromDate, fromTime)
+    val durationBetween = Duration.between(remindAt, localDateTime)
+
     return ReminderType.entries.find { it.duration == durationBetween.toKotlinDuration()
-    }?: ReminderType.TEN_MINUTES
+    }?: ReminderType.ONE_HOUR
+}
+
+fun getReminderTypeFromTimestamp(
+    time: Long,
+    remindAt: Long
+): ReminderType {
+    val instant = Instant.ofEpochMilli(time)
+    val zonedDateTime = instant.atZone(ZoneId.systemDefault())
+    val localDateTime = zonedDateTime.toLocalDateTime()
+
+    val instantRemindAt = Instant.ofEpochMilli(remindAt)
+    val zonedDateTimeRemindAt = instantRemindAt.atZone(ZoneId.systemDefault())
+    val localDateTimeRemindAt = zonedDateTimeRemindAt.toLocalDateTime()
+
+    val durationBetween = Duration.between(localDateTimeRemindAt, localDateTime)
+
+    return ReminderType.entries.find { it.duration == durationBetween.toKotlinDuration()
+    }?: ReminderType.ONE_HOUR
+}
+
+fun getRemindAtFromReminderType(
+    reminderType: ReminderType,
+    fromDate: LocalDate,
+    fromTime: LocalTime
+): ZonedDateTime {
+    val localDateTime = LocalDateTime.of(fromDate, fromTime)
+    val reminderAtLocalDateTime = localDateTime.minus(reminderType.duration.toJavaDuration())
+
+    return ZonedDateTime.of(reminderAtLocalDateTime, ZoneId.systemDefault())
 }
 
 fun parseTimestampToLocalDate(
@@ -85,8 +118,8 @@ fun parseTimestampToZonedDateTime(
 fun parseLocalDateToTimestamp(
     localDate: LocalDate,
 ): Long {
-    val localDateTime = localDate.atStartOfDay()
-    return localDateTime.toInstant(java.time.ZoneOffset.UTC).toEpochMilli()
+    val localDateTime = localDate.atStartOfDay(ZoneId.systemDefault())
+    return localDateTime.toInstant().toEpochMilli()
 }
 
 fun parseLocalDateTimeToTimestamp(

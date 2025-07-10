@@ -6,12 +6,16 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class AgendaScreenState (
-    val selectedDate: LocalDate = LocalDate.now(),
+    val selectedDate: LocalDate,
     val initials: String = "",
     val showDatePicker: Boolean = false,
     val relatedDates: List<LocalDate> = getRelatedDates(LocalDate.now()),
     val agendaItems: List<AgendaItem> = emptyList(),
-    val timeNeedled: LocalTime = LocalTime.now()
+    val timeNeedled: LocalTime = LocalTime.now(),
+    val isDeletingItem: Boolean = false,
+    val showDeleteConfirmationDialog: Boolean = false,
+    val agendaItemTypeToDelete: String = "",
+    val agendaItemIdToDelete: String = ""
 ){
     companion object{
         const val RANGE_DAYS: Long = 15

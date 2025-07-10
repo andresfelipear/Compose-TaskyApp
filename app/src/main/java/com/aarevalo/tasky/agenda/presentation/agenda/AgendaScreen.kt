@@ -36,6 +36,7 @@ import com.aarevalo.tasky.agenda.presentation.components.AgendaList
 import com.aarevalo.tasky.agenda.presentation.components.AgendaScreenHeader
 import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
+import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
 import com.aarevalo.tasky.core.navigation.Destination
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
@@ -68,6 +69,37 @@ fun AgendaScreenRoute(
                 navController.navigate(Destination.Route.LoginRoute)
             }
 
+            is AgendaScreenEvent.Success -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.task_updated_successfully,
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+
+            is AgendaScreenEvent.SuccessDeleteAgendaItem -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.agenda_item_deleted_successfully,
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+
+            is AgendaScreenEvent.GoingBackToLoginScreen -> {
+                keyboardController?.hide()
+                Toast.makeText(
+                    context,
+                    R.string.back_to_login_screen,
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                navController.navigate(Destination.Route.LoginRoute)
+            }
+
             is AgendaScreenEvent.Error -> {
                 keyboardController?.hide()
                 Toast.makeText(
@@ -77,10 +109,8 @@ fun AgendaScreenRoute(
                 )
                     .show()
             }
-            else -> Unit
         }
     }
-
 
     if(state.showDatePicker) {
         CustomDatePicker(
@@ -140,6 +170,18 @@ fun AgendaScreen(
 
     val spacing = LocalSpacing.current
     val snackBarState = remember { SnackbarHostState() }
+
+    DeleteAgendaItemDialog(
+        showConfirmationDialog = state.showDeleteConfirmationDialog,
+        onDismissConfirmationDialog = {
+            onAction(AgendaScreenAction.OnChangeDeleteDialogVisibility)
+        },
+        onConfirmDeleteAgendaItem = {
+            onAction(AgendaScreenAction.OnDeleteAgendaItem)
+        },
+        elementName = state.agendaItemTypeToDelete,
+        isDeletingItem = state.isDeletingItem
+    )
 
     Scaffold(
         snackbarHost = {
@@ -260,7 +302,9 @@ fun AgendaScreen(
 fun AgendaScreenPreview() {
     TaskyTheme {
         AgendaScreen(
-            state = AgendaScreenState(),
+            state = AgendaScreenState(
+                selectedDate = LocalDate.now(),
+            ),
             onAction = {})
     }
 }

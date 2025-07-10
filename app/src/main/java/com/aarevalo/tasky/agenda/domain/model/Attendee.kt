@@ -8,5 +8,5 @@ data class Attendee(
     val fullName: String,
     val email: String,
     val isGoing: Boolean,
-    val reminderAt: ZonedDateTime
+    val remindAt: ZonedDateTime
 )

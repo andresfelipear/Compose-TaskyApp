@@ -5,7 +5,6 @@ import androidx.room.Room
 import com.aarevalo.tasky.BuildConfig
 import com.aarevalo.tasky.agenda.data.local.RoomLocalAgendaDataSource
 import com.aarevalo.tasky.agenda.data.local.dao.AttendeeDao
-import com.aarevalo.tasky.agenda.data.local.dao.DeletedItemSyncDao
 import com.aarevalo.tasky.agenda.data.local.dao.EventDao
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
 import com.aarevalo.tasky.agenda.data.local.dao.PhotoDao
@@ -15,11 +14,15 @@ import com.aarevalo.tasky.agenda.data.local.database.AgendaDatabase
 import com.aarevalo.tasky.agenda.data.remote.RetrofitRemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.agenda.data.OfflineFirstAgendaRepository
+import com.aarevalo.tasky.agenda.data.SyncAgendaWorkerScheduler
+import com.aarevalo.tasky.agenda.data.local.converter.MoshiAgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.data.util.AndroidPhotoByteLoader
 import com.aarevalo.tasky.agenda.data.util.StandardDispatcherProvider
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
+import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
+import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.DispatcherProvider
@@ -29,6 +32,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -75,7 +80,9 @@ object TaskyAgendaModule {
             context.applicationContext,
             AgendaDatabase::class.java,
             "agenda_database"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(true)
+            .build()
     }
 
     @Provides
@@ -110,12 +117,6 @@ object TaskyAgendaModule {
 
     @Provides
     @Singleton
-    fun provideDeletedItemSyncDao(
-        database: AgendaDatabase
-    ): DeletedItemSyncDao = database.deletedItemSyncDao
-
-    @Provides
-    @Singleton
     fun providePendingItemSyncDao(
         database: AgendaDatabase
     ): PendingItemSyncDao = database.pendingItemSyncDao
@@ -143,13 +144,48 @@ object TaskyAgendaModule {
     fun provideAgendaRepository(
         remoteAgendaDataSource: RemoteAgendaDataSource,
         localAgendaSource: LocalAgendaDataSource,
-        sessionStorage: SessionStorage
+        sessionStorage: SessionStorage,
+        pendingItemSyncDao: PendingItemSyncDao,
+        coroutineScope: CoroutineScope,
+        syncAgendaScheduler: SyncAgendaScheduler,
+        agendaItemJsonConverter: AgendaItemJsonConverter
     ) : AgendaRepository {
         return OfflineFirstAgendaRepository(
             remoteAgendaDataSource,
             localAgendaSource,
-            sessionStorage
+            sessionStorage,
+            coroutineScope,
+            pendingItemSyncDao,
+            syncAgendaScheduler,
+            agendaItemJsonConverter,
+            StandardDispatcherProvider
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideSyncAgendaScheduler(
+        @ApplicationContext context: Context,
+        pendingItemSyncDao: PendingItemSyncDao,
+        sessionStorage: SessionStorage,
+        coroutineScope: CoroutineScope,
+        agendaItemJsonConverter: AgendaItemJsonConverter
+    ): SyncAgendaScheduler {
+        return SyncAgendaWorkerScheduler(
+            context.applicationContext,
+            pendingItemSyncDao,
+            sessionStorage,
+            coroutineScope,
+            agendaItemJsonConverter
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideAgendaItemJsonConverter(
+        moshi: Moshi
+    ): AgendaItemJsonConverter {
+        return MoshiAgendaItemJsonConverter(moshi)
     }
 
     @Provides
@@ -165,5 +201,11 @@ object TaskyAgendaModule {
     @Singleton
     fun provideDispatcherProvider(): DispatcherProvider {
         return StandardDispatcherProvider
+    }
+
+    @Provides
+    @Singleton
+    fun provideCoroutineScope(): CoroutineScope {
+        return CoroutineScope(Dispatchers.IO)
     }
 }

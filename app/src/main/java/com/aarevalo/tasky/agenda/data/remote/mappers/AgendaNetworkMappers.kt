@@ -1,8 +1,9 @@
 package com.aarevalo.tasky.agenda.data.remote.mappers
 
 import com.aarevalo.tasky.agenda.data.remote.dto.AttendeeDto
+import com.aarevalo.tasky.agenda.data.remote.dto.EventCreateRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.EventDto
-import com.aarevalo.tasky.agenda.data.remote.dto.EventRequest
+import com.aarevalo.tasky.agenda.data.remote.dto.EventUpdateRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.PhotoDto
 import com.aarevalo.tasky.agenda.data.remote.dto.ReminderDto
 import com.aarevalo.tasky.agenda.data.remote.dto.TaskDto
@@ -11,6 +12,7 @@ import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.asEventDetails
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.asTaskDetails
 import com.aarevalo.tasky.core.util.parseLocalDateTimeToTimestamp
 import com.aarevalo.tasky.core.util.parseTimestampToLocalDate
 import com.aarevalo.tasky.core.util.parseTimestampToLocalTime
@@ -24,15 +26,15 @@ fun EventDto.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(from),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Event(
             toTime = parseTimestampToLocalTime(to),
             toDate = parseTimestampToLocalDate(to),
             photos = photos.map { it.toEventPhoto() },
             attendees = attendees.map { it.toAttendee() },
             isUserEventCreator = isUserEventCreator,
-
-        )
+        ),
+        hostId = host
     )
 }
 
@@ -43,10 +45,11 @@ fun TaskDto.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(time),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Task(
             isDone = isDone
-        )
+        ),
+        hostId = ""
     )
 }
 
@@ -57,25 +60,41 @@ fun ReminderDto.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(time),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
-        details = AgendaItemDetails.Reminder
+        remindAt = parseTimestampToZonedDateTime(remindAt),
+        details = AgendaItemDetails.Reminder,
+        hostId = ""
     )
 }
 
-fun AgendaItem.toEventRequest(): EventRequest {
+fun AgendaItem.toEventUpdateRequest(): EventUpdateRequest {
     val details = details.asEventDetails
     requireNotNull(details)
 
-    return EventRequest(
+    return EventUpdateRequest(
         id = id,
         title = title,
         description = description,
         from = parseLocalDateTimeToTimestamp(fromDate, fromTime),
         to = parseLocalDateTimeToTimestamp(details.toDate, details.toTime),
-        reminderAt = reminderAt.toInstant().toEpochMilli(),
+        remindAt = remindAt.toInstant().toEpochMilli(),
         attendeeIds = details.attendees.map { it.userId },
         deletedPhotoKeys = emptyList(),
         isGoing = false
+    )
+}
+
+fun AgendaItem.toEventCreateRequest(): EventCreateRequest {
+    val details = details.asEventDetails
+    requireNotNull(details)
+
+    return EventCreateRequest(
+        id = id,
+        title = title,
+        description = description,
+        from = parseLocalDateTimeToTimestamp(fromDate, fromTime),
+        to = parseLocalDateTimeToTimestamp(details.toDate, details.toTime),
+        remindAt = remindAt.toInstant().toEpochMilli(),
+        attendeeIds = details.attendees.map { it.userId },
     )
 }
 
@@ -85,8 +104,8 @@ fun AgendaItem.toTaskDto(): TaskDto {
         title = title,
         description = description,
         time = parseLocalDateTimeToTimestamp(fromDate, fromTime),
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
-        isDone = false
+        remindAt = parseZonedDateTimeToTimestamp(remindAt),
+        isDone = details.asTaskDetails?.isDone?:false
     )
 }
 
@@ -99,7 +118,7 @@ fun AgendaItem.toReminderDto(): ReminderDto {
             fromDate,
             fromTime
         ),
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt)
+        remindAt = parseZonedDateTimeToTimestamp(remindAt)
     )
 }
 
@@ -108,9 +127,9 @@ fun AttendeeDto.toAttendee(): Attendee {
         userId = userId,
         fullName = fullName,
         email = email,
-        isGoing = isGoing,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
-        eventId = eventId
+        isGoing = isGoing?:true,
+        remindAt = parseTimestampToZonedDateTime(remindAt?:System.currentTimeMillis()),
+        eventId = eventId?:""
     )
 }
 
@@ -135,7 +154,7 @@ fun Attendee.toAttendeeDto(): AttendeeDto {
         email = email,
         eventId = eventId,
         isGoing = isGoing,
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt)
+        remindAt = parseZonedDateTimeToTimestamp(remindAt)
     )
 }
 

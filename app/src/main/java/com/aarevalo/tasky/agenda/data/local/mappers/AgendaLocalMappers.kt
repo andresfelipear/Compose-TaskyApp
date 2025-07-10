@@ -9,14 +9,11 @@ import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
-import com.aarevalo.tasky.core.util.getReminderTypeFromLocalDateTime
 import com.aarevalo.tasky.core.util.parseLocalDateTimeToTimestamp
 import com.aarevalo.tasky.core.util.parseTimestampToLocalDate
 import com.aarevalo.tasky.core.util.parseTimestampToLocalTime
 import com.aarevalo.tasky.core.util.parseTimestampToZonedDateTime
 import com.aarevalo.tasky.core.util.parseZonedDateTimeToTimestamp
-import java.time.LocalDateTime
-import kotlin.time.toJavaDuration
 
 fun EventEntity.toAgendaItem(): AgendaItem {
     return AgendaItem(
@@ -25,7 +22,8 @@ fun EventEntity.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(fromTimestamp),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        remindAt = parseTimestampToZonedDateTime(remindAt),
+        hostId = hostId,
         details = AgendaItemDetails.Event(
             toTime = parseTimestampToLocalTime(toTimestamp),
             toDate = parseTimestampToLocalDate(toTimestamp),
@@ -43,7 +41,7 @@ fun AttendeeEntity.toAttendee(): Attendee{
         fullName = fullName,
         email = email,
         isGoing = isGoing ?: true,
-        reminderAt = reminderAt?.let {
+        remindAt = remindAt?.let {
             parseTimestampToZonedDateTime(it)
         } ?: parseTimestampToZonedDateTime(System.currentTimeMillis())
     )
@@ -63,7 +61,8 @@ fun TaskEntity.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(time),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(reminderAt),
+        hostId = "",
+        remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Task(
             isDone = isDone
         )
@@ -77,9 +76,10 @@ fun ReminderEntity.toAgendaItem(): AgendaItem {
         fromDate = parseTimestampToLocalDate(time),
         description = description,
         title = title,
-        reminderAt = parseTimestampToZonedDateTime(time).minus(remindAt.duration.toJavaDuration()),
-        details = AgendaItemDetails.Reminder
-    )
+        hostId = "",
+        remindAt = parseTimestampToZonedDateTime(remindAt),
+        details = AgendaItemDetails.Reminder,
+        )
 }
 
 fun AgendaItem.toEventEntity(): EventEntity{
@@ -95,8 +95,8 @@ fun AgendaItem.toEventEntity(): EventEntity{
             localDate = (details as AgendaItemDetails.Event).toDate,
             localTime = details.toTime
         ),
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
-        hostId = "",
+        remindAt = parseZonedDateTimeToTimestamp(remindAt),
+        hostId = hostId,
         isUserEventCreator = details.isUserEventCreator,
         photoKeys = details.photos.map { it.key }
     )
@@ -111,14 +111,12 @@ fun AgendaItem.toTaskEntity(): TaskEntity{
             localDate = fromDate,
             localTime = fromTime
         ),
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt),
+        remindAt = parseZonedDateTimeToTimestamp(remindAt),
         isDone = (details as AgendaItemDetails.Task).isDone
     )
 }
 
 fun AgendaItem.toReminderEntity(): ReminderEntity {
-    val reminderAtToLocalDateTime = reminderAt.toLocalDateTime()
-    val localDateTime = LocalDateTime.of(fromDate, fromTime)
     return ReminderEntity(
         reminderId = id,
         title = title,
@@ -127,10 +125,7 @@ fun AgendaItem.toReminderEntity(): ReminderEntity {
             localDate = fromDate,
             localTime = fromTime
         ),
-        remindAt = getReminderTypeFromLocalDateTime(
-            localDateTime = localDateTime,
-            reminderAt = reminderAtToLocalDateTime
-        )
+        remindAt = parseZonedDateTimeToTimestamp(remindAt)
     )
 }
 
@@ -141,7 +136,7 @@ fun Attendee.toAttendeeEntity(): AttendeeEntity{
         fullName = fullName,
         email = email,
         isGoing = isGoing,
-        reminderAt = parseZonedDateTimeToTimestamp(reminderAt)
+        remindAt = parseZonedDateTimeToTimestamp(remindAt)
     )
 }
 

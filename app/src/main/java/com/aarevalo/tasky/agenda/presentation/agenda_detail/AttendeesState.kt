@@ -8,7 +8,6 @@ data class AttendeesState (
     val email: String = "",
     val isEmailValid: Boolean = false,
     val isAdding: Boolean = false,
-    val isProcessingEmail: Boolean = false,
     val errorMessage: UiText? = null,
     val filterOptions: List<VisitorFilterType> = VisitorFilterType.entries,
     val selectedFilter: VisitorFilterType = VisitorFilterType.ALL,

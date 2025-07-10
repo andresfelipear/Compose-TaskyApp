@@ -2,6 +2,7 @@ package com.aarevalo.tasky.agenda.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,7 +14,8 @@ import androidx.room.PrimaryKey
             childColumns = ["eventId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["eventId"])]
 )
 data class AttendeeEntity(
     @PrimaryKey(autoGenerate = false)
@@ -22,5 +24,5 @@ data class AttendeeEntity(
     val email: String,
     val eventId: String?,
     val isGoing: Boolean?,
-    val reminderAt: Long?,
+    val remindAt: Long?,
 )
