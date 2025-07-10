@@ -20,7 +20,6 @@ import com.aarevalo.tasky.agenda.data.local.mappers.toTaskEntity
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
-import com.aarevalo.tasky.agenda.presentation.agenda_detail.asEventDetails
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.util.parseLocalDateToTimestamp
 import kotlinx.coroutines.flow.Flow
@@ -200,10 +199,10 @@ class RoomLocalAgendaDataSource @Inject constructor(
                 it.toReminderEntity()
             }
 
+            taskDao.upsertTasks(tasks)
+            reminderDao.upsertReminders(reminders)
             db.withTransaction {
                 eventDao.upsertEvents(eventEntities)
-                taskDao.upsertTasks(tasks)
-                reminderDao.upsertReminders(reminders)
                 attendeeDao.upsertAttendees(
                     events.map{
                         (it.details as AgendaItemDetails.Event).attendees.map { attendee ->

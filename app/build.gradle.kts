@@ -81,12 +81,12 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-    kapt(libs.dagger.compiler)
+    ksp(libs.hilt.compiler)
+    ksp(libs.dagger.compiler)
 
     // Hilt Work
     implementation(libs.hilt.work)
-    kapt(libs.hilt.compiler.work)
+    ksp(libs.hilt.compiler.work)
 
     // Hilt Navigation
     implementation(libs.hilt.navigation.compose)

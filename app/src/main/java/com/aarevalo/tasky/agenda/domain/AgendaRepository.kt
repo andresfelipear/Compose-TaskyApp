@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface AgendaRepository {
-    fun getAgendaItems(): Flow<List<AgendaItem>>
     fun getAgendaItemsByDate(date: LocalDate): Flow<List<AgendaItem>>
     suspend fun fetchAgendaItems(): EmptyResult<DataError>
     suspend fun getAgendaItemById(agendaItemId: String): AgendaItem?

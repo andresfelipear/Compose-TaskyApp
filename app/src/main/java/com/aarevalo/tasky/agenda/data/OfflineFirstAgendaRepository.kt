@@ -20,6 +20,7 @@ import com.aarevalo.tasky.core.domain.util.asEmptyDataResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,10 +39,6 @@ class OfflineFirstAgendaRepository @Inject constructor(
     private val dispatcher: DispatcherProvider
 ): AgendaRepository {
 
-    override fun getAgendaItems(): Flow<List<AgendaItem>> {
-        return localAgendaSource.getAgendaItems()
-    }
-
     override fun getAgendaItemsByDate(date: LocalDate): Flow<List<AgendaItem>> {
         return localAgendaSource.getAgendaItemsByDate(date)
     }
@@ -54,8 +51,23 @@ class OfflineFirstAgendaRepository @Inject constructor(
             }
             is Result.Success -> {
                 applicationScope.async {
-                    localAgendaSource.deleteAllAgendaItems()
-                    localAgendaSource.upsertAgendaItems(result.data).asEmptyDataResult()
+                    val localItems = localAgendaSource.getAgendaItems().first()
+                    val localItemsIds = localItems.map { it.id }
+
+                    val remoteItems = result.data
+                    val remoteItemsIds = remoteItems.map { it.id }
+
+                    val itemsToDeleteLocally = localItemsIds.minus(remoteItemsIds.toSet())
+                    itemsToDeleteLocally.forEach{
+                        try {
+                            localAgendaSource.deleteAgendaItem(it)
+                        } catch(e: SQLException){
+                            Timber.e(e, "Failed to delete agenda item locally for ID: %s", it)
+                            return@forEach
+                        }
+                    }
+
+                    localAgendaSource.upsertAgendaItems(remoteItems).asEmptyDataResult()
                 }.await()
             }
         }
@@ -114,32 +126,20 @@ class OfflineFirstAgendaRepository @Inject constructor(
         // the data is updated but the operation keep the same. Keep using the same worker
         val existingPendingItem = pendingItemSyncDao.getPendingItemSyncById(agendaItem.id)
 
-        // The 'let' block below was problematic because it conditionally upserted.
-        // The original intention seems to be that if there's an existing pending item,
-        // we update its details while preserving its original sync operation.
-        // If there's no existing pending item, we mark it as an UPDATE.
-        // I've incorporated this logic into the PendingItemSyncEntity creation.
-
-        val syncOperationToStore = existingPendingItem?.syncOperation ?: SyncOperation.UPDATE
-        val itemJson = agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem)
-        if (itemJson == null) {
-            Timber.e("Failed to convert AgendaItem ID: %s to JSON. Bad data.", agendaItem.id)
-            return Result.Error(DataError.Local.BAD_DATA).asEmptyDataResult()
+        existingPendingItem?.let { pendingItem ->
+            pendingItemSyncDao.upsertPendingItemSyn(
+                PendingItemSyncEntity(
+                    itemId = agendaItem.id,
+                    userId = agendaItem.hostId,
+                    isGoing = isGoing,
+                    deletedPhotoKeys = deletedPhotoKeys,
+                    itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+                    syncOperation = pendingItem.syncOperation,
+                    itemJson = agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem)
+                        ?: return Result.Error(DataError.Local.BAD_DATA)
+                )
+            )
         }
-
-        // Unconditionally create/update the PendingItemSyncEntity HERE.
-        // This is the single source of truth for what needs to be synced.
-        val pendingSyncEntity = PendingItemSyncEntity(
-            itemId = agendaItem.id,
-            userId = agendaItem.hostId,
-            isGoing = isGoing,
-            deletedPhotoKeys = deletedPhotoKeys,
-            itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
-            syncOperation = syncOperationToStore,
-            itemJson = itemJson
-        )
-        pendingItemSyncDao.upsertPendingItemSyn(pendingSyncEntity)
-
 
         Timber.d("Attempting to update agenda item remotely: %s", agendaItem.id)
         return when(val remoteResult = remoteAgendaSource.updateAgendaItem(agendaItem, deletedPhotoKeys, isGoing)){
@@ -233,7 +233,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
 
             Timber.d("Found pending items: %s", pendingItems.await())
 
-            val createJobs = pendingItems
+            val syncCrudJobs = pendingItems
                 .await()
                 .map { pendingItem ->
                     launch {
@@ -282,7 +282,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                     }
                 }
 
-            createJobs.joinAll()
+            syncCrudJobs.joinAll()
         }
     }
 
