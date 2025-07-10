@@ -6,6 +6,7 @@ import com.aarevalo.tasky.agenda.data.local.entity.PhotoEntity
 import com.aarevalo.tasky.agenda.data.local.entity.ReminderEntity
 import com.aarevalo.tasky.agenda.data.local.entity.TaskEntity
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AlarmItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
@@ -144,5 +145,15 @@ fun EventPhoto.toPhotoEntity(): PhotoEntity{
     return PhotoEntity(
         key = key,
         uri = uri
+    )
+}
+
+fun AgendaItem.toAlarmItem(): AlarmItem {
+    return AlarmItem(
+        id = id,
+        title = title,
+        description = description,
+        time = remindAt,
+        itemType = details.toStringType(),
     )
 }

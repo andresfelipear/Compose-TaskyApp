@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.core.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+    private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,15 +39,21 @@ class MainActivity : ComponentActivity() {
             }
         }
         setContent {
-            TaskyRoot(viewModel)
+            navController = rememberNavController()
+            TaskyRoot(viewModel, navController)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        navController.handleDeepLink(intent)
     }
 }
 
 @Composable
 fun TaskyRoot(
     viewModel: MainViewModel,
-    navController: NavHostController = rememberNavController(),
+    navController: NavHostController,
 ) {
 
     TaskyTheme {
