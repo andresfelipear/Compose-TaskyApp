@@ -4,13 +4,16 @@ import android.database.SQLException
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
 import com.aarevalo.tasky.agenda.data.local.entity.PendingItemSyncEntity
 import com.aarevalo.tasky.agenda.data.local.entity.SyncOperation
+import com.aarevalo.tasky.agenda.data.local.mappers.toAlarmItem
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
+import com.aarevalo.tasky.agenda.domain.AlarmScheduler
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.domain.util.DispatcherProvider
@@ -26,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 class OfflineFirstAgendaRepository @Inject constructor(
@@ -36,14 +40,59 @@ class OfflineFirstAgendaRepository @Inject constructor(
     private val pendingItemSyncDao: PendingItemSyncDao,
     private val syncAgendaScheduler: SyncAgendaScheduler,
     private val agendaItemJsonConverter: AgendaItemJsonConverter,
-    private val dispatcher: DispatcherProvider
+    private val dispatcher: DispatcherProvider,
+    private val alarmScheduler: AlarmScheduler
 ): AgendaRepository {
+
+    override suspend fun scheduleReminder(agendaItem: AgendaItem){
+        val currentUserId = sessionStorage.getSession()?.userId
+
+        if(currentUserId == null){
+            Timber.w("Cannot schedule reminder for item %s: User not logged in.", agendaItem.id)
+            alarmScheduler.cancel(agendaItem.toAlarmItem())
+            return
+        }
+
+        val reminderTimeMillis = agendaItem.remindAt.toInstant().toEpochMilli()
+        val currentTimeMillis = ZonedDateTime.now().toInstant().toEpochMilli()
+
+        val isTimeInFuture = reminderTimeMillis > currentTimeMillis
+
+        // only schedule if the reminder time is in the future.
+        println("is in the future (calculated): ${agendaItem.remindAt.toInstant().toEpochMilli() > ZonedDateTime.now().toInstant().toEpochMilli()}")
+
+        if (isTimeInFuture) {
+            alarmScheduler.schedule(agendaItem.toAlarmItem())
+            Timber.d("Reminder scheduled for item %s (type: %s) at %s", agendaItem.id, agendaItem.javaClass.simpleName, agendaItem.remindAt)
+        } else {
+            Timber.w("Skipping scheduling reminder for item %s (type: %s) as time %s is in the past or not for current user.",
+                     agendaItem.id, agendaItem.javaClass.simpleName, agendaItem.remindAt)
+            alarmScheduler.cancel(agendaItem.toAlarmItem())
+        }
+    }
+
+    override suspend fun cancelReminder(agendaItemId: String) {
+        localAgendaSource.getAgendaItemById(agendaItemId)?.let { agendaItem ->
+            alarmScheduler.cancel(agendaItem.toAlarmItem())
+            Timber.d("Cancelled reminder for AgendaItem ID: %s", agendaItem.id)
+        } ?: Timber.w("Attempted to cancel reminder for non-existent AgendaItem ID: %s", agendaItemId)
+    }
+
+    override fun getAllAgendaItems(): Flow<List<AgendaItem>> {
+        return localAgendaSource.getAgendaItems()
+    }
 
     override fun getAgendaItemsByDate(date: LocalDate): Flow<List<AgendaItem>> {
         return localAgendaSource.getAgendaItemsByDate(date)
     }
 
     override suspend fun fetchAgendaItems(): EmptyResult<DataError> {
+        val currentUserId = sessionStorage.getSession()?.userId
+        if (currentUserId == null) {
+            Timber.e("Cannot fetch agenda items: User not logged in.")
+            return Result.Error(DataError.Network.UNAUTHORIZED).asEmptyDataResult()
+        }
+
         return when(val result = remoteAgendaSource.fetchFullAgenda()) {
             is Result.Error -> {
                 Timber.e("Error fetching agenda items remotely! %s", result)
@@ -58,16 +107,25 @@ class OfflineFirstAgendaRepository @Inject constructor(
                     val remoteItemsIds = remoteItems.map { it.id }
 
                     val itemsToDeleteLocally = localItemsIds.minus(remoteItemsIds.toSet())
-                    itemsToDeleteLocally.forEach{
+                    itemsToDeleteLocally.forEach{ id ->
                         try {
-                            localAgendaSource.deleteAgendaItem(it)
+                            cancelReminder(id)
+                            localAgendaSource.deleteAgendaItem(id)
+                            Timber.d("Deleted local agenda item %s during reconciliation.", id)
                         } catch(e: SQLException){
-                            Timber.e(e, "Failed to delete agenda item locally for ID: %s", it)
+                            Timber.e(e, "Failed to delete agenda item locally for ID: %s", id)
                             return@forEach
                         }
                     }
 
-                    localAgendaSource.upsertAgendaItems(remoteItems).asEmptyDataResult()
+                    localAgendaSource.upsertAgendaItems(remoteItems)
+                    Timber.d("Upserted %d remote agenda items locally.", remoteItems.size)
+
+                    remoteItems.forEach { agendaItem ->
+                        scheduleReminder(agendaItem)
+                    }
+
+                    Result.Success(Unit)
                 }.await()
             }
         }
@@ -85,6 +143,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
             return localResult.asEmptyDataResult()
         }
 
+        applicationScope.launch {
+            scheduleReminder(agendaItem)
+        }
+
         Timber.d("Attempting to create agenda item remotely: %s", agendaItem.id)
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
@@ -100,6 +162,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 Timber.d("Success creating agenda item remotely: %s", agendaItem.id)
                 if(remoteResult.data != null){
                     applicationScope.async {
+                        scheduleReminder(remoteResult.data)
                         localAgendaSource.upsertAgendaItem(remoteResult.data)
                     }.await().asEmptyDataResult()
                 }
@@ -120,6 +183,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
         if(localResult is Result.Error){
             Timber.e("Failed to update agenda item locally for ID: %s, Error: %s", agendaItem.id, localResult.error)
             return localResult.asEmptyDataResult()
+        }
+
+        applicationScope.launch {
+            scheduleReminder(agendaItem)
         }
 
         // edge case - when agenda item is created / or updated in offline-mode
@@ -168,6 +235,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 }
                 if(remoteResult.data != null){
                     applicationScope.async {
+                        scheduleReminder(remoteResult.data)
                         localAgendaSource.upsertAgendaItem(remoteResult.data)
                     }.await().asEmptyDataResult()
                 }
@@ -181,7 +249,9 @@ class OfflineFirstAgendaRepository @Inject constructor(
     override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError> {
         Timber.d("Deleting agenda item locally: %s", agendaItemId)
         try{
+            cancelReminder(agendaItemId)
             localAgendaSource.deleteAgendaItem(agendaItemId)
+            Timber.d("Agenda item ID: %s deleted locally.", agendaItemId)
         }
         catch (e: SQLException){
             Timber.e(e, "Failed to delete agenda item locally for ID: %s", agendaItemId)
@@ -243,7 +313,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                                 val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(pendingItem.itemJson, pendingItem.itemType)
                                 if (agendaItem == null) {
                                     Timber.e("Failed to deserialize pending CREATE item: %s", pendingItem.itemId)
-                                    Result.Error(DataError.Local.BAD_DATA) // Mark as error so it's not deleted
+                                    Result.Error(DataError.Local.BAD_DATA)
                                 } else {
                                     remoteAgendaSource.createAgendaItem(agendaItem)
                                 }
@@ -252,7 +322,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                                 val agendaItem = agendaItemJsonConverter.getAgendaItemFromJson(pendingItem.itemJson, pendingItem.itemType)
                                 if (agendaItem == null) {
                                     Timber.e("Failed to deserialize pending UPDATE item: %s", pendingItem.itemId)
-                                    Result.Error(DataError.Local.BAD_DATA) // Mark as error so it's not deleted
+                                    Result.Error(DataError.Local.BAD_DATA)
                                 } else {
                                     remoteAgendaSource.updateAgendaItem(
                                         agendaItem = agendaItem,
@@ -269,7 +339,6 @@ class OfflineFirstAgendaRepository @Inject constructor(
                             is Result.Error -> {
                                 Timber.w("Failed to sync pending item %s (%s). Error: %s",
                                          pendingItem.itemId, pendingItem.syncOperation, result.error)
-                                // Keep pending item in DB for next retry
                             }
                             is Result.Success -> {
                                 Timber.d("Successfully synced pending item %s (%s). Deleting from pending sync.",
@@ -292,10 +361,24 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun logout(): EmptyResult<DataError.Network> {
+        Timber.d("User logging out. Cancelling all syncs and alarms.")
         syncAgendaScheduler.cancelAllSyncs()
+
+        val currentUserId = sessionStorage.getSession()?.userId
+        // only schedule if the current user is login
+
+        if (currentUserId != null) {
+            localAgendaSource.getAgendaItems().first().forEach { agendaItem ->
+                alarmScheduler.cancel(agendaItem.toAlarmItem())
+            }
+            Timber.d("Cancelled all alarms for user ID: %s.", currentUserId)
+        } else {
+            Timber.w("No user ID found during logout to explicitly cancel alarms.")
+        }
+
         localAgendaSource.deleteAllAgendaItems()
         sessionStorage.setSession(null)
-        Timber.d("User logged out. Local data cleared and syncs cancelled.")
+        Timber.d("User logged out. Local data cleared.")
         return remoteAgendaSource.logout()
     }
 }

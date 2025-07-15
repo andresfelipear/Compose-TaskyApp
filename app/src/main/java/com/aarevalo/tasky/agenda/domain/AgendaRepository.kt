@@ -7,8 +7,12 @@ import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.domain.util.EmptyResult
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
+import java.time.ZonedDateTime
 
 interface AgendaRepository {
+    suspend fun scheduleReminder(agendaItem: AgendaItem)
+    suspend fun cancelReminder(agendaItemId: String)
+    fun getAllAgendaItems(): Flow<List<AgendaItem>>
     fun getAgendaItemsByDate(date: LocalDate): Flow<List<AgendaItem>>
     suspend fun fetchAgendaItems(): EmptyResult<DataError>
     suspend fun getAgendaItemById(agendaItemId: String): AgendaItem?

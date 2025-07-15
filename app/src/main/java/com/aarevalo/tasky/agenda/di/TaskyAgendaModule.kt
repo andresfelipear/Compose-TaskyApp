@@ -1,5 +1,6 @@
 package com.aarevalo.tasky.agenda.di
 
+import android.app.NotificationManager
 import android.content.Context
 import androidx.room.Room
 import com.aarevalo.tasky.BuildConfig
@@ -15,10 +16,12 @@ import com.aarevalo.tasky.agenda.data.remote.RetrofitRemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.data.remote.api.TaskyAgendaApi
 import com.aarevalo.tasky.agenda.data.OfflineFirstAgendaRepository
 import com.aarevalo.tasky.agenda.data.SyncAgendaWorkerScheduler
+import com.aarevalo.tasky.agenda.data.local.AlarmManagerAlarmScheduler
 import com.aarevalo.tasky.agenda.data.local.converter.MoshiAgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.data.util.AndroidPhotoByteLoader
 import com.aarevalo.tasky.agenda.data.util.StandardDispatcherProvider
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
+import com.aarevalo.tasky.agenda.domain.AlarmScheduler
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
@@ -148,7 +151,8 @@ object TaskyAgendaModule {
         pendingItemSyncDao: PendingItemSyncDao,
         coroutineScope: CoroutineScope,
         syncAgendaScheduler: SyncAgendaScheduler,
-        agendaItemJsonConverter: AgendaItemJsonConverter
+        agendaItemJsonConverter: AgendaItemJsonConverter,
+        alarmScheduler: AlarmScheduler
     ) : AgendaRepository {
         return OfflineFirstAgendaRepository(
             remoteAgendaDataSource,
@@ -158,7 +162,8 @@ object TaskyAgendaModule {
             pendingItemSyncDao,
             syncAgendaScheduler,
             agendaItemJsonConverter,
-            StandardDispatcherProvider
+            StandardDispatcherProvider,
+            alarmScheduler
         )
     }
 
@@ -207,5 +212,23 @@ object TaskyAgendaModule {
     @Singleton
     fun provideCoroutineScope(): CoroutineScope {
         return CoroutineScope(Dispatchers.IO)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlarmScheduler(
+        @ApplicationContext context: Context
+    ): AlarmScheduler {
+        return AlarmManagerAlarmScheduler(
+            context.applicationContext
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationManager(
+        @ApplicationContext context: Context
+    ): NotificationManager {
+        return context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 }
