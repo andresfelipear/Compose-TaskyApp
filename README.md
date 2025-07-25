@@ -59,60 +59,33 @@ Allows existing users to sign in with their credentials.
 Enables new users to create an account.  
 
 ### Agenda Screen
-<img width="199" height="402" alt="login_screen" src="https://github.com/user-attachments/assets/7e958699-d17a-4789-8fe9-1e0959982661" />
+<img width="199" height="402" alt="agenda_screen" src="https://github.com/user-attachments/assets/897249c5-1936-4a3a-94d9-4878474d63c7" />
 
-The main dashboard. Users can navigate through dates, view all events, tasks, and reminders, and quickly add new agenda items. (Refers to Figma: Node ID 4-8354, 3-3357)   
+
+The main dashboard. Users can navigate through dates, view all events, tasks, and reminders, and quickly add new agenda items.    
 
 ### Event Detail Screen
-<img width="199" height="402" alt="login_screen" src="https://github.com/user-attachments/assets/7e958699-d17a-4789-8fe9-1e0959982661" />
+<img width="199" height="402" alt="event_detail_screen" src="https://github.com/user-attachments/assets/d49666cc-aded-4966-9cf2-d00f24d60bed" />
 
-Displays the details of an event, including title, description, time, associated photos, and attendees. Allows editing or deletion. (Refers to Figma: Example Event Details)
+Displays the details of an event, including title, description, time, associated photos, and attendees. Allows editing or deletion. 
 
 ### Task Detail Screen
-<img width="199" height="402" alt="login_screen" src="https://github.com/user-attachments/assets/7e958699-d17a-4789-8fe9-1e0959982661" />
+<img width="199" height="402" alt="task_detail_screen" src="https://github.com/user-attachments/assets/de1c65fa-cd02-4f0a-9d41-ea219eea548d" />
 
 View and manage a specific task, mark it as done, or edit its details. (Refers to Figma: Example Task Details)       
 
 ### Reminder Detail Screen
-<img width="199" height="402" alt="login_screen" src="https://github.com/user-attachments/assets/7e958699-d17a-4789-8fe9-1e0959982661" />
+<img width="199" height="402" alt="reminder_detail_screen" src="https://github.com/user-attachments/assets/2c876d2e-55b0-4f39-8b88-be239daf58d5" />
 
 Displays details of a reminder, allowing edits to its title, description, and time.
  
 ### Photo Preview Screen
-<img width="199" height="402" alt="login_screen" src="https://github.com/user-attachments/assets/7e958699-d17a-4789-8fe9-1e0959982661" />
+<img width="199" height="402" alt="Agenda - EventDetails - Photo" src="https://github.com/user-attachments/assets/6f48027c-3285-4472-9693-ed73508c38e4" />
 
 A dedicated screen to view attached photos in detail.
 
 ### Edit Text Screen
-<img width="199" height="402" alt="login_screen" src="https://github.com/user-attachments/assets/7e958699-d17a-4789-8fe9-1e0959982661" />
-
-Generic screen used for editing text fields (e.g., title, description) across different agenda items.
-
-| Screen Name                | Description                                                                                                                                                                                                                                                                                                                                                                   | Screenshot                                           |
-| :---------------------     | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------- |
-| **Splash Screen**          | Displays while the app checks for an active user session.                                                                                                                                                                                                                                                                                                                     |  |
-| **Login Screen**           | Allows existing users to sign in with their credentials.                                                                                                                                                                                                                                                                                                                      |  |
-| **Registration Screen**    | Enables new users to create an account.                                                                                                                                                                                                                                                                                                                                       |  |
-| **Agenda Screen**          | The main dashboard. Users can navigate through dates, view all events, tasks, and reminders, and quickly add new agenda items. (Refers to Figma: Node ID 4-8354, 3-3357)                                                                                                                                                                                                          |  |
-| **Event Detail Screen**    | Displays the details of an event, including title, description, time, associated photos, and attendees. Allows editing or deletion. (Refers to Figma: Example Event Details)                                                                                                                                                                                                    |  |
-| **Task Detail Screen**     | View and manage a specific task, mark it as done, or edit its details. (Refers to Figma: Example Task Details)                                                                                                                                                                                                                                                                   |  |
-| **Reminder Detail Screen** | Displays details of a reminder, allowing edits to its title, description, and time. (Refers to Figma: Example Reminder Details)                                                                                                                                                                                                                                             |  |
-| **Photo Preview Screen**   | A dedicated screen to view attached photos in detail. (Refers to Figma: Photo Preview Example)                                                                                                                                                                                                                                                                                       |  |
-| **Edit Text Screen**       | Generic screen used for editing text fields (e.g., title, description) across different agenda items. (Refers to Figma: Node ID 3-3357, common edit screen)                                                                                                                                                                                                                        |  |
-
-Okay, I understand perfectly\! That's a very common and effective architectural approach for larger Android applications. Let's refine the "Technical Architecture" section to reflect your package-by-feature structure and the specific MVVM + MVP combination you're employing.
-
-Here's the updated section for your `README.md`:
-
------
-
-Thank you for clarifying\! That's an important distinction. Using repositories directly in the ViewModel (or a "Presenter" component within the ViewModel) is a valid pattern and simplifies the architecture by reducing abstraction if use cases don't add significant value for your current complexity.
-
-Let's update the "Technical Architecture" section again to accurately reflect this, specifically within the **Domain Layer** and how the **ViewModels** interact with it.
-
-Here's the revised section for your `README.md`:
-
------
+<img width="199" height="402" alt="edit_text_screen" src="https://github.com/user-attachments/assets/0f86fbc4-e228-4f23-ba0a-93530b49e83c" />
 
 ## Technical Architecture
 
