@@ -221,7 +221,7 @@ A cornerstone of Tasky's architecture is its robust offline-first strategy, ensu
 
 ## API Interaction
 
-Tasky interacts with a custom backend API ([Tasky API Documentation](https://www.google.com/search?q=Tasky-API.pdf)) to manage agenda items and user authentication.
+Tasky interacts with a custom backend API to manage agenda items and user authentication.
 
   * **Base URL:** `https://tasky.pl-coding.com/`
   * **Authentication:**
@@ -296,19 +296,4 @@ To get a copy of this project up and running on your local machine for developme
 
 ## Design & Mockups
 
-The entire user interface and experience for Tasky were designed using Figma. You can view the full design mockups here:
-
-👉 [Tasky Figma Design](https://www.figma.com/design/nblGPLxYBWvuZwyLfWwpzQ/Tasky?node-id=4-8354&t=S5QuvwzKRKGvclir-0)
-
-## Contributing
-
-Feel free to open issues or submit pull requests. Any contributions are welcome\!
-
-**Please remember to:**
-
-1.  **Replace `https://via.placeholder.com/...` URLs** in the "Screenshots" section with actual URLs to your app's screenshots.
-2.  **Replace `https://github.com/your-username/Tasky.git`** with your actual GitHub repository URL.
-3.  **Add a `LICENSE` file** to your repository if you choose the MIT License (or specify another).
-4.  **Verify the `TASKY_API_KEY` handling** in your `build.gradle` to ensure it correctly picks up the key from `local.properties`.
-
-This detailed README should provide a fantastic overview of your app for potential employers\! Good luck with your job search\!
+The entire user interface and experience for Tasky were designed using Figma. 
