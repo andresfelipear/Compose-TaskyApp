@@ -214,7 +214,7 @@ A cornerstone of Tasky's architecture is its robust offline-first strategy, ensu
   * **Logging:** [Timber](https://github.com/JakeWharton/timber)
   * **Navigation:** [Jetpack Navigation Compose](https://developer.android.com/jetpack/compose/navigation)
   * **Date & Time API:** [Java Time API (java.time)](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) (via `ZonedDateTime`, `Instant`)
-  * **Image Loading:** (Assuming Coil or Glide for image handling, if photos are displayed) - Add if applicable.
+  * **Image Loading:** [Coil 3](https://coil-kt.github.io/coil/)
   * **Splash Screen:** [Android 12+ Splash Screen API](https://developer.android.com/develop/ui/views/launch/splash-screen)
 
 ## API Interaction
@@ -230,7 +230,7 @@ Tasky interacts with a custom backend API to manage agenda items and user authen
           * The `SessionStorage` is responsible for securely storing and providing session tokens.
           * Access token refresh logic is handled to ensure continuous authenticated API calls.
   * **Endpoints:**
-      * **Auth:** `/register`, `/login`, `/refreshToken`
+      * **Auth:** `/register`, `/login`, `/accessToken`
       * **Agenda:** `/agenda` (for fetching all items for a given day)
       * **Events:** `/event` (Create, Update, Delete, Get by ID), `/event?eventId={eventId}` (Delete)
           * Supports `hostId` for ownership and `attendees` management.
@@ -238,12 +238,13 @@ Tasky interacts with a custom backend API to manage agenda items and user authen
           * *Note: API does not return `hostId` for Tasks, ownership is inferred by user session.*
       * **Reminders:** `/reminder` (Create, Update, Delete, Get by ID), `/reminder?reminderId={reminderId}` (Delete)
           * *Note: API does not return `hostId` for Reminders, ownership is inferred by user session.*
-      * **Photos:** `/photo` (Upload, Delete) - part of Event management.
+      * **Photos:** Included as multipart uploads in `POST /event` and `PUT /event` (no standalone photo endpoint).
 
 ## Requirements
 
 The application adheres to the following key requirements:
 
+  * **Min SDK:** 28 (Android 9)
   * **Responsiveness:** Supports both mobile devices and tablets, including landscape mode.
   * **Theming:** Fully supports both light and dark themes.
   * **Splash Screen:** Displays a splash screen during app launch to check for active user sessions.
@@ -258,9 +259,9 @@ To get a copy of this project up and running on your local machine for developme
 
 ### Prerequisites
 
-  * Android Studio Arctic Fox or newer
-  * Kotlin plugin for Android Studio
-  * An Android device or emulator running API level 21+ (preferably 33+ for full notification testing)
+  * Android Studio (latest stable) with Android Gradle Plugin 8.7+
+  * JDK 11
+  * An Android device or emulator running API level 28+ (Android 9+). For full notification/exact alarm testing, API 33+ is recommended.
 
 ### Building the Project
 
@@ -273,16 +274,34 @@ To get a copy of this project up and running on your local machine for developme
     Open the cloned project in Android Studio.
 3.  **Sync Gradle:**
     Allow Gradle to sync and download all necessary dependencies.
-4.  **API Key:**
-      * You will need to obtain an `x-api-key` from the Tasky API provider.
-      * Create a `local.properties` file in your project's root directory (if it doesn't exist).
-      * Add your API key to this file:
+4.  **API configuration:**
+      * Obtain an `x-api-key` from the Tasky API provider.
+      * Create or update a `local.properties` file in your project's root directory.
+      * Add the following properties (no quotes):
         ```properties
-        TASKY_API_KEY="YOUR_API_KEY_HERE"
+        API_KEY=YOUR_API_KEY_HERE
+        API_BASE_URL=https://tasky.pl-coding.com/
         ```
-      * This key will be automatically picked up by your `build.gradle` (module-level) through `BuildConfig` or similar.
+      * Notes:
+        * `API_BASE_URL` must include a trailing slash.
+        * These are exposed via `BuildConfig.API_KEY` and `BuildConfig.API_BASE_URL` and used by the networking layer.
 5.  **Run on Device/Emulator:**
     Connect an Android device or start an emulator and click the "Run" button in Android Studio.
+
+## Running & Testing
+
+- **Build debug APK:**
+  ```bash
+  ./gradlew assembleDebug
+  ```
+- **Run unit tests:**
+  ```bash
+  ./gradlew test
+  ```
+- **Run instrumentation tests (device/emulator required):**
+  ```bash
+  ./gradlew connectedAndroidTest
+  ```
 
 ## Future Enhancements
 
