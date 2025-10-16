@@ -151,3 +151,19 @@ fun getUtcTimestampFromLocalDate(
     val instant = zonedDateTime.toInstant()
     return instant.toEpochMilli()
 }
+
+fun toIsoInstantString(zonedDateTime: ZonedDateTime): String {
+    return zonedDateTime.withZoneSameInstant(ZoneId.of("UTC")).toInstant().toString()
+}
+
+fun fromIsoInstantString(iso: String): ZonedDateTime {
+    return Instant.parse(iso).atZone(ZoneId.systemDefault())
+}
+
+fun millisToIsoInstantString(millis: Long): String {
+    return Instant.ofEpochMilli(millis).toString()
+}
+
+fun isoInstantStringToMillis(iso: String): Long {
+    return Instant.parse(iso).toEpochMilli()
+}
