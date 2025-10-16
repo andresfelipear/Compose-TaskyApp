@@ -4,9 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class AccessTokenResponse(
+data class RefreshTokenResponse(
     @Json(name = "accessToken")
     val accessToken: String,
-    @Json(name = "expirationTimestamp")
-    val expirationTimestamp: Long
+    @Json(name = "refreshToken")
+    val refreshToken: String
 )

@@ -8,12 +8,12 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface TaskyAuthApi {
-    @POST("register")
+    @POST("auth/register")
     suspend fun register(
         @Body request: RegisterRequest
     ): Response<Unit>
 
-    @POST("login")
+    @POST("auth/login")
     suspend fun login(
         @Body request: LoginRequest
     ): Response<LoginResponse>

@@ -4,7 +4,6 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class PhotoDto(
-    @Json(name = "key") val key: String,
-    @Json(name = "url") val url: String
+data class LogoutRequest(
+    @Json(name = "refreshToken") val refreshToken: String
 )

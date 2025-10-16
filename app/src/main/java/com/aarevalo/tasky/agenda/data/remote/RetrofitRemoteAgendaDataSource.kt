@@ -13,6 +13,7 @@ import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
+import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.agenda.domain.util.PhotoByteLoader
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.data.networking.makeApiCall
@@ -20,16 +21,24 @@ import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.domain.util.EmptyResult
 import com.aarevalo.tasky.core.domain.util.Result
 import com.aarevalo.tasky.core.util.getUtcTimestampFromLocalDate
+import com.aarevalo.tasky.core.util.millisToIsoInstantString
+import com.aarevalo.tasky.agenda.data.remote.dto.LogoutRequest
+import com.aarevalo.tasky.agenda.data.remote.dto.ConfirmUploadRequest
+import com.aarevalo.tasky.agenda.data.remote.dto.EventWithUploadUrlsResponse
+import com.aarevalo.tasky.agenda.data.remote.dto.UploadUrlDto
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import timber.log.Timber
+import java.time.ZonedDateTime
 import java.time.LocalDate
 import javax.inject.Inject
 
 class RetrofitRemoteAgendaDataSource @Inject constructor(
     private val api: TaskyAgendaApi,
-    private val photoByteLoader: PhotoByteLoader
+    private val photoByteLoader: PhotoByteLoader,
+    private val sessionStorage: SessionStorage
 ): RemoteAgendaDataSource {
 
     override suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network> {
@@ -47,7 +56,7 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         date: LocalDate
     ): Result<List<AgendaItem>, DataError.Network> {
         return makeApiCall(
-            apiCall = { api.getAgenda(getUtcTimestampFromLocalDate(date)) },
+            apiCall = { api.getAgenda(millisToIsoInstantString(getUtcTimestampFromLocalDate(date))) },
             mapper = { agendaResponse ->
                 agendaResponse.events.map { it.toAgendaItem() } +
                     agendaResponse.tasks.map { it.toAgendaItem() } +
@@ -74,30 +83,25 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         return when (agendaItem.details) {
             is AgendaItemDetails.Event -> {
                 val eventRequest = agendaItem.toEventCreateRequest()
-                val photoParts = mutableListOf<MultipartBody.Part>()
-
-                agendaItem.details.photos.forEachIndexed { index, eventPhoto ->
-                    if (eventPhoto is EventPhoto.Local) {
-                        val photoBytes = photoByteLoader.getBytes(eventPhoto.uri)
-                        if (photoBytes != null) {
-                            val mediaType = "image/jpeg".toMediaTypeOrNull()
-                            val filename = "${eventPhoto.key}.jpg"
-                            photoParts.add(
-                                MultipartBody.Part.createFormData(
-                                    name = "photo${index}",
-                                    filename = filename,
-                                    body = photoBytes.toRequestBody(mediaType)
-                                )
+                val createResult = makeApiCall(
+                    apiCall = { api.createEvent(eventRequest) },
+                    mapper = { it }
+                )
+                when (createResult) {
+                    is Result.Error -> createResult
+                    is Result.Success -> {
+                        val created: EventWithUploadUrlsResponse = createResult.data
+                        val uploadKeys = uploadPhotos(created.uploadUrls, agendaItem)
+                        if (uploadKeys.isNotEmpty()) {
+                            val confirmResult = makeApiCall(
+                                apiCall = { api.confirmUpload(created.event.id, ConfirmUploadRequest(uploadKeys)) },
+                                mapper = { it.event.toAgendaItem() }
                             )
-                        } else {
-                            Timber.w("Could not load bytes for local photo with key: %s, URI: %s", eventPhoto.key, eventPhoto.uri)
+                            return confirmResult
                         }
+                        Result.Success(created.event.toAgendaItem())
                     }
                 }
-                makeApiCall(
-                    apiCall = { api.createEvent(eventRequest, *photoParts.toTypedArray()) },
-                    mapper = { it.toAgendaItem() }
-                )
             }
             is AgendaItemDetails.Task -> {
                 Timber.d("Creating task remotely! API call")
@@ -116,30 +120,25 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
                     deletedPhotoKeys = deletedPhotoKeys,
                     isGoing = isGoing
                 )
-                val photoParts = mutableListOf<MultipartBody.Part>()
-
-                agendaItem.details.photos.forEachIndexed { index, eventPhoto ->
-                    if (eventPhoto is EventPhoto.Local) {
-                        val photoBytes = photoByteLoader.getBytes(eventPhoto.uri)
-                        if (photoBytes != null) {
-                            val mediaType = "image/jpeg".toMediaTypeOrNull()
-                            val filename = "${eventPhoto.key}.jpg"
-                            photoParts.add(
-                                MultipartBody.Part.createFormData(
-                                    name = "photo${index}",
-                                    filename = filename,
-                                    body = photoBytes.toRequestBody(mediaType)
-                                )
+                val updateResult = makeApiCall(
+                    apiCall = { api.updateEvent(agendaItem.id, eventRequest) },
+                    mapper = { it }
+                )
+                when (updateResult) {
+                    is Result.Error -> updateResult
+                    is Result.Success -> {
+                        val updated: EventWithUploadUrlsResponse = updateResult.data
+                        val uploadKeys = uploadPhotos(updated.uploadUrls, agendaItem)
+                        if (uploadKeys.isNotEmpty()) {
+                            val confirmResult = makeApiCall(
+                                apiCall = { api.confirmUpload(updated.event.id, ConfirmUploadRequest(uploadKeys)) },
+                                mapper = { it.event.toAgendaItem() }
                             )
-                        } else {
-                            Timber.w("Could not load bytes for local photo with key: %s, URI: %s", eventPhoto.key, eventPhoto.uri)
+                            return confirmResult
                         }
+                        Result.Success(updated.event.toAgendaItem())
                     }
                 }
-                makeApiCall(
-                    apiCall = { api.updateEvent(eventRequest, *photoParts.toTypedArray()) },
-                    mapper = { it.toAgendaItem() }
-                )
             }
             is AgendaItemDetails.Task -> {
                 makeApiCall(apiCall = { api.updateTask(agendaItem.toTaskDto()) }, mapper = { null })
@@ -154,7 +153,14 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         return makeApiCall(
             apiCall = { api.getAttendee(email) },
             mapper = { attendeeResponse ->
-                attendeeResponse.attendee?.takeIf { attendeeResponse.doesUserExist }?.toAttendee()
+                Attendee(
+                    userId = attendeeResponse.userId,
+                    eventId = "",
+                    fullName = attendeeResponse.fullName,
+                    email = attendeeResponse.email,
+                    isGoing = true,
+                    remindAt = ZonedDateTime.now()
+                )
             }
         )
     }
@@ -197,6 +203,37 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
     }
 
     override suspend fun logout(): EmptyResult<DataError.Network> {
-        return makeApiCall(apiCall = { api.logout() })
+        return makeApiCall(apiCall = {
+            val refreshToken = sessionStorage.getSession()?.refreshToken.orEmpty()
+            api.logout(LogoutRequest(refreshToken))
+        })
+    }
+
+    private suspend fun uploadPhotos(uploadUrls: List<UploadUrlDto>, agendaItem: AgendaItem): List<String> {
+        if (uploadUrls.isEmpty()) return emptyList()
+        val client = OkHttpClient()
+        val uploadedKeys = mutableListOf<String>()
+        uploadUrls.forEach { upload ->
+            val localPhoto = agendaItem.details.asEventDetails?.photos?.firstOrNull { it.key == upload.photoKey }
+            if (localPhoto is EventPhoto.Local) {
+                val bytes = photoByteLoader.getBytes(localPhoto.uri)
+                if (bytes != null) {
+                    val body = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val request = Request.Builder().url(upload.url).put(body).build()
+                    try {
+                        client.newCall(request).execute().use { resp ->
+                            if (resp.isSuccessful) {
+                                uploadedKeys.add(upload.uploadKey)
+                            } else {
+                                Timber.w("Photo upload failed for key=%s, code=%s", upload.photoKey, resp.code)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e, "Photo upload exception for key=%s", upload.photoKey)
+                    }
+                }
+            }
+        }
+        return uploadedKeys
     }
 }
