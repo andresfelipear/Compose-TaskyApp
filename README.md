@@ -4,18 +4,16 @@ Tasky is a robust, offline-first mobile application designed to help users manag
 
 ## Table of Contents
 
-  * [Features](https://www.google.com/search?q=%23features)
-  * [Screenshots](https://www.google.com/search?q=%23screenshots)
-  * [Technical Architecture](https://www.google.com/search?q=%23technical-architecture)
-  * [Offline-First Design](https://www.google.com/search?q=%23offline-first-design)
-  * [Key Technologies & Libraries](https://www.google.com/search?q=%23key-technologies--libraries)
-  * [API Interaction](https://www.google.com/search?q=%23api-interaction)
-  * [Requirements](https://www.google.com/search?q=%23requirements)
-  * [Setup & Installation](https://www.google.com/search?q=%23setup--installation)
-  * [Future Enhancements](https://www.google.com/search?q=%23future-enhancements)
-  * [Design & Mockups](https://www.google.com/search?q=%23design--mockups)
-  * [Contributing](https://www.google.com/search?q=%23contributing)
-  * [License](https://www.google.com/search?q=%23license)
+  * [Features](#features)
+  * [Screenshots](#screenshots)
+  * [Technical Architecture](#technical-architecture)
+  * [Offline-First Design](#offline-first-design)
+  * [Key Technologies & Libraries](#key-technologies--libraries)
+  * [API Interaction](#api-interaction)
+  * [Requirements](#requirements)
+  * [Setup & Installation](#setup--installation)
+  * [Future Enhancements](#future-enhancements)
+  * [Design & Mockups](#design--mockups)
 
 ## Features
 
