@@ -27,13 +27,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.EditTextFieldType
+import com.aarevalo.tasky.core.navigation.NavigationEvent
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.ui.theme.LocalExtendedColors
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
 fun EditTextScreenRoot(
-    navController: NavController,
+    onNavigate: (NavigationEvent) -> Unit,
+    navController: NavController,  // Keep for savedStateHandle pattern
     viewModel: EditTextViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -41,11 +43,13 @@ fun EditTextScreenRoot(
                    onAction = { action ->
                        when(action) {
                            is EditTextScreenAction.GoBack -> {
+                               // Save result to savedStateHandle for AgendaDetailScreen
                                navController
                                    .previousBackStackEntry
                                    ?.savedStateHandle
                                    ?.set(state.type.key, action.content)
-                               navController.navigateUp()
+                               // Use centralized navigation for going back
+                               onNavigate(NavigationEvent.NavigateUp)
                            }
                        }
                    })

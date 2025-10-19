@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.agenda.presentation.components.AddAgendaItemButton
@@ -38,7 +37,7 @@ import com.aarevalo.tasky.agenda.presentation.components.CalendarDaysSelector
 import com.aarevalo.tasky.agenda.presentation.components.CustomDatePicker
 import com.aarevalo.tasky.agenda.presentation.components.DeleteAgendaItemDialog
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
-import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.navigation.NavigationEvent
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.core.util.toTitleCase
 import com.aarevalo.tasky.ui.theme.LocalSpacing
@@ -50,7 +49,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AgendaScreenRoute(
     viewModel: AgendaViewModel = hiltViewModel(),
-    navController: NavController
+    onNavigate: (NavigationEvent) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -66,7 +65,7 @@ fun AgendaScreenRoute(
                     Toast.LENGTH_LONG
                 )
                     .show()
-                navController.navigate(Destination.Route.LoginRoute)
+                onNavigate(NavigationEvent.NavigateToLogin)
             }
 
             is AgendaScreenEvent.Success -> {
@@ -97,7 +96,7 @@ fun AgendaScreenRoute(
                     Toast.LENGTH_LONG
                 )
                     .show()
-                navController.navigate(Destination.Route.LoginRoute)
+                onNavigate(NavigationEvent.NavigateToLogin)
             }
 
             is AgendaScreenEvent.Error -> {
@@ -129,8 +128,8 @@ fun AgendaScreenRoute(
         onAction = {
             when(it) {
                 is AgendaScreenAction.OnEditAgendaItemClick -> {
-                    navController.navigate(
-                        Destination.Route.AgendaDetailRoute(
+                    onNavigate(
+                        NavigationEvent.NavigateToAgendaDetail(
                             agendaItemId = it.agendaItemId,
                             isEditable = true,
                             type = it.type.toStringType()
@@ -138,8 +137,8 @@ fun AgendaScreenRoute(
                     )
                 }
                 is AgendaScreenAction.OnOpenAgendaItemClick -> {
-                    navController.navigate(
-                        Destination.Route.AgendaDetailRoute(
+                    onNavigate(
+                        NavigationEvent.NavigateToAgendaDetail(
                             agendaItemId = it.agendaItemId,
                             isEditable = false,
                             type = it.type.toStringType()
@@ -147,8 +146,8 @@ fun AgendaScreenRoute(
                     )
                 }
                 is AgendaScreenAction.OnCreateAgendaItemClick -> {
-                    navController.navigate(
-                        Destination.Route.AgendaDetailRoute(
+                    onNavigate(
+                        NavigationEvent.NavigateToAgendaDetail(
                             agendaItemId = null,
                             isEditable = true,
                             type = it.type.toStringType()

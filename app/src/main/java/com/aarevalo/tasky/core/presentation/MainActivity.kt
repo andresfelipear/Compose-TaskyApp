@@ -110,13 +110,17 @@ fun TaskyRoot(
                 navigation<Destination.Graph.AuthGraph>(startDestination = Destination.Route.LoginRoute) {
                     composable<Destination.Route.LoginRoute> {
                         LoginScreenRoot(
-                            navController = navController
+                            onNavigate = { event ->
+                                handleNavigationEvent(event, navController)
+                            }
                         )
                     }
 
                     composable<Destination.Route.RegisterRoute> {
                         RegistrationScreenRoot(
-                            navController = navController
+                            onNavigate = { event ->
+                                handleNavigationEvent(event, navController)
+                            }
                         )
                     }
                 }
@@ -124,19 +128,27 @@ fun TaskyRoot(
                 navigation<Destination.Graph.AgendaGraph>(startDestination = Destination.Route.AgendaRoute) {
                     composable<Destination.Route.AgendaRoute> {
                         AgendaScreenRoute(
-                            navController = navController
+                            onNavigate = { event ->
+                                handleNavigationEvent(event, navController)
+                            }
                         )
                     }
 
                     composable<Destination.Route.AgendaDetailRoute> {
                         AgendaDetailScreenRoot(
-                            navController = navController
+                            onNavigate = { event ->
+                                handleNavigationEvent(event, navController)
+                            },
+                            navController = navController  // For savedStateHandle
                         )
                     }
 
                     composable<Destination.Route.EditTextRoute> {
                         EditTextScreenRoot(
-                            navController = navController
+                            onNavigate = { event ->
+                                handleNavigationEvent(event, navController)
+                            },
+                            navController = navController  // For savedStateHandle
                         )
                     }
 
@@ -144,11 +156,77 @@ fun TaskyRoot(
                         val photoPreviewRoute = backStackEntry.toRoute<Destination.Route.PhotoPreviewRoute>()
                         PhotoPreviewScreenRoot(
                             route = photoPreviewRoute,
-                            navController = navController
+                            onNavigate = { event ->
+                                handleNavigationEvent(event, navController)
+                            },
+                            navController = navController  // For savedStateHandle
                         )
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Centralized navigation handler - all navigation logic lives here.
+ * Screens emit NavigationEvents, this function performs the actual navigation.
+ */
+private fun handleNavigationEvent(
+    event: com.aarevalo.tasky.core.navigation.NavigationEvent,
+    navController: NavHostController
+) {
+    when(event) {
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateToLogin -> {
+            navController.navigate(Destination.Route.LoginRoute) {
+                // Clear back stack when navigating to login
+                popUpTo(Destination.Graph.AuthGraph) {
+                    inclusive = true
+                }
+            }
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateToRegister -> {
+            navController.navigate(Destination.Route.RegisterRoute)
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateToAgenda -> {
+            navController.navigate(Destination.Route.AgendaRoute) {
+                // Clear auth graph when navigating to agenda
+                popUpTo(Destination.Graph.AuthGraph) {
+                    inclusive = true
+                }
+            }
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateToAgendaDetail -> {
+            navController.navigate(
+                Destination.Route.AgendaDetailRoute(
+                    agendaItemId = event.agendaItemId,
+                    isEditable = event.isEditable,
+                    type = event.type
+                )
+            )
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateToEditText -> {
+            navController.navigate(
+                Destination.Route.EditTextRoute(
+                    type = event.type,
+                    text = event.text
+                )
+            )
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateToPhotoPreview -> {
+            navController.navigate(
+                Destination.Route.PhotoPreviewRoute(
+                    photoUri = event.photoUri,
+                    photoKey = event.photoKey,
+                    isEditable = event.isEditable
+                )
+            )
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateBack -> {
+            navController.popBackStack()
+        }
+        is com.aarevalo.tasky.core.navigation.NavigationEvent.NavigateUp -> {
+            navController.navigateUp()
         }
     }
 }

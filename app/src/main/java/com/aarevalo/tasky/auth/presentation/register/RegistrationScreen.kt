@@ -30,13 +30,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.core.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
-import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.navigation.NavigationEvent
 import com.aarevalo.tasky.core.presentation.components.TaskyHelperLabel
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.ui.theme.LocalSpacing
@@ -45,7 +44,7 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 @Composable
 fun RegistrationScreenRoot(
     viewModel: RegistrationViewModel = hiltViewModel(),
-    navController: NavController
+    onNavigate: (NavigationEvent) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -61,7 +60,7 @@ fun RegistrationScreenRoot(
                     Toast.LENGTH_LONG
                 )
                     .show()
-                navController.navigate(Destination.Route.LoginRoute)
+                onNavigate(NavigationEvent.NavigateToLogin)
             }
 
             is RegistrationEvent.Error -> {
@@ -80,7 +79,7 @@ fun RegistrationScreenRoot(
         onAction = { action ->
             when(action) {
                 is RegistrationAction.OnGoToLogin -> {
-                    navController.navigate(Destination.Route.LoginRoute)
+                    onNavigate(NavigationEvent.NavigateToLogin)
                 }
 
                 else -> Unit

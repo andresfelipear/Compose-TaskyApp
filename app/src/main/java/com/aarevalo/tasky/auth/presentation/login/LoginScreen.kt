@@ -30,13 +30,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.core.presentation.components.TaskyActionButton
 import com.aarevalo.tasky.core.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
-import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.navigation.NavigationEvent
 import com.aarevalo.tasky.core.presentation.components.TaskyHelperLabel
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.core.presentation.util.UiText
@@ -46,7 +45,7 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 @Composable
 fun LoginScreenRoot(
     viewModel: LoginViewModel = hiltViewModel(),
-    navController: NavController
+    onNavigate: (NavigationEvent) -> Unit
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -62,7 +61,7 @@ fun LoginScreenRoot(
                         R.string.youre_logged_in,
                         Toast.LENGTH_LONG
                     ).show()
-                    navController.navigate(Destination.Route.AgendaRoute)
+                    onNavigate(NavigationEvent.NavigateToAgenda)
                 }
                 is LoginScreenEvent.Error -> {
                     keyboardController?.hide()
@@ -79,7 +78,7 @@ fun LoginScreenRoot(
         onAction = { action ->
             when(action) {
                 is LoginScreenAction.OnGoToRegister -> {
-                    navController.navigate(Destination.Route.RegisterRoute)
+                    onNavigate(NavigationEvent.NavigateToRegister)
                 }
                 else -> Unit
             }

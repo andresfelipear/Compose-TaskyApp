@@ -59,7 +59,7 @@ import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.EventType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.ReminderButton
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.components.VisitorsSection
 import com.aarevalo.tasky.core.domain.dropdownMenu.TaskyDropDownMenuItem
-import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.navigation.NavigationEvent
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.core.util.UiText
@@ -71,7 +71,8 @@ import com.aarevalo.tasky.ui.theme.TaskyTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgendaDetailScreenRoot(
-    navController: NavController,
+    onNavigate: (NavigationEvent) -> Unit,
+    navController: NavController,  // Keep for savedStateHandle pattern
     viewModel: AgendaDetailViewModel = hiltViewModel(),
 ){
     val context = LocalContext.current
@@ -79,6 +80,7 @@ fun AgendaDetailScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
 
+    // Navigation-for-result: Get results from EditTextScreen via savedStateHandle
     val editedTitle: String? = backStackEntry
         ?.savedStateHandle
         ?.get(EditTextFieldType.TITLE.key)
@@ -97,7 +99,7 @@ fun AgendaDetailScreenRoot(
                     R.string.agenda_item_edited_successfully,
                     Toast.LENGTH_LONG
                 ).show()
-                navController.popBackStack()
+                onNavigate(NavigationEvent.NavigateBack)
             }
             is AgendaDetailScreenEvent.ItemCreated -> {
                 keyboardController?.hide()
@@ -106,7 +108,7 @@ fun AgendaDetailScreenRoot(
                     R.string.agenda_item_created_successfully,
                     Toast.LENGTH_LONG
                 ).show()
-                navController.popBackStack()
+                onNavigate(NavigationEvent.NavigateBack)
             }
             is AgendaDetailScreenEvent.ItemDeleted -> {
                 keyboardController?.hide()
@@ -115,7 +117,7 @@ fun AgendaDetailScreenRoot(
                     R.string.agenda_item_deleted_successfully,
                     Toast.LENGTH_LONG
                     ).show()
-                navController.popBackStack()
+                onNavigate(NavigationEvent.NavigateBack)
             }
             is AgendaDetailScreenEvent.GoingBackToLoginScreen -> {
                 keyboardController?.hide()
@@ -125,7 +127,7 @@ fun AgendaDetailScreenRoot(
                     Toast.LENGTH_LONG
                 )
                     .show()
-                navController.navigate(Destination.Route.LoginRoute)
+                onNavigate(NavigationEvent.NavigateToLogin)
             }
             is AgendaDetailScreenEvent.Error -> {
                 keyboardController?.hide()
@@ -222,13 +224,13 @@ fun AgendaDetailScreenRoot(
         onAction = {
             when(it){
                 is AgendaDetailScreenAction.OnNavigateToEditTextScreen -> {
-                    navController.navigate(Destination.Route.EditTextRoute(
+                    onNavigate(NavigationEvent.NavigateToEditText(
                         type = it.type.toString(),
                         text = it.text
                     ))
                 }
                 is AgendaDetailScreenAction.OnGoBack -> {
-                    navController.navigateUp()
+                    onNavigate(NavigationEvent.NavigateUp)
                 }
                 else -> {
                     viewModel.onAction(it)

@@ -33,13 +33,15 @@ import coil3.compose.rememberAsyncImagePainter
 import com.aarevalo.tasky.R
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.navigation.NavigationEvent
 import com.aarevalo.tasky.core.presentation.components.AppBar
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
 @Composable
 fun PhotoPreviewScreenRoot(
     route: Destination.Route.PhotoPreviewRoute,
-    navController: NavController
+    onNavigate: (NavigationEvent) -> Unit,
+    navController: NavController  // Keep for savedStateHandle pattern
 ){
     val photo = if(Uri.parse(route.photoUri).scheme?.startsWith("content") == true){
         EventPhoto.Local(key = route.photoKey, uriString = route.photoUri)
@@ -53,6 +55,7 @@ fun PhotoPreviewScreenRoot(
         onAction = { action ->
             when(action) {
                 is PhotoPreviewAction.GoBack -> {
+                    // Save result to savedStateHandle for AgendaDetailScreen
                     navController
                         .previousBackStackEntry
                         ?.savedStateHandle
@@ -60,7 +63,8 @@ fun PhotoPreviewScreenRoot(
                             photoId = action.photoId,
                             wasPhotoDeleted = action.wasDeleted
                         ))
-                    navController.navigateUp()
+                    // Use centralized navigation for going back
+                    onNavigate(NavigationEvent.NavigateUp)
                 }
             }
         }
