@@ -12,6 +12,7 @@ fun <T> responseToResult(response: Response<T>): Result<T, DataError.Network> {
                 Result.Success(it)
             } ?: Result.Error(DataError.Network.UNKNOWN) // Successful but no body
         }
+        response.code() == 400 -> Result.Error(DataError.Network.BAD_REQUEST)
         response.code() == 401 -> Result.Error(DataError.Network.UNAUTHORIZED)
         response.code() == 404 -> Result.Error(DataError.Network.NOT_FOUND)
         response.code() == 408 -> Result.Error(DataError.Network.REQUEST_TIMEOUT)
