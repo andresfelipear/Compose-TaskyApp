@@ -161,13 +161,48 @@ class OfflineFirstAgendaRepository @Inject constructor(
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
                 Timber.e("Error creating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
-                println("remoteResult: $remoteResult")
-                applicationScope.launch {
-                    syncAgendaScheduler.scheduleSyncAgenda(
-                        syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
-                    )
-                }.join()
-                Result.Success(Unit)
+                
+                // Check if the error is retryable
+                println("remoteResult.error: ${remoteResult.error}")
+                val isRetryable = when(remoteResult.error) {
+                    // Network/temporary errors - should retry
+                    DataError.Network.REQUEST_TIMEOUT,
+                    DataError.Network.NO_INTERNET,
+                    DataError.Network.SERVER_ERROR,
+                    DataError.Network.TOO_MANY_REQUESTS,
+
+                    // Client errors - should not retry (data is invalid)
+                    DataError.Network.BAD_REQUEST,
+                    DataError.Network.CONFLICT,
+                    DataError.Network.UNAUTHORIZED,
+                    DataError.Network.NOT_FOUND,
+                    DataError.Network.PAYLOAD_TOO_LARGE,
+                    DataError.Network.SERIALIZATION -> false
+                    DataError.Network.UNKNOWN -> true
+                }
+
+                println("isRetryable: $isRetryable")
+                
+                if(isRetryable) {
+                    // Schedule worker to retry later
+                    Timber.d("Scheduling retry for agenda item creation: %s", agendaItem.id)
+                    applicationScope.launch {
+                        syncAgendaScheduler.scheduleSyncAgenda(
+                            syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
+                        )
+                    }.join()
+                    Result.Success(Unit)
+                } else {
+                    // Non-retryable error - delete local item and return error
+                    Timber.w("Non-retryable error creating agenda item: %s. Deleting local item.", agendaItem.id)
+                    try {
+                        cancelReminder(agendaItem.id, agendaItem.type)
+                        localAgendaSource.deleteAgendaItem(agendaItem.id, agendaItem.type)
+                    } catch(e: Exception) {
+                        Timber.e(e, "Failed to cleanup local item after non-retryable error")
+                    }
+                    Result.Error(remoteResult.error)
+                }
             }
             is Result.Success -> {
                 Timber.d("Success creating agenda item remotely: %s", agendaItem.id)
@@ -223,18 +258,45 @@ class OfflineFirstAgendaRepository @Inject constructor(
         return when(val remoteResult = remoteAgendaSource.updateAgendaItem(agendaItem, deletedPhotoKeys, isGoing)){
             is Result.Error -> {
                 Timber.e("Error updating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
-                if(existingPendingItem == null){
-                    applicationScope.launch {
-                        syncAgendaScheduler.scheduleSyncAgenda(
-                            syncType = SyncAgendaScheduler.SyncType.UpdateAgendaItem(
-                                agendaItem = agendaItem,
-                                isGoing = isGoing,
-                                deletedPhotoKeys = deletedPhotoKeys
-                            )
-                        )
-                    }.join()
+                
+                // Check if the error is retryable
+                val isRetryable = when(remoteResult.error) {
+                    // Network/temporary errors - should retry
+                    DataError.Network.REQUEST_TIMEOUT,
+                    DataError.Network.NO_INTERNET,
+                    DataError.Network.SERVER_ERROR,
+                    DataError.Network.TOO_MANY_REQUESTS,
+                    DataError.Network.UNKNOWN -> true
+                    
+                    // Client errors - should not retry (data is invalid)
+                    DataError.Network.BAD_REQUEST,
+                    DataError.Network.CONFLICT,
+                    DataError.Network.UNAUTHORIZED,
+                    DataError.Network.NOT_FOUND,
+                    DataError.Network.PAYLOAD_TOO_LARGE,
+                    DataError.Network.SERIALIZATION -> false
                 }
-                Result.Success(Unit)
+                
+                if(isRetryable) {
+                    // Only schedule worker for retryable errors if not already pending
+                    if(existingPendingItem == null){
+                        Timber.d("Scheduling retry for agenda item update: %s", agendaItem.id)
+                        applicationScope.launch {
+                            syncAgendaScheduler.scheduleSyncAgenda(
+                                syncType = SyncAgendaScheduler.SyncType.UpdateAgendaItem(
+                                    agendaItem = agendaItem,
+                                    isGoing = isGoing,
+                                    deletedPhotoKeys = deletedPhotoKeys
+                                )
+                            )
+                        }.join()
+                    }
+                    Result.Success(Unit)
+                } else {
+                    // Non-retryable error - return error to user
+                    Timber.w("Non-retryable error updating agenda item: %s", agendaItem.id)
+                    Result.Error(remoteResult.error)
+                }
             }
             is Result.Success -> {
                 Timber.d("Success updating agenda item remotely: %s", agendaItem.id)
