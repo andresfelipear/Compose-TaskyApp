@@ -98,4 +98,6 @@
     <string name="default_reminder_description">You have an upcoming agenda item!</string>
     <string name="reminder_notification_channel_name">Tasky Reminders</string>
     <string name="reminder_notification_channel_description">Notifications for your scheduled agenda items.</string>
+    <string name="reminder_too_close_error">The event time is too close. Please choose a later time.</string>
+    <string name="reminder_adjusted">Reminder adjusted to avoid being in the past.</string>
 </resources>
