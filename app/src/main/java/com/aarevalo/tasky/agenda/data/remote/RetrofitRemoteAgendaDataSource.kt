@@ -26,6 +26,7 @@ import com.aarevalo.tasky.agenda.data.remote.dto.LogoutRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.ConfirmUploadRequest
 import com.aarevalo.tasky.agenda.data.remote.dto.EventWithUploadUrlsResponse
 import com.aarevalo.tasky.agenda.data.remote.dto.UploadUrlDto
+import com.aarevalo.tasky.agenda.presentation.agenda_detail.asEventDetails
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -38,7 +39,6 @@ import javax.inject.Inject
 class RetrofitRemoteAgendaDataSource @Inject constructor(
     private val api: TaskyAgendaApi,
     private val photoByteLoader: PhotoByteLoader,
-    private val sessionStorage: SessionStorage
 ): RemoteAgendaDataSource {
 
     override suspend fun fetchFullAgenda(): Result<List<AgendaItem>, DataError.Network> {
@@ -202,9 +202,10 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         }
     }
 
-    override suspend fun logout(): EmptyResult<DataError.Network> {
+    override suspend fun logout(
+        refreshToken: String
+    ): EmptyResult<DataError.Network> {
         return makeApiCall(apiCall = {
-            val refreshToken = sessionStorage.getSession()?.refreshToken.orEmpty()
             api.logout(LogoutRequest(refreshToken))
         })
     }

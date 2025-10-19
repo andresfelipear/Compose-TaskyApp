@@ -67,12 +67,10 @@ object TaskyAgendaModule {
     fun provideRemoteAgendaDataSource(
         api: TaskyAgendaApi,
         photoByteLoader: PhotoByteLoader,
-        sessionStorage: SessionStorage
     ): RemoteAgendaDataSource {
         return RetrofitRemoteAgendaDataSource(
             api,
             photoByteLoader,
-            sessionStorage
         )
     }
 

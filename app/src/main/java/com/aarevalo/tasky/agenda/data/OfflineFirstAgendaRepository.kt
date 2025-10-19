@@ -364,7 +364,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
         Timber.d("User logging out. Cancelling all syncs and alarms.")
         syncAgendaScheduler.cancelAllSyncs()
 
-        val currentUserId = sessionStorage.getSession()?.userId
+        val session = sessionStorage.getSession()
+        val currentUserId = session?.userId
+        val refreshToken = session?.refreshToken.orEmpty()
+
         // only schedule if the current user is login
 
         if (currentUserId != null) {
@@ -377,8 +380,13 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
 
         localAgendaSource.deleteAllAgendaItems()
-        sessionStorage.setSession(null)
-        Timber.d("User logged out. Local data cleared.")
-        return remoteAgendaSource.logout()
+        val logoutResult = remoteAgendaSource.logout(refreshToken)
+
+        if(logoutResult is Result.Success){
+            sessionStorage.setSession(null)
+            Timber.d("User logged out. Local data cleared.")
+
+        }
+        return logoutResult
     }
 }
