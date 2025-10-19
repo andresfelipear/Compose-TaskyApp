@@ -39,6 +39,8 @@ class AuthenticationRepositoryImpl @Inject constructor(
                     accessTokenExpirationTimestamp = response.data.accessTokenExpirationTimestamp
                 )
             )
+            println("Session set!")
+            println(sessionStorage.getSession())
         }
         return response.asEmptyDataResult()
     }

@@ -37,6 +37,7 @@ import com.aarevalo.tasky.core.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.presentation.components.TaskyHelperLabel
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
@@ -98,6 +99,7 @@ fun RegistrationScreen(
 
     val spacing = LocalSpacing.current
     val snackBarState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     Scaffold(
         snackbarHost = {
@@ -163,11 +165,29 @@ fun RegistrationScreen(
                             hint = stringResource(id = R.string.email_hint),
                         )
 
-                        TaskyPasswordTextField(passwordState = state.passwordState,
-                                               isPasswordVisible = state.isPasswordVisible,
-                                               onPasswordVisibilityChange = {
-                                                   onAction(RegistrationAction.OnPasswordVisibilityChanged(it))
-                                               })
+                        TaskyPasswordTextField(
+                            passwordState = state.passwordState,
+                            isPasswordVisible = state.isPasswordVisible,
+                            onPasswordVisibilityChange = {
+                                onAction(RegistrationAction.OnPasswordVisibilityChanged(it))
+                            },
+                            isValidInput = state.isValidPassword
+                        )
+
+                        // Show validation errors only when password is invalid and not empty
+                        if (!state.isValidPassword && state.passwordState.text.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                state.infoMessage?.forEach { errorMessage ->
+                                    TaskyHelperLabel(
+                                        text = errorMessage.asString(context),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Column(

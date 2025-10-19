@@ -87,7 +87,10 @@ class RegistrationViewModel @Inject constructor(
             .onEach { password ->
                 val validationResult = inputValidator.isValidPassword(password.toString())
                 _state.update {
-                    it.copy(isValidPassword = validationResult.isValid)
+                    it.copy(
+                        isValidPassword = validationResult.isValid,
+                        infoMessage = validationResult.errorMessage
+                    )
                 }
             }
             .launchIn(viewModelScope)

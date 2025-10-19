@@ -206,7 +206,8 @@ fun AgendaItemPreview() {
                 fromTime = LocalTime.now(),
                 fromDate = LocalDate.now(),
                 remindAt = ZonedDateTime.now(),
-                hostId = ""
+                hostId = "",
+                type = com.aarevalo.tasky.agenda.domain.model.AgendaItemType.TASK
                 ),
             dropDownMenuItems = listOf(
                 TaskyDropDownMenuItem(

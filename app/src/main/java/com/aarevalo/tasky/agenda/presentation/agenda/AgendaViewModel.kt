@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aarevalo.tasky.agenda.domain.AgendaRepository
 import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
+import timber.log.Timber
 import com.aarevalo.tasky.agenda.presentation.agenda.AgendaScreenState.Companion.RANGE_DAYS
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
@@ -111,7 +112,12 @@ class AgendaViewModel @Inject constructor(
                 }
                 viewModelScope.launch {
                     val agendaItemIdToDelete = _state.value.agendaItemIdToDelete
-                    val result = agendaRepository.deleteAgendaItem(agendaItemIdToDelete)
+                    val agendaItem = _state.value.agendaItems.find { it.id == agendaItemIdToDelete }
+                    if(agendaItem == null) {
+                        Timber.e("Could not find agenda item with ID: %s", agendaItemIdToDelete)
+                        return@launch
+                    }
+                    val result = agendaRepository.deleteAgendaItem(agendaItemIdToDelete, agendaItem.type)
 
                     _state.update {
                         it.copy(

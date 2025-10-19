@@ -13,20 +13,14 @@ data class AgendaItem(
     val title: String,
     val remindAt: ZonedDateTime,
     val details: AgendaItemDetails,
-    val hostId: String
-){
-    companion object {
-        const val PREFIX_EVENT_ID = "event_"
-        const val PREFIX_REMINDER_ID = "reminder_"
-        const val PREFIX_TASK_ID = "task_"
+    val hostId: String,
+    val type: AgendaItemType
+)
 
-        fun getAgendaItemTypeFromItemId(itemId: String): AgendaItemType{
-            return when{
-                itemId.contains(this.PREFIX_EVENT_ID) -> AgendaItemType.EVENT
-                itemId.contains(this.PREFIX_REMINDER_ID) -> AgendaItemType.REMINDER
-                itemId.contains(this.PREFIX_TASK_ID) -> AgendaItemType.TASK
-                else -> throw IllegalArgumentException("Invalid itemId: $itemId")
-            }
-        }
+fun AgendaItemDetails.toAgendaItemType(): AgendaItemType {
+    return when(this) {
+        is AgendaItemDetails.Event -> AgendaItemType.EVENT
+        is AgendaItemDetails.Task -> AgendaItemType.TASK
+        is AgendaItemDetails.Reminder -> AgendaItemType.REMINDER
     }
 }

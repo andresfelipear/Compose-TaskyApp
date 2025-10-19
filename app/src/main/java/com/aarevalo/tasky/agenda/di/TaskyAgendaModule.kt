@@ -66,11 +66,11 @@ object TaskyAgendaModule {
     @Singleton
     fun provideRemoteAgendaDataSource(
         api: TaskyAgendaApi,
-        photoByteLoader: PhotoByteLoader
+        photoByteLoader: PhotoByteLoader,
     ): RemoteAgendaDataSource {
         return RetrofitRemoteAgendaDataSource(
             api,
-            photoByteLoader
+            photoByteLoader,
         )
     }
 

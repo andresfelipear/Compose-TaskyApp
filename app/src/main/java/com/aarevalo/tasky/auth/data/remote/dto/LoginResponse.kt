@@ -9,7 +9,7 @@ data class LoginResponse(
     val accessToken: String,
     @Json(name = "refreshToken")
     val refreshToken: String,
-    @Json(name = "fullName")
+    @Json(name = "username")
     val fullName: String,
     val userId: String,
     @Json(name = "accessTokenExpirationTimestamp")

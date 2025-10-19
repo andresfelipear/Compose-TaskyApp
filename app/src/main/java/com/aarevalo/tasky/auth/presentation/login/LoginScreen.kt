@@ -37,7 +37,9 @@ import com.aarevalo.tasky.core.presentation.components.TaskyInputTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskyPasswordTextField
 import com.aarevalo.tasky.auth.presentation.components.TaskySurface
 import com.aarevalo.tasky.core.navigation.Destination
+import com.aarevalo.tasky.core.presentation.components.TaskyHelperLabel
 import com.aarevalo.tasky.core.presentation.ui.ObserveAsEvents
+import com.aarevalo.tasky.core.presentation.util.UiText
 import com.aarevalo.tasky.ui.theme.LocalSpacing
 import com.aarevalo.tasky.ui.theme.TaskyTheme
 
@@ -154,6 +156,7 @@ fun LoginScreen(
                         TaskyPasswordTextField(
                             passwordState = state.passwordState,
                             isPasswordVisible = state.isPasswordVisible,
+                            isValidInput = state.isValidPassword,
                             onPasswordVisibilityChange =
                             {
                                 onAction(LoginScreenAction.OnPasswordVisibilityChanged(it))

@@ -17,6 +17,6 @@ interface RemoteAgendaDataSource {
     suspend fun fetchAttendee(email: String): Result<Attendee?, DataError.Network>
     suspend fun deleteAttendee(eventId: String): EmptyResult<DataError.Network>
     suspend fun syncAgenda(deletedEventIds: List<String>, deletedTaskIds: List<String>, deletedReminderIds: List<String>): EmptyResult<DataError.Network>
-    suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError.Network>
-    suspend fun logout(): EmptyResult<DataError.Network>
+    suspend fun deleteAgendaItem(agendaItemId: String, itemType: AgendaItemType): EmptyResult<DataError.Network>
+    suspend fun logout(refreshToken: String): EmptyResult<DataError.Network>
 }

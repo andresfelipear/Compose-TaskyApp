@@ -11,6 +11,7 @@ import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
@@ -71,8 +72,8 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
     }
 
-    override suspend fun cancelReminder(agendaItemId: String) {
-        localAgendaSource.getAgendaItemById(agendaItemId)?.let { agendaItem ->
+    override suspend fun cancelReminder(agendaItemId: String, itemType: AgendaItemType) {
+        localAgendaSource.getAgendaItemById(agendaItemId, itemType)?.let { agendaItem ->
             alarmScheduler.cancel(agendaItem.toAlarmItem())
             Timber.d("Cancelled reminder for AgendaItem ID: %s", agendaItem.id)
         } ?: Timber.w("Attempted to cancel reminder for non-existent AgendaItem ID: %s", agendaItemId)
@@ -109,9 +110,15 @@ class OfflineFirstAgendaRepository @Inject constructor(
                     val itemsToDeleteLocally = localItemsIds.minus(remoteItemsIds.toSet())
                     itemsToDeleteLocally.forEach{ id ->
                         try {
-                            cancelReminder(id)
-                            localAgendaSource.deleteAgendaItem(id)
-                            Timber.d("Deleted local agenda item %s during reconciliation.", id)
+                            // Find the local item to get its type
+                            val localItem = localItems.find { it.id == id }
+                            if(localItem != null) {
+                                cancelReminder(id, localItem.type)
+                                localAgendaSource.deleteAgendaItem(id, localItem.type)
+                                Timber.d("Deleted local agenda item %s during reconciliation.", id)
+                            } else {
+                                Timber.w("Could not find local item with ID: %s for deletion", id)
+                            }
                         } catch(e: SQLException){
                             Timber.e(e, "Failed to delete agenda item locally for ID: %s", id)
                             return@forEach
@@ -132,7 +139,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun getAgendaItemById(agendaItemId: String): AgendaItem? {
-        return localAgendaSource.getAgendaItemById(agendaItemId)
+        // Try to find the item in all tables since we don't know the type
+        return localAgendaSource.getAgendaItemById(agendaItemId, AgendaItemType.EVENT)
+            ?: localAgendaSource.getAgendaItemById(agendaItemId, AgendaItemType.TASK)
+            ?: localAgendaSource.getAgendaItemById(agendaItemId, AgendaItemType.REMINDER)
     }
 
     override suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError> {
@@ -151,12 +161,48 @@ class OfflineFirstAgendaRepository @Inject constructor(
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
                 Timber.e("Error creating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
-                applicationScope.launch {
-                    syncAgendaScheduler.scheduleSyncAgenda(
-                        syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
-                    )
-                }.join()
-                Result.Success(Unit)
+                
+                // Check if the error is retryable
+                println("remoteResult.error: ${remoteResult.error}")
+                val isRetryable = when(remoteResult.error) {
+                    // Network/temporary errors - should retry
+                    DataError.Network.REQUEST_TIMEOUT,
+                    DataError.Network.NO_INTERNET,
+                    DataError.Network.SERVER_ERROR,
+                    DataError.Network.TOO_MANY_REQUESTS,
+
+                    // Client errors - should not retry (data is invalid)
+                    DataError.Network.BAD_REQUEST,
+                    DataError.Network.CONFLICT,
+                    DataError.Network.UNAUTHORIZED,
+                    DataError.Network.NOT_FOUND,
+                    DataError.Network.PAYLOAD_TOO_LARGE,
+                    DataError.Network.SERIALIZATION -> false
+                    DataError.Network.UNKNOWN -> true
+                }
+
+                println("isRetryable: $isRetryable")
+                
+                if(isRetryable) {
+                    // Schedule worker to retry later
+                    Timber.d("Scheduling retry for agenda item creation: %s", agendaItem.id)
+                    applicationScope.launch {
+                        syncAgendaScheduler.scheduleSyncAgenda(
+                            syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
+                        )
+                    }.join()
+                    Result.Success(Unit)
+                } else {
+                    // Non-retryable error - delete local item and return error
+                    Timber.w("Non-retryable error creating agenda item: %s. Deleting local item.", agendaItem.id)
+                    try {
+                        cancelReminder(agendaItem.id, agendaItem.type)
+                        localAgendaSource.deleteAgendaItem(agendaItem.id, agendaItem.type)
+                    } catch(e: Exception) {
+                        Timber.e(e, "Failed to cleanup local item after non-retryable error")
+                    }
+                    Result.Error(remoteResult.error)
+                }
             }
             is Result.Success -> {
                 Timber.d("Success creating agenda item remotely: %s", agendaItem.id)
@@ -200,7 +246,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                     userId = agendaItem.hostId,
                     isGoing = isGoing,
                     deletedPhotoKeys = deletedPhotoKeys,
-                    itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+                    itemType = agendaItem.type,
                     syncOperation = pendingItem.syncOperation,
                     itemJson = agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem)
                         ?: return Result.Error(DataError.Local.BAD_DATA)
@@ -212,18 +258,45 @@ class OfflineFirstAgendaRepository @Inject constructor(
         return when(val remoteResult = remoteAgendaSource.updateAgendaItem(agendaItem, deletedPhotoKeys, isGoing)){
             is Result.Error -> {
                 Timber.e("Error updating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
-                if(existingPendingItem == null){
-                    applicationScope.launch {
-                        syncAgendaScheduler.scheduleSyncAgenda(
-                            syncType = SyncAgendaScheduler.SyncType.UpdateAgendaItem(
-                                agendaItem = agendaItem,
-                                isGoing = isGoing,
-                                deletedPhotoKeys = deletedPhotoKeys
-                            )
-                        )
-                    }.join()
+                
+                // Check if the error is retryable
+                val isRetryable = when(remoteResult.error) {
+                    // Network/temporary errors - should retry
+                    DataError.Network.REQUEST_TIMEOUT,
+                    DataError.Network.NO_INTERNET,
+                    DataError.Network.SERVER_ERROR,
+                    DataError.Network.TOO_MANY_REQUESTS,
+                    DataError.Network.UNKNOWN -> true
+                    
+                    // Client errors - should not retry (data is invalid)
+                    DataError.Network.BAD_REQUEST,
+                    DataError.Network.CONFLICT,
+                    DataError.Network.UNAUTHORIZED,
+                    DataError.Network.NOT_FOUND,
+                    DataError.Network.PAYLOAD_TOO_LARGE,
+                    DataError.Network.SERIALIZATION -> false
                 }
-                Result.Success(Unit)
+                
+                if(isRetryable) {
+                    // Only schedule worker for retryable errors if not already pending
+                    if(existingPendingItem == null){
+                        Timber.d("Scheduling retry for agenda item update: %s", agendaItem.id)
+                        applicationScope.launch {
+                            syncAgendaScheduler.scheduleSyncAgenda(
+                                syncType = SyncAgendaScheduler.SyncType.UpdateAgendaItem(
+                                    agendaItem = agendaItem,
+                                    isGoing = isGoing,
+                                    deletedPhotoKeys = deletedPhotoKeys
+                                )
+                            )
+                        }.join()
+                    }
+                    Result.Success(Unit)
+                } else {
+                    // Non-retryable error - return error to user
+                    Timber.w("Non-retryable error updating agenda item: %s", agendaItem.id)
+                    Result.Error(remoteResult.error)
+                }
             }
             is Result.Success -> {
                 Timber.d("Success updating agenda item remotely: %s", agendaItem.id)
@@ -246,11 +319,12 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
     }
 
-    override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError> {
+    override suspend fun deleteAgendaItem(agendaItemId: String, itemType: AgendaItemType): EmptyResult<DataError> {
         Timber.d("Deleting agenda item locally: %s", agendaItemId)
+        
         try{
-            cancelReminder(agendaItemId)
-            localAgendaSource.deleteAgendaItem(agendaItemId)
+            cancelReminder(agendaItemId, itemType)
+            localAgendaSource.deleteAgendaItem(agendaItemId, itemType)
             Timber.d("Agenda item ID: %s deleted locally.", agendaItemId)
         }
         catch (e: SQLException){
@@ -269,7 +343,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
 
         Timber.d("Attempting to delete agenda item remotely: %s", agendaItemId)
         val remoteResult = applicationScope.async {
-            remoteAgendaSource.deleteAgendaItem(agendaItemId)
+            remoteAgendaSource.deleteAgendaItem(agendaItemId, itemType)
         }.await()
 
         return when(remoteResult){
@@ -277,7 +351,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 Timber.e("Error deleting agenda item remotely for ID: %s! Error: %s", agendaItemId, remoteResult)
                 applicationScope.launch {
                     syncAgendaScheduler.scheduleSyncAgenda(
-                        syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId)
+                        syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId, itemType)
                     )
                 }
                 Result.Success(Unit)
@@ -332,7 +406,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                                 }
                             }
                             SyncOperation.DELETE -> {
-                                remoteAgendaSource.deleteAgendaItem(pendingItem.itemId)
+                                remoteAgendaSource.deleteAgendaItem(pendingItem.itemId, pendingItem.itemType)
                             }
                         }
                         when(result){
@@ -364,7 +438,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
         Timber.d("User logging out. Cancelling all syncs and alarms.")
         syncAgendaScheduler.cancelAllSyncs()
 
-        val currentUserId = sessionStorage.getSession()?.userId
+        val session = sessionStorage.getSession()
+        val currentUserId = session?.userId
+        val refreshToken = session?.refreshToken.orEmpty()
+
         // only schedule if the current user is login
 
         if (currentUserId != null) {
@@ -377,8 +454,13 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
 
         localAgendaSource.deleteAllAgendaItems()
-        sessionStorage.setSession(null)
-        Timber.d("User logged out. Local data cleared.")
-        return remoteAgendaSource.logout()
+        val logoutResult = remoteAgendaSource.logout(refreshToken)
+
+        if(logoutResult is Result.Success){
+            sessionStorage.setSession(null)
+            Timber.d("User logged out. Local data cleared.")
+
+        }
+        return logoutResult
     }
 }

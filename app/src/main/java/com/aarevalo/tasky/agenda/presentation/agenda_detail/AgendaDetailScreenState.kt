@@ -6,6 +6,7 @@ import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.core.presentation.util.UiText
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
@@ -13,9 +14,9 @@ private const val TO_TIME_ADDITION_MINUTES = 30L
 
 data class AgendaDetailScreenState(
     val isEditable: Boolean = false,
-    val reminderType: ReminderType = ReminderType.ONE_HOUR,
-    val fromTime: LocalTime = LocalTime.now(),
-    val fromDate: LocalDate = LocalDate.now(),
+    val reminderType: ReminderType = ReminderType.TEN_MINUTES,
+    val fromTime: LocalTime = getDefaultFromTime(),
+    val fromDate: LocalDate = getDefaultFromDate(),
     val description: String = "Event description",
     val title: String = "New Event",
     val isSelectingReminder: Boolean = false,
@@ -86,4 +87,20 @@ val AgendaItemDetails.asTaskDetails: AgendaItemDetails.Task?
 
 val AgendaItemDetails.asReminderDetails: AgendaItemDetails.Reminder?
     get() = this as? AgendaItemDetails.Reminder
+
+/**
+ * Returns the default "from" time for new agenda items (1 hour from now).
+ * This ensures all reminder options are valid by default.
+ */
+private fun getDefaultFromTime(): LocalTime {
+    return LocalDateTime.now().plusHours(1).toLocalTime()
+}
+
+/**
+ * Returns the default "from" date for new agenda items.
+ * If adding 1 hour crosses midnight, returns tomorrow's date.
+ */
+private fun getDefaultFromDate(): LocalDate {
+    return LocalDateTime.now().plusHours(1).toLocalDate()
+}
 

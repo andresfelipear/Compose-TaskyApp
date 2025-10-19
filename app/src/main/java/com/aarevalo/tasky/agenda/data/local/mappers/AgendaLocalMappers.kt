@@ -6,6 +6,7 @@ import com.aarevalo.tasky.agenda.data.local.entity.PhotoEntity
 import com.aarevalo.tasky.agenda.data.local.entity.ReminderEntity
 import com.aarevalo.tasky.agenda.data.local.entity.TaskEntity
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.AlarmItem
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
@@ -31,7 +32,8 @@ fun EventEntity.toAgendaItem(): AgendaItem {
             photos = emptyList(),
             attendees = emptyList(),
             isUserEventCreator = isUserEventCreator
-        )
+        ),
+        type = AgendaItemType.EVENT
     )
 }
 
@@ -66,7 +68,8 @@ fun TaskEntity.toAgendaItem(): AgendaItem {
         remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Task(
             isDone = isDone
-        )
+        ),
+        type = AgendaItemType.TASK
     )
 }
 
@@ -80,7 +83,8 @@ fun ReminderEntity.toAgendaItem(): AgendaItem {
         hostId = "",
         remindAt = parseTimestampToZonedDateTime(remindAt),
         details = AgendaItemDetails.Reminder,
-        )
+        type = AgendaItemType.REMINDER
+    )
 }
 
 fun AgendaItem.toEventEntity(): EventEntity{
