@@ -11,10 +11,10 @@
     <string name="register_button">GET STARTED</string>
     <string name="already_have_account">ALREADY HAVE AN ACCOUNT?</string>
     <string name="login_link">LOG IN</string>
-    <string name="password_error_length">password must be at least %d long.</string>
-    <string name="password_error_uppercase">password must contain at least one uppercase letter.</string>
-    <string name="password_error_lowercase">password must contain at least one lowercase letter.</string>
-    <string name="password_error_digit">password must contain at least one digit</string>
+    <string name="password_error_length">Password must be at least %d characters long.</string>
+    <string name="password_error_uppercase">Password must contain at least one uppercase letter.</string>
+    <string name="password_error_lowercase">Password must contain at least one lowercase letter.</string>
+    <string name="password_error_digit">Password must contain at least one digit</string>
     <string name="login_title">Welcome Back!</string>
     <string name="signup_link">SIGN UP</string>
     <string name="dont_have_account">DON\'T HAVE AN ACCOUNT?</string>
@@ -100,4 +100,5 @@
     <string name="reminder_notification_channel_description">Notifications for your scheduled agenda items.</string>
     <string name="reminder_too_close_error">The event time is too close. Please choose a later time.</string>
     <string name="reminder_adjusted">Reminder adjusted to avoid being in the past.</string>
+    <string name="password_helper">Invalid Password.</string>
 </resources>

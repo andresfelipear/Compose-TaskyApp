@@ -9,6 +9,7 @@ data class LoginScreenState(
     val isPasswordVisible: Boolean = false,
     val isValidEmail: Boolean = false,
     val isValidPassword: Boolean = false,
+    val infoMessage: List<UiText>? = emptyList(),
     val isLoading: Boolean = false,
     val isLoggedIn: Boolean = false
 )
