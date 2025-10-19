@@ -12,4 +12,5 @@ data class RegistrationScreenState(
     val isValidPassword: Boolean = false,
     val isLoading: Boolean = false,
     val isPasswordVisible: Boolean = false,
+    val infoMessage: List<UiText>? = emptyList()
 )

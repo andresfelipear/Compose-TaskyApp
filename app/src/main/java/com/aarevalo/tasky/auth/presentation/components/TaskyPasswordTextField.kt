@@ -1,6 +1,7 @@
 package com.aarevalo.tasky.auth.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ fun TaskyPasswordTextField(
     onPasswordVisibilityChange: (Boolean) -> Unit,
     hint: String = stringResource(id = R.string.password),
     modifier: Modifier = Modifier,
+    isValidInput: Boolean = true,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
         color = MaterialTheme.colorScheme.onSurface,
     )
@@ -52,6 +54,17 @@ fun TaskyPasswordTextField(
             .fillMaxWidth()
             .background(colors.surfaceHigher)
             .clip(RoundedCornerShape(10.dp))
+            .then(
+                if (!isValidInput && passwordState.text.isNotEmpty()) {
+                    Modifier.border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.error,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .padding(
                 vertical = spacing.spaceMedium,
                 horizontal = spacing.spaceExtraMedium
