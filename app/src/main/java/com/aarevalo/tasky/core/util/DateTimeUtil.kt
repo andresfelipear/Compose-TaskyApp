@@ -97,6 +97,46 @@ fun getRemindAtFromReminderType(
     return ZonedDateTime.of(reminderAtLocalDateTime, ZoneId.systemDefault())
 }
 
+/**
+ * Validates if a reminder time would be in the past.
+ * Returns the first valid ReminderType, or null if even the shortest reminder would be in the past.
+ */
+fun getValidReminderType(
+    selectedReminderType: ReminderType,
+    fromDate: LocalDate,
+    fromTime: LocalTime,
+    now: ZonedDateTime = ZonedDateTime.now()
+): ReminderType? {
+    val eventDateTime = ZonedDateTime.of(fromDate, fromTime, ZoneId.systemDefault())
+    
+    // Check if selected reminder type is valid
+    val selectedRemindAt = getRemindAtFromReminderType(selectedReminderType, fromDate, fromTime)
+    if (selectedRemindAt.isAfter(now)) {
+        return selectedReminderType
+    }
+    
+    // Selected reminder would be in the past, find the shortest valid one
+    // Order from shortest to longest
+    val reminderTypesOrdered = listOf(
+        ReminderType.TEN_MINUTES,
+        ReminderType.THIRTY_MINUTES,
+        ReminderType.ONE_HOUR,
+        ReminderType.SIX_HOURS,
+        ReminderType.ONE_DAY
+    )
+    
+    for (reminderType in reminderTypesOrdered) {
+        val remindAt = getRemindAtFromReminderType(reminderType, fromDate, fromTime)
+        if (remindAt.isAfter(now)) {
+            return reminderType
+        }
+    }
+    
+    // Even the shortest reminder (10 minutes) would be in the past
+    // Event time is too close or in the past
+    return null
+}
+
 fun parseTimestampToLocalDate(
     timestampMillis: Long,
     zoneId: ZoneId = ZoneId.systemDefault()
