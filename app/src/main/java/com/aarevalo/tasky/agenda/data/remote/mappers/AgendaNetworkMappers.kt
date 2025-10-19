@@ -8,6 +8,7 @@ import com.aarevalo.tasky.agenda.data.remote.dto.PhotoDto
 import com.aarevalo.tasky.agenda.data.remote.dto.ReminderDto
 import com.aarevalo.tasky.agenda.data.remote.dto.TaskDto
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
@@ -38,7 +39,8 @@ fun EventDto.toAgendaItem(): AgendaItem {
             attendees = attendees.map { it.toAttendee() },
             isUserEventCreator = isUserEventCreator,
         ),
-        hostId = hostId
+        hostId = hostId,
+        type = AgendaItemType.EVENT
     )
 }
 
@@ -53,7 +55,8 @@ fun TaskDto.toAgendaItem(): AgendaItem {
         details = AgendaItemDetails.Task(
             isDone = isDone
         ),
-        hostId = ""
+        hostId = "",
+        type = AgendaItemType.TASK
     )
 }
 
@@ -66,7 +69,8 @@ fun ReminderDto.toAgendaItem(): AgendaItem {
         title = title,
         remindAt = fromIsoInstantString(remindAt),
         details = AgendaItemDetails.Reminder,
-        hostId = ""
+        hostId = "",
+        type = AgendaItemType.REMINDER
     )
 }
 

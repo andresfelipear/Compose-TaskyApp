@@ -118,7 +118,8 @@ fun AgendaListPreview(){
                         fromDate = LocalDate.now(),
                         details = AgendaItemDetails.Event(),
                         remindAt = ZonedDateTime.now(),
-                        hostId = ""
+                        hostId = "",
+                        type = com.aarevalo.tasky.agenda.domain.model.AgendaItemType.EVENT
                     ),
                     AgendaItem(
                         id = "2",
@@ -129,7 +130,8 @@ fun AgendaListPreview(){
                         details = AgendaItemDetails.Task(),
                         fromDate = LocalDate.now(),
                         remindAt = ZonedDateTime.now(),
-                        hostId = ""
+                        hostId = "",
+                        type = com.aarevalo.tasky.agenda.domain.model.AgendaItemType.TASK
                     ),
                     AgendaItem(
                         id = "3",
@@ -140,7 +142,8 @@ fun AgendaListPreview(){
                         fromDate = LocalDate.now(),
                         details = AgendaItemDetails.Event(),
                         remindAt = ZonedDateTime.now(),
-                        hostId = ""
+                        hostId = "",
+                        type = com.aarevalo.tasky.agenda.domain.model.AgendaItemType.EVENT
                     ),
                     AgendaItem(
                         id = "4",
@@ -151,7 +154,8 @@ fun AgendaListPreview(){
                         details = AgendaItemDetails.Reminder,
                         fromDate = LocalDate.now(),
                         remindAt = ZonedDateTime.now(),
-                        hostId = ""
+                        hostId = "",
+                        type = com.aarevalo.tasky.agenda.domain.model.AgendaItemType.REMINDER
                     )
                 ),
                 selectedDate = LocalDate.now(),

@@ -44,7 +44,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             is SyncAgendaScheduler.SyncType.PeriodicFetch -> schedulePeriodicFetch(syncType.interval)
             is SyncAgendaScheduler.SyncType.CreateAgendaItem -> scheduleCreateAgendaItem(syncType.agendaItem)
             is SyncAgendaScheduler.SyncType.UpdateAgendaItem -> scheduleUpdateAgendaItem(syncType.agendaItem, syncType.isGoing, syncType.deletedPhotoKeys)
-            is SyncAgendaScheduler.SyncType.DeleteAgendaItem -> scheduleDeleteAgendaItem(syncType.itemId)
+            is SyncAgendaScheduler.SyncType.DeleteAgendaItem -> scheduleDeleteAgendaItem(syncType.itemId, syncType.itemType)
         }
     }
 
@@ -59,7 +59,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             userId = agendaItem.hostId,
             isGoing = false,
             deletedPhotoKeys = emptyList(),
-            itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+            itemType = agendaItem.type,
             syncOperation = SyncOperation.CREATE,
             itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: run {
                 Timber.e("Failed to get JSON from agenda item for creation: %s", agendaItem.id)
@@ -104,7 +104,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             userId = agendaItem.hostId,
             isGoing = isGoing,
             deletedPhotoKeys = deletedPhotoKeys,
-            itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+            itemType = agendaItem.type,
             syncOperation = SyncOperation.UPDATE,
             itemJson =  agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem) ?: run {
                 Timber.e("Failed to get json from agenda item for update: %s", agendaItem.id)
@@ -140,7 +140,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
         }
     }
 
-    private suspend fun scheduleDeleteAgendaItem(itemId: String) {
+    private suspend fun scheduleDeleteAgendaItem(itemId: String, itemType: com.aarevalo.tasky.agenda.domain.model.AgendaItemType) {
         val userId = sessionStorage.getSession()?.userId
         if (userId == null) {
             Timber.e("Cannot schedule delete agenda item: User session not found for item ID: %s", itemId)
@@ -152,7 +152,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             userId = userId,
             isGoing = false,
             deletedPhotoKeys = emptyList(),
-            itemType = AgendaItem.getAgendaItemTypeFromItemId(itemId),
+            itemType = itemType,
             syncOperation = SyncOperation.DELETE,
             itemJson = "" // No JSON needed for delete
         )
@@ -175,6 +175,7 @@ class SyncAgendaWorkerScheduler @Inject constructor(
             .setInputData(
                 Data.Builder()
                     .putString(DeleteAgendaItemWorker.AGENDA_ITEM_ID, itemId)
+                    .putString(DeleteAgendaItemWorker.AGENDA_ITEM_TYPE, itemType.name)
                     .build()
             )
             .build() // Build the request here

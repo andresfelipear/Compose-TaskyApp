@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.aarevalo.tasky.agenda.data.local.dao.PendingItemSyncDao
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -22,7 +23,10 @@ class DeleteAgendaItemWorker @AssistedInject constructor(
         }
 
         val pendingAgendaItemId = params.inputData.getString(AGENDA_ITEM_ID) ?: return Result.failure()
-        return when(val result = remoteAgendaDataSource.deleteAgendaItem(pendingAgendaItemId)){
+
+        val pendingAgendaItemType = params.inputData.getString(AGENDA_ITEM_TYPE) ?: return Result.failure()
+
+        return when(val result = remoteAgendaDataSource.deleteAgendaItem(pendingAgendaItemId, AgendaItemType.valueOf(pendingAgendaItemType))){
             is com.aarevalo.tasky.core.domain.util.Result.Success -> {
                 pendingItemSyncDao.deletePendingItemSyncById(pendingAgendaItemId)
                 Result.success()
@@ -35,6 +39,7 @@ class DeleteAgendaItemWorker @AssistedInject constructor(
 
     companion object {
         const val AGENDA_ITEM_ID = "AGENDA_ITEM_ID"
+        const val AGENDA_ITEM_TYPE = "AGENDA_ITEM_TYPE"
     }
 
 }

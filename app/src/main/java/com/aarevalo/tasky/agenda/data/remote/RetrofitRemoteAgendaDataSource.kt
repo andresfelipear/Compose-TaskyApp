@@ -187,18 +187,17 @@ class RetrofitRemoteAgendaDataSource @Inject constructor(
         )
     }
 
-    override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError.Network> {
-        return when {
-            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> makeApiCall(
+    override suspend fun deleteAgendaItem(agendaItemId: String, itemType: AgendaItemType): EmptyResult<DataError.Network> {
+        return when (itemType) {
+            AgendaItemType.EVENT -> makeApiCall(
                 apiCall = { api.deleteEvent(agendaItemId) }
             )
-            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> makeApiCall(
+            AgendaItemType.TASK -> makeApiCall(
                 apiCall = { api.deleteTask(agendaItemId) }
             )
-            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> makeApiCall(
+            AgendaItemType.REMINDER -> makeApiCall(
                 apiCall = { api.deleteReminder(agendaItemId) }
             )
-            else -> Result.Error(DataError.Network.BAD_REQUEST)
         }
     }
 

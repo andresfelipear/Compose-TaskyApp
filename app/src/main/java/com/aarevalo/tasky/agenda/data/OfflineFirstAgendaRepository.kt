@@ -11,6 +11,7 @@ import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.RemoteAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.SyncAgendaScheduler
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.util.AgendaItemJsonConverter
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
@@ -71,8 +72,8 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
     }
 
-    override suspend fun cancelReminder(agendaItemId: String) {
-        localAgendaSource.getAgendaItemById(agendaItemId)?.let { agendaItem ->
+    override suspend fun cancelReminder(agendaItemId: String, itemType: AgendaItemType) {
+        localAgendaSource.getAgendaItemById(agendaItemId, itemType)?.let { agendaItem ->
             alarmScheduler.cancel(agendaItem.toAlarmItem())
             Timber.d("Cancelled reminder for AgendaItem ID: %s", agendaItem.id)
         } ?: Timber.w("Attempted to cancel reminder for non-existent AgendaItem ID: %s", agendaItemId)
@@ -109,9 +110,15 @@ class OfflineFirstAgendaRepository @Inject constructor(
                     val itemsToDeleteLocally = localItemsIds.minus(remoteItemsIds.toSet())
                     itemsToDeleteLocally.forEach{ id ->
                         try {
-                            cancelReminder(id)
-                            localAgendaSource.deleteAgendaItem(id)
-                            Timber.d("Deleted local agenda item %s during reconciliation.", id)
+                            // Find the local item to get its type
+                            val localItem = localItems.find { it.id == id }
+                            if(localItem != null) {
+                                cancelReminder(id, localItem.type)
+                                localAgendaSource.deleteAgendaItem(id, localItem.type)
+                                Timber.d("Deleted local agenda item %s during reconciliation.", id)
+                            } else {
+                                Timber.w("Could not find local item with ID: %s for deletion", id)
+                            }
                         } catch(e: SQLException){
                             Timber.e(e, "Failed to delete agenda item locally for ID: %s", id)
                             return@forEach
@@ -132,7 +139,10 @@ class OfflineFirstAgendaRepository @Inject constructor(
     }
 
     override suspend fun getAgendaItemById(agendaItemId: String): AgendaItem? {
-        return localAgendaSource.getAgendaItemById(agendaItemId)
+        // Try to find the item in all tables since we don't know the type
+        return localAgendaSource.getAgendaItemById(agendaItemId, AgendaItemType.EVENT)
+            ?: localAgendaSource.getAgendaItemById(agendaItemId, AgendaItemType.TASK)
+            ?: localAgendaSource.getAgendaItemById(agendaItemId, AgendaItemType.REMINDER)
     }
 
     override suspend fun createAgendaItem(agendaItem: AgendaItem): EmptyResult<DataError> {
@@ -151,6 +161,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
         return when(val remoteResult = remoteAgendaSource.createAgendaItem(agendaItem)){
             is Result.Error -> {
                 Timber.e("Error creating agenda item remotely for ID: %s! Error: %s", agendaItem.id, remoteResult)
+                println("remoteResult: $remoteResult")
                 applicationScope.launch {
                     syncAgendaScheduler.scheduleSyncAgenda(
                         syncType = SyncAgendaScheduler.SyncType.CreateAgendaItem(agendaItem)
@@ -200,7 +211,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                     userId = agendaItem.hostId,
                     isGoing = isGoing,
                     deletedPhotoKeys = deletedPhotoKeys,
-                    itemType = AgendaItem.getAgendaItemTypeFromItemId(agendaItem.id),
+                    itemType = agendaItem.type,
                     syncOperation = pendingItem.syncOperation,
                     itemJson = agendaItemJsonConverter.getJsonFromAgendaItem(agendaItem)
                         ?: return Result.Error(DataError.Local.BAD_DATA)
@@ -246,11 +257,12 @@ class OfflineFirstAgendaRepository @Inject constructor(
         }
     }
 
-    override suspend fun deleteAgendaItem(agendaItemId: String): EmptyResult<DataError> {
+    override suspend fun deleteAgendaItem(agendaItemId: String, itemType: AgendaItemType): EmptyResult<DataError> {
         Timber.d("Deleting agenda item locally: %s", agendaItemId)
+        
         try{
-            cancelReminder(agendaItemId)
-            localAgendaSource.deleteAgendaItem(agendaItemId)
+            cancelReminder(agendaItemId, itemType)
+            localAgendaSource.deleteAgendaItem(agendaItemId, itemType)
             Timber.d("Agenda item ID: %s deleted locally.", agendaItemId)
         }
         catch (e: SQLException){
@@ -269,7 +281,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
 
         Timber.d("Attempting to delete agenda item remotely: %s", agendaItemId)
         val remoteResult = applicationScope.async {
-            remoteAgendaSource.deleteAgendaItem(agendaItemId)
+            remoteAgendaSource.deleteAgendaItem(agendaItemId, itemType)
         }.await()
 
         return when(remoteResult){
@@ -277,7 +289,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                 Timber.e("Error deleting agenda item remotely for ID: %s! Error: %s", agendaItemId, remoteResult)
                 applicationScope.launch {
                     syncAgendaScheduler.scheduleSyncAgenda(
-                        syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId)
+                        syncType = SyncAgendaScheduler.SyncType.DeleteAgendaItem(agendaItemId, itemType)
                     )
                 }
                 Result.Success(Unit)
@@ -332,7 +344,7 @@ class OfflineFirstAgendaRepository @Inject constructor(
                                 }
                             }
                             SyncOperation.DELETE -> {
-                                remoteAgendaSource.deleteAgendaItem(pendingItem.itemId)
+                                remoteAgendaSource.deleteAgendaItem(pendingItem.itemId, pendingItem.itemType)
                             }
                         }
                         when(result){

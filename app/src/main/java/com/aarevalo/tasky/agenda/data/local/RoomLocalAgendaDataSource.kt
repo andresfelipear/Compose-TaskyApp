@@ -19,6 +19,7 @@ import com.aarevalo.tasky.agenda.data.local.mappers.toReminderEntity
 import com.aarevalo.tasky.agenda.data.local.mappers.toTaskEntity
 import com.aarevalo.tasky.agenda.domain.LocalAgendaDataSource
 import com.aarevalo.tasky.agenda.domain.model.AgendaItem
+import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.presentation.agenda_detail.AgendaItemDetails
 import com.aarevalo.tasky.core.domain.util.DataError
 import com.aarevalo.tasky.core.util.parseLocalDateToTimestamp
@@ -121,27 +122,27 @@ class RoomLocalAgendaDataSource @Inject constructor(
 
     override suspend fun getAgendaItemById(
         agendaItemId: String,
+        itemType: AgendaItemType
     ): AgendaItem? {
-        return when {
-            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> {
-                eventDao.getEventById(agendaItemId)?.let { eventDao ->
-                    val attendees = attendeeDao.getAttendeesByEventId(eventDao.eventId).map { it.toAttendee() }
-                    val photos = photoDao.getPhotosByKeys(eventDao.photoKeys).map { it.toEventPhoto() }
-                    eventDao.toAgendaItem().copy(
-                        details = (eventDao.toAgendaItem().details as AgendaItemDetails.Event).copy(
+        return when(itemType) {
+            AgendaItemType.EVENT -> {
+                eventDao.getEventById(agendaItemId)?.let { eventEntity ->
+                    val attendees = attendeeDao.getAttendeesByEventId(eventEntity.eventId).map { it.toAttendee() }
+                    val photos = photoDao.getPhotosByKeys(eventEntity.photoKeys).map { it.toEventPhoto() }
+                    eventEntity.toAgendaItem().copy(
+                        details = (eventEntity.toAgendaItem().details as AgendaItemDetails.Event).copy(
                             attendees = attendees,
                             photos = photos
                         )
                     )
                 }
             }
-            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> {
-                reminderDao.getReminderById(agendaItemId)?.toAgendaItem()
-            }
-            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> {
+            AgendaItemType.TASK -> {
                 taskDao.getTaskById(agendaItemId)?.toAgendaItem()
             }
-            else -> null
+            AgendaItemType.REMINDER -> {
+                reminderDao.getReminderById(agendaItemId)?.toAgendaItem()
+            }
         }
     }
 
@@ -226,9 +227,10 @@ class RoomLocalAgendaDataSource @Inject constructor(
 
     override suspend fun deleteAgendaItem(
         agendaItemId: String,
+        itemType: AgendaItemType
     ) {
-        when{
-            agendaItemId.contains(AgendaItem.PREFIX_EVENT_ID) -> {
+        when(itemType) {
+            AgendaItemType.EVENT -> {
                 db.withTransaction {
                     val eventToDelete = eventDao.getEventById(agendaItemId)
                     eventDao.deleteEventById(agendaItemId)
@@ -239,11 +241,11 @@ class RoomLocalAgendaDataSource @Inject constructor(
                     }
                 }
             }
-            agendaItemId.contains(AgendaItem.PREFIX_REMINDER_ID) -> {
-                reminderDao.deleteReminderById(agendaItemId)
-            }
-            agendaItemId.contains(AgendaItem.PREFIX_TASK_ID) -> {
+            AgendaItemType.TASK -> {
                 taskDao.deleteTaskById(agendaItemId)
+            }
+            AgendaItemType.REMINDER -> {
+                reminderDao.deleteReminderById(agendaItemId)
             }
         }
     }

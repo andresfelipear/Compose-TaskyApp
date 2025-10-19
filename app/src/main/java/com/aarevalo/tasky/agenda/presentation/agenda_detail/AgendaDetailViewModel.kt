@@ -10,6 +10,7 @@ import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
+import com.aarevalo.tasky.agenda.domain.model.toAgendaItemType
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
 import com.aarevalo.tasky.core.domain.util.Result
@@ -157,7 +158,7 @@ class AgendaDetailViewModel @Inject constructor(
                     )
                 }
                 viewModelScope.launch {
-                    agendaRepository.deleteAgendaItem(existingAgendaItemId!!)
+                    agendaRepository.deleteAgendaItem(existingAgendaItemId!!, agendaItemType)
                     _state.update {
                         it.copy(
                             isConfirmingToDeleteItem = false,
@@ -351,6 +352,7 @@ class AgendaDetailViewModel @Inject constructor(
                                     remindAt = state.value.remindAt,
                                     hostId = userId,
                                     details = state.value.details,
+                                    type = state.value.details.toAgendaItemType()
                                 ),
                                 deletedPhotoKeys = if(state.value.details is AgendaItemDetails.Event) deletedRemotePhotos.value.map { it.key } else emptyList(),
                                 isGoing = if(state.value.details is AgendaItemDetails.Event) (state.value.details as AgendaItemDetails.Event).localAttendee?.isGoing ?: false else false
@@ -378,7 +380,7 @@ class AgendaDetailViewModel @Inject constructor(
 
                             val result = when(agendaItemType){
                                 AgendaItemType.EVENT -> {
-                                    val eventId = AgendaItem.PREFIX_EVENT_ID + UUID.randomUUID().toString()
+                                    val eventId = UUID.randomUUID().toString()
                                     agendaRepository.createAgendaItem(
                                         agendaItem = AgendaItem(
                                             id = eventId,
@@ -393,6 +395,7 @@ class AgendaDetailViewModel @Inject constructor(
                                                     eventId = eventId
                                                 ) }
                                             ),
+                                            type = AgendaItemType.EVENT
                                         )
                                     )
                                 }
@@ -400,7 +403,7 @@ class AgendaDetailViewModel @Inject constructor(
                                     println("Task details: ${state.value.details}")
                                     agendaRepository.createAgendaItem(
                                         agendaItem = AgendaItem(
-                                            id = AgendaItem.PREFIX_TASK_ID + UUID.randomUUID().toString(),
+                                            id = UUID.randomUUID().toString(),
                                             title = state.value.title,
                                             description = state.value.description,
                                             fromDate = state.value.fromDate,
@@ -408,13 +411,14 @@ class AgendaDetailViewModel @Inject constructor(
                                             remindAt = state.value.remindAt,
                                             hostId = userId,
                                             details = state.value.details,
+                                            type = AgendaItemType.TASK
                                         )
                                     )
                                 }
                                 AgendaItemType.REMINDER -> {
                                     agendaRepository.createAgendaItem(
                                         agendaItem = AgendaItem(
-                                            id = AgendaItem.PREFIX_REMINDER_ID + UUID.randomUUID().toString(),
+                                            id = UUID.randomUUID().toString(),
                                             title = state.value.title,
                                             description = state.value.description,
                                             fromDate = state.value.fromDate,
@@ -422,6 +426,7 @@ class AgendaDetailViewModel @Inject constructor(
                                             remindAt = state.value.remindAt,
                                             hostId = userId,
                                             details = state.value.details,
+                                            type = AgendaItemType.REMINDER
                                         )
                                     )
                                 }
@@ -522,6 +527,7 @@ class AgendaDetailViewModel @Inject constructor(
 
         if(existingAgendaItemId != null){
             viewModelScope.launch {
+                // Try to get the item - repository handles trying all tables
                 val agendaItem = agendaRepository.getAgendaItemById(existingAgendaItemId)
                 agendaItem?.let {
                     var details = agendaItem.details

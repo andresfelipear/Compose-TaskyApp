@@ -10,5 +10,5 @@ data class ReminderDto(
     @Json(name = "description") val description: String,
     @Json(name = "time") val time: String,
     @Json(name = "remindAt") val remindAt: String,
-    @Json(name = "updatedAt") val updatedAt: String,
+    @Json(name = "updatedAt") val updatedAt: String? = null,
 )
