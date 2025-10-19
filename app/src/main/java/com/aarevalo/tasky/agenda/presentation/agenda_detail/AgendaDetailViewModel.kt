@@ -10,6 +10,7 @@ import com.aarevalo.tasky.agenda.domain.model.AgendaItem
 import com.aarevalo.tasky.agenda.domain.model.AgendaItemType
 import com.aarevalo.tasky.agenda.domain.model.Attendee
 import com.aarevalo.tasky.agenda.domain.model.EventPhoto
+import com.aarevalo.tasky.agenda.domain.model.ReminderType
 import com.aarevalo.tasky.agenda.domain.model.toAgendaItemType
 import com.aarevalo.tasky.auth.domain.util.InputValidator
 import com.aarevalo.tasky.core.domain.preferences.SessionStorage
@@ -18,6 +19,7 @@ import com.aarevalo.tasky.core.presentation.ui.asUiText
 import com.aarevalo.tasky.core.presentation.util.UiText
 import com.aarevalo.tasky.core.util.getRemindAtFromReminderType
 import com.aarevalo.tasky.core.util.getReminderTypeFromLocalDateTime
+import com.aarevalo.tasky.core.util.getValidReminderType
 import com.aarevalo.tasky.core.util.stateInWhileSubscribed
 import com.aarevalo.tasky.core.util.toTitleCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,7 +76,7 @@ class AgendaDetailViewModel @Inject constructor(
         when(action){
             is AgendaDetailScreenAction.OnFromDateChanged -> {
                 _state.update {
-                    if(it.details is AgendaItemDetails.Event){
+                    val newState = if(it.details is AgendaItemDetails.Event){
                         it.copy(
                             fromDate = action.date,
                             details = it.details.copy(
@@ -88,14 +90,41 @@ class AgendaDetailViewModel @Inject constructor(
                             isFromDateDialogVisible = false
                         )
                     }
-
+                    
+                    // Validate reminder after date change
+                    val validReminderType = getValidReminderType(
+                        selectedReminderType = newState.reminderType,
+                        fromDate = newState.fromDate,
+                        fromTime = newState.fromTime
+                    )
+                    
+                    if (validReminderType == null || validReminderType != newState.reminderType) {
+                        // Adjust reminder if needed
+                        val adjustedReminderType = validReminderType ?: ReminderType.TEN_MINUTES
+                        newState.copy(
+                            reminderType = adjustedReminderType,
+                            remindAt = getRemindAtFromReminderType(
+                                reminderType = adjustedReminderType,
+                                fromDate = newState.fromDate,
+                                fromTime = newState.fromTime
+                            )
+                        )
+                    } else {
+                        newState.copy(
+                            remindAt = getRemindAtFromReminderType(
+                                reminderType = newState.reminderType,
+                                fromDate = newState.fromDate,
+                                fromTime = newState.fromTime
+                            )
+                        )
+                    }
                 }
             }
 
 
             is AgendaDetailScreenAction.OnFromTimeChanged -> {
                 _state.update {
-                    if(it.details is AgendaItemDetails.Event) {
+                    val newState = if(it.details is AgendaItemDetails.Event) {
                         it.copy(
                             fromTime = action.time,
                             details = it.details.copy(
@@ -107,6 +136,34 @@ class AgendaDetailViewModel @Inject constructor(
                         it.copy(
                             fromTime = action.time,
                             isFromTimeDialogVisible = false
+                        )
+                    }
+                    
+                    // Validate reminder after time change
+                    val validReminderType = getValidReminderType(
+                        selectedReminderType = newState.reminderType,
+                        fromDate = newState.fromDate,
+                        fromTime = newState.fromTime
+                    )
+                    
+                    if (validReminderType == null || validReminderType != newState.reminderType) {
+                        // Adjust reminder if needed
+                        val adjustedReminderType = validReminderType ?: ReminderType.TEN_MINUTES
+                        newState.copy(
+                            reminderType = adjustedReminderType,
+                            remindAt = getRemindAtFromReminderType(
+                                reminderType = adjustedReminderType,
+                                fromDate = newState.fromDate,
+                                fromTime = newState.fromTime
+                            )
+                        )
+                    } else {
+                        newState.copy(
+                            remindAt = getRemindAtFromReminderType(
+                                reminderType = newState.reminderType,
+                                fromDate = newState.fromDate,
+                                fromTime = newState.fromTime
+                            )
                         )
                     }
                 }
@@ -139,14 +196,52 @@ class AgendaDetailViewModel @Inject constructor(
 
             is AgendaDetailScreenAction.OnReminderTypeChanged -> {
                 _state.update {
-                    it.copy(
-                        reminderType = action.reminderType,
-                        remindAt = getRemindAtFromReminderType(
-                            reminderType = action.reminderType,
-                            fromDate = it.fromDate,
-                            fromTime = it.fromTime
-                        )
+                    // Validate if the selected reminder would be in the past
+                    val validReminderType = getValidReminderType(
+                        selectedReminderType = action.reminderType,
+                        fromDate = it.fromDate,
+                        fromTime = it.fromTime
                     )
+                    
+                    if (validReminderType == null) {
+                        // Event time is too close or in the past, can't set any reminder
+                        viewModelScope.launch {
+                            eventChannel.send(
+                                AgendaDetailScreenEvent.Error(
+                                    UiText.StringResource(id = R.string.reminder_too_close_error)
+                                )
+                            )
+                        }
+                        it // Return unchanged state
+                    } else if (validReminderType != action.reminderType) {
+                        // Auto-adjusted to a shorter valid reminder
+                        viewModelScope.launch {
+                            eventChannel.send(
+                                AgendaDetailScreenEvent.Error(
+                                    UiText.StringResource(
+                                        id = R.string.reminder_adjusted)
+                                )
+                            )
+                        }
+                        it.copy(
+                            reminderType = validReminderType,
+                            remindAt = getRemindAtFromReminderType(
+                                reminderType = validReminderType,
+                                fromDate = it.fromDate,
+                                fromTime = it.fromTime
+                            )
+                        )
+                    } else {
+                        // Selected reminder is valid
+                        it.copy(
+                            reminderType = action.reminderType,
+                            remindAt = getRemindAtFromReminderType(
+                                reminderType = action.reminderType,
+                                fromDate = it.fromDate,
+                                fromTime = it.fromTime
+                            )
+                        )
+                    }
                 }
             }
 
